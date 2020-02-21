@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="api">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="osgCmd\Any.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\BitState.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Cmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\CmdManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Common.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\DynLib.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\DynLibManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\ExitCmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Reflection.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Renderer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Sigslot.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Singleton.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Support.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\UserData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="osgCmd\Cmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\CmdManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\DynLib.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\DynLibManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\ExitCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\osgCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\Reflection.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\Renderer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\Sigslot.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\Utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\UserData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

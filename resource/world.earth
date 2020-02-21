@@ -1,0 +1,30 @@
+<map name="world" type="geocentric" version="2">
+	<image name="world_image" driver="gdal">
+        <url>world.tif</url>
+    </image>
+	<heightfield name="world_heightfield" driver="gdal">
+        <url>srtm30plus_stripped.tif</url>
+    </heightfield>
+	<image name="world_boundaries" driver="agglite" opacity="0.5">
+		<features name="world_shape" driver="ogr">
+			<url>world.shp</url>
+			<build_spatial_index>true</build_spatial_index>
+		</features>
+		<geometry_type>line</geometry_type>
+		<relative_line_size>true</relative_line_size>
+		<styles>
+			<style type="text/css">
+				world {
+					stroke:#ffff00
+					stroke-opacity:1.0
+					stroke-width:1.5
+				}
+			</style>
+		</styles>
+	</image>
+	<options>
+		<cache type="filesystem">
+			<path>file_cache</path>
+		</cache>
+	</options>
+</map>
