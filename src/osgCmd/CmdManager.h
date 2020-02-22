@@ -11,12 +11,11 @@ class _osgCmdExport CmdManager : public Singleton<CmdManager>, public DynLibMana
 public:
 	CmdManager();
 	~CmdManager();
-	void initBuiltInCmd();
+	void initBuiltinCmd();
 	bool addCmd(const string& cmd, Cmd* pCmd);
 	void removeCmd(const string& cmd);
 	void run();
-	bool sendCmd(const vector<string>& arglist);
-	osg::Group* getRootNode() const;
+	bool sendCmd(const string& cmdline);
 	Renderer* getRenderer() const;
 
 	template<typename T>
@@ -33,7 +32,6 @@ private:
 	bool                                   _busying;
 	Renderer*                              _renderer;
 	OpenThreads::Block                     _cmdBlock;
-	osg::ref_ptr<osg::Group>               _rootNode;
 	unordered_map<string, shared_ptr<Cmd>> _commands;
 };
 

@@ -10,36 +10,7 @@ using namespace osgCmd;
 
 typedef const char* (*DllGetCmdTypeName)(void);
 
-void osgCmd_Init(const char* workdir /*= nullptr*/)
-{
-	if (workdir == nullptr || 0 == strcmp(workdir, ""))
-		workdir = ".\\";
-
-	setWorkDir(workdir);
-	new CmdManager();
-	CmdManager::getSingleton().initBuiltInCmd();
-}
-
-bool osgCmd_Send(const char* cmdline, bool lazyLoad /*= false*/)
-{
-	vector<string> arglist;
-	stringtok(arglist, cmdline);
-	if (arglist.size() == 0)
-	{
-		OSG_FATAL << "Null command!" << std::endl;
-		return false;
-	}
-
-	if (lazyLoad)
-	{
-		if (!osgCmd_Register(arglist[0].c_str()))
-			return false;
-	}
-
-	return CmdManager::getSingleton().sendCmd(arglist);
-}
-
-bool osgCmd_Register(const char* cmd)
+static bool s_CmdRegister(const char* cmd)
 {
 	if (CmdManager::getSingleton().findCmd<Cmd>(cmd))
 		return true;
@@ -63,22 +34,31 @@ bool osgCmd_Register(const char* cmd)
 	return CmdManager::getSingleton().addCmd(cmd, ReflexFactory<>::getInstance().create<Cmd>(getCmdTypeName()));
 }
 
-void osgCmd_Unregister(const char* cmd, bool unloadPlugin /*= true*/)
+void osgCmd_Init(int cmdcount, char* cmdset[], const char* workdir /*= nullptr*/, int wndWidth /*= 0*/, int wndHeight /*= 0*/, float wndScale /*= 1.0f*/)
 {
-	CmdManager::getSingleton().removeCmd(cmd);
-	if (unloadPlugin)
+	if (workdir != nullptr && 0 != strcmp(workdir, ""))
+		setWorkDir(workdir);
+
+	CmdManager* pCmdMgr = new CmdManager();
+	pCmdMgr->getRenderer()->setupOSG(wndWidth, wndHeight, wndScale);
+	
+	if (cmdset)
 	{
-#ifdef _DEBUG
-		CmdManager::getSingleton().unload("osgCmd-" + string(cmd) + "d");
-#else
-		CmdManager::getSingleton().unload("osgCmd-" + string(cmd));
-#endif
+		for (int i = 0; i < cmdcount; ++i)
+			s_CmdRegister(cmdset[i]);
 	}
+
+	pCmdMgr->initBuiltinCmd();
+	pCmdMgr->start();
+}
+
+bool osgCmd_Send(const char* cmdline)
+{
+	return CmdManager::getSingleton().sendCmd(cmdline);
 }
 
 void osgCmd_Run()
 {
-	CmdManager::getSingleton().getRenderer()->setKeyEventSetsDone(0);
 	CmdManager::getSingleton().getRenderer()->run();
 }
 

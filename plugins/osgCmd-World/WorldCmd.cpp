@@ -12,12 +12,10 @@ REFLEX_IMPLEMENT(WorldCmd);
 
 bool WorldCmd::init()
 {
-	osg::Node* node = osgDB::readNodeFile(osgCmd::getWorkDir() + "world.earth");
-	_mapNode = dynamic_cast<osgEarth::MapNode*>(node);
-	_parent->addChild(_mapNode);
-	osg::ref_ptr<osg::ClearNode> clearNode = new osg::ClearNode;
-	clearNode->setClearColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	_parent->addChild(clearNode);
+	osg::Group* pRootNode = osgCmd::CmdManager::getSingleton().getRenderer()->getRootNode();
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(osgCmd::getWorkDir() + "world.earth");
+	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
+	pRootNode->addChild(_mapNode);
 	_manipulator = new osgEarth::Util::EarthManipulator();
 	_manipulator->setNode(_mapNode);
 	_manipulator->getSettings()->setArcViewpointTransitions(true);
@@ -25,6 +23,41 @@ bool WorldCmd::init()
 	_mapNode->addExtension(osgEarth::Extension::create("sky_simple", osgEarth::ConfigOptions()));
 	_eventHandler = new WorldEventHandler(this);
 	return true;
+}
+
+void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
+{
+	do
+	{
+		bool showGUI;
+		if (cmdarg.read("--gui", showGUI))
+		{
+			_subCmds.userData().setData(showGUI);
+			osgCmd::SignalTrigger::connect<WorldEventHandler>(_subCmds, _eventHandler.get(), &WorldEventHandler::showLabelControl);
+		}
+
+		float lon, lat, dist;
+		if (cmdarg.read("--fly", lon, lat, dist))
+		{
+			_subCmds.userData().setData("lon", lon);
+			_subCmds.userData().setData("lat", lat);
+			_subCmds.userData().setData("dist", dist);
+			osgCmd::SignalTrigger::connect<WorldCmd>(_subCmds, this, &WorldCmd::flyTo);
+		}
+
+		if (cmdarg.read("--dist"))
+		{
+		}
+
+	} while (0);
+}
+
+void WorldCmd::helpInformation(osg::ApplicationUsage* usage)
+{
+	usage->setDescription("Word command: encapsulation of osgEarth.");
+	usage->addCommandLineOption("--gui", "Display panel information.");
+	usage->addCommandLineOption("--fly", "Set viewpoint to specified latitude and longitude.");
+	usage->addCommandLineOption("--dist", "Ground measurement distance.");
 }
 
 osgEarth::MapNode* WorldCmd::getMapNode() const
@@ -35,31 +68,6 @@ osgEarth::MapNode* WorldCmd::getMapNode() const
 osgEarth::Util::EarthManipulator* WorldCmd::getEarthManipulator() const
 {
 	return _manipulator.get();
-}
-
-bool WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
-{
-	bool showGUI;
-	if (cmdarg.read("-gui", showGUI))
-	{
-		_subCmds.userData().setData(showGUI);
-		osgCmd::SignalTrigger::connect<WorldEventHandler>(_subCmds, _eventHandler.get(), &WorldEventHandler::showLabelControl);
-	}
-
-	float lon, lat, dist;
-	if (cmdarg.read("-fly", lon, lat, dist))
-	{
-		_subCmds.userData().setData("lon", lon);
-		_subCmds.userData().setData("lat", lat);
-		_subCmds.userData().setData("dist", dist);
-		osgCmd::SignalTrigger::connect<WorldCmd>(_subCmds, this, &WorldCmd::flyTo);
-	}
-
-	if (cmdarg.read("-dist"))
-	{
-	}
-
-	return true;
 }
 
 void WorldCmd::flyTo(const osgCmd::UserData& userdata)

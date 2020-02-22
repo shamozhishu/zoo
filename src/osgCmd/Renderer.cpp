@@ -90,21 +90,31 @@ void Renderer::update()
 {
 }
 
+osg::Group* Renderer::getRootNode() const
+{
+	return _rootNode.get();
+}
+
 void Renderer::setupOSG(int windowWidth, int windowHeight, float windowScale)
 {
-	_osgInitialized = true;
-	_windowScale = windowScale;
-	_osgWinEmb = new osgViewer::GraphicsWindowEmbedded(0, 0, windowWidth * windowScale, windowHeight * windowScale);
-	_osgWinEmb->getEventQueue()->syncWindowRectangleWithGraphicsContext();
-	_camera->setViewport(new osg::Viewport(0, 0, windowWidth * windowScale, windowHeight * windowScale));
-	_camera->setGraphicsContext(_osgWinEmb.get());
-	setKeyEventSetsDone(0);
-	setReleaseContextAtEndOfFrameHint(false);
-	setThreadingModel(osgViewer::Viewer::SingleThreaded);
+	if (windowWidth > 0 && windowHeight > 0)
+	{
+		_osgInitialized = true;
+		_windowScale = windowScale;
+		_osgGraphicsWnd = new osgViewer::GraphicsWindowEmbedded(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+		_osgGraphicsWnd->getEventQueue()->syncWindowRectangleWithGraphicsContext();
+		_camera->setViewport(new osg::Viewport(0, 0, windowWidth * windowScale, windowHeight * windowScale));
+		_camera->setGraphicsContext(_osgGraphicsWnd.get());
+		setReleaseContextAtEndOfFrameHint(false);
+		setThreadingModel(osgViewer::Viewer::SingleThreaded);
 
-	osgViewer::Viewer::Windows windows;
-	getWindows(windows);
-	_lastFrameStartTime.setStartTick(0);
+		osgViewer::Viewer::Windows windows;
+		getWindows(windows);
+		_lastFrameStartTime.setStartTick(0);
+	}
+
+	setKeyEventSetsDone(0);
+	_rootNode = new osg::Group();
 }
 
 bool Renderer::checkNeedToDoFrame()
@@ -238,8 +248,8 @@ void Renderer::resize(int windowWidth, int windowHeight, float windowScale)
 		return;
 
 	_windowScale = windowScale;
-	_osgWinEmb->resized(0, 0, windowWidth * windowScale, windowHeight * windowScale);
-	_osgWinEmb->getEventQueue()->windowResize(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+	_osgGraphicsWnd->resized(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+	_osgGraphicsWnd->getEventQueue()->windowResize(0, 0, windowWidth * windowScale, windowHeight * windowScale);
 	update();
 }
 
@@ -247,38 +257,38 @@ void Renderer::keyPressEvent(Key key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
 	int value = g_keyboardMap.remapKey(key);
-	_osgWinEmb->getEventQueue()->keyPress(value);
+	_osgGraphicsWnd->getEventQueue()->keyPress(value);
 }
 
 void Renderer::keyReleaseEvent(Key key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
 	int value = g_keyboardMap.remapKey(key);
-	_osgWinEmb->getEventQueue()->keyRelease(value);
+	_osgGraphicsWnd->getEventQueue()->keyRelease(value);
 }
 
 void Renderer::mousePressEvent(int x, int y, unsigned int modkey, MouseButton button)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->mouseButtonPress(x * _windowScale, y * _windowScale, button);
+	_osgGraphicsWnd->getEventQueue()->mouseButtonPress(x * _windowScale, y * _windowScale, button);
 }
 
 void Renderer::mouseReleaseEvent(int x, int y, unsigned int modkey, MouseButton button)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->mouseButtonRelease(x * _windowScale, y * _windowScale, button);
+	_osgGraphicsWnd->getEventQueue()->mouseButtonRelease(x * _windowScale, y * _windowScale, button);
 }
 
 void Renderer::mouseDoubleClickEvent(int x, int y, unsigned int modkey, MouseButton button)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->mouseDoubleButtonPress(x * _windowScale, y * _windowScale, button);
+	_osgGraphicsWnd->getEventQueue()->mouseDoubleButtonPress(x * _windowScale, y * _windowScale, button);
 }
 
 void Renderer::mouseMoveEvent(int x, int y, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->mouseMotion(x * _windowScale, y * _windowScale);
+	_osgGraphicsWnd->getEventQueue()->mouseMotion(x * _windowScale, y * _windowScale);
 }
 
 void Renderer::wheelEvent(int x, int y, unsigned int modkey, Scroll scroll)
@@ -306,8 +316,8 @@ void Renderer::wheelEvent(int x, int y, unsigned int modkey, Scroll scroll)
 	}
 
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->mouseMotion(x * _windowScale, y * _windowScale);
-	_osgWinEmb->getEventQueue()->mouseScroll(sm);
+	_osgGraphicsWnd->getEventQueue()->mouseMotion(x * _windowScale, y * _windowScale);
+	_osgGraphicsWnd->getEventQueue()->mouseScroll(sm);
 }
 
 void Renderer::timerEvent()
@@ -335,7 +345,7 @@ void Renderer::setKeyboardModifiers(unsigned int modkey)
 	if (bitmodkey.checkState(ESTATE_03))
 		mask |= osgGA::GUIEventAdapter::MODKEY_ALT;
 
-	_osgWinEmb->getEventQueue()->getCurrentEventState()->setModKeyMask(mask);
+	_osgGraphicsWnd->getEventQueue()->getCurrentEventState()->setModKeyMask(mask);
 }
 
 }

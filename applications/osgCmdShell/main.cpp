@@ -19,14 +19,20 @@ static void parsecmdline()
 	char szCmdline[128];
 	while (true)
 	{
-		printf("--cmd: >> ");
+		printf("--osgCmd: >> ");
 		fgets(szCmdline, sizeof(szCmdline), stdin);
 		if (feof(stdin))
 			break;
 
 		const char* pszCmdline = strtrim(szCmdline);
+		if (0 == _stricmp(pszCmdline, "cls"))
+		{
+			system("cls");
+			continue;
+		}
+
 		osgCmd_Send(pszCmdline);
-		if (0 == _stricmp(pszCmdline, "exit"))
+		if (0 == strcmp(pszCmdline, "--exit"))
 			break;
 	}
 }
@@ -37,11 +43,19 @@ int main(int argc, char* args[])
 	if (argc > 1)
 		workdir = args[1];
 
-	osgCmd_Init(workdir);
+	int cmdcount = argc - 2;
+	char** cmdset = nullptr;
+	if (cmdcount > 0)
+	{
+		cmdset = new char*[cmdcount];
+		for (int i = 0; i < cmdcount; ++i)
+			cmdset[i] = args[i + 2];
+	}
+	
+	osgCmd_Init(cmdcount, cmdset, workdir);
 
-	int i = 2;
-	while (i < argc)
-		osgCmd_Register(args[i++]);
+	if (cmdset)
+		delete[] cmdset;
 
 	std::thread cmdline(parsecmdline);
 	osgCmd_Run();

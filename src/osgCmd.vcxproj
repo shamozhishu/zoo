@@ -19,7 +19,7 @@
     <ClInclude Include="osgCmd\Common.h" />
     <ClInclude Include="osgCmd\DynLib.h" />
     <ClInclude Include="osgCmd\DynLibManager.h" />
-    <ClInclude Include="osgCmd\ExitCmd.h" />
+    <ClInclude Include="osgCmd\BuiltinCmd.h" />
     <ClInclude Include="osgCmd\Reflection.h" />
     <ClInclude Include="osgCmd\Renderer.h" />
     <ClInclude Include="osgCmd\Sigslot.h" />
@@ -29,11 +29,10 @@
     <ClInclude Include="osgCmd\Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="osgCmd\Cmd.cpp" />
     <ClCompile Include="osgCmd\CmdManager.cpp" />
     <ClCompile Include="osgCmd\DynLib.cpp" />
     <ClCompile Include="osgCmd\DynLibManager.cpp" />
-    <ClCompile Include="osgCmd\ExitCmd.cpp" />
+    <ClCompile Include="osgCmd\BuiltinCmd.cpp" />
     <ClCompile Include="osgCmd\osgCmd.cpp" />
     <ClCompile Include="osgCmd\Reflection.cpp" />
     <ClCompile Include="osgCmd\Renderer.cpp" />

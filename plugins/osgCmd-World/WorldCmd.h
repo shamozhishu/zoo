@@ -8,11 +8,10 @@ class WorldCmd : public osgCmd::Cmd
 	REFLEX_DECLARE(WorldCmd)
 public:
 	bool init();
+	void parseCmdArg(osg::ArgumentParser& cmdarg);
+	void helpInformation(osg::ApplicationUsage* usage);
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;
-
-protected:
-	bool parseCmdArg(osg::ArgumentParser& cmdarg);
 
 private slots:
 	void flyTo(const osgCmd::UserData& userdata);

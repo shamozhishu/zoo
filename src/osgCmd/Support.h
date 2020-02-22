@@ -41,6 +41,7 @@ extern "C"
 
 #include <osg/Group>
 #include <osgViewer/Viewer>
+#include <osgUtil/Optimizer>
 #include <osgGA/StateSetManipulator>
 #include <OpenThreads/ReadWriteMutex>
 #ifdef NEED_OSGEARTH_LIBRARY
@@ -158,7 +159,7 @@ enum Scroll
 template<typename ...Args> class ReflexFactory;
 template class _osgCmdExport ReflexFactory<>;
 class Cmd;
-struct CmdData;
+class BuiltinCmd;
 class CmdManager;
 class Renderer;
 class Any;

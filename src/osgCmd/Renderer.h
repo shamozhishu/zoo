@@ -10,6 +10,7 @@ public:
 	Renderer();
 	~Renderer();
 	void update();
+	osg::Group* getRootNode() const;
 	void setupOSG(int windowWidth, int windowHeight, float windowScale);
 	bool checkNeedToDoFrame() override;
 	void frame(double simulationTime = USE_REFERENCE_TIME) override;
@@ -32,8 +33,9 @@ protected:
 	void setKeyboardModifiers(unsigned int modkey);
 
 private:
-	osg::ref_ptr<osgViewer::GraphicsWindow> _osgWinEmb;
+	osg::ref_ptr<osg::Group>                _rootNode;
 	float                                   _windowScale;
+	osg::ref_ptr<osgViewer::GraphicsWindow> _osgGraphicsWnd;
 	bool                                    _osgInitialized;
 	bool                                    _continuousUpdate;
 	osg::Timer                              _lastFrameStartTime;

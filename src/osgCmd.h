@@ -12,11 +12,6 @@
 
 extern "C"
 {
-	static const char* osgCmd_BuiltInCmd[] = {
-		"Exit",
-		"null"
-	};
-
 	enum osgCmd_MouseButton
 	{
 		NoButton = 0,
@@ -85,16 +80,13 @@ extern "C"
 		SCROLL_2D
 	};
 
-	_osgCmdExport void osgCmd_Init(const char* workdir = nullptr);
-	_osgCmdExport bool osgCmd_Send(const char* cmdline, bool lazyLoad = false);
-	_osgCmdExport bool osgCmd_Register(const char* cmd);
-	_osgCmdExport void osgCmd_Unregister(const char* cmd, bool unloadPlugin = true);
-
+	_osgCmdExport void osgCmd_Init(int cmdcount, char* cmdset[], const char* workdir = nullptr, int wndWidth = 0, int wndHeight = 0, float wndScale = 1.0f);
+	_osgCmdExport bool osgCmd_Send(const char* cmdline);
 	_osgCmdExport void osgCmd_Run();
 	_osgCmdExport void osgCmd_Destroy();
 	_osgCmdExport void osgCmd_Render();
 	_osgCmdExport void osgCmd_Resize(int windowWidth, int windowHeight, float windowScale);
-
+	// Event.
 	_osgCmdExport void osgCmd_KeyPressEvent(osgCmd_Key key, unsigned int modkey);
 	_osgCmdExport void osgCmd_KeyReleaseEvent(osgCmd_Key key, unsigned int modkey);
 	_osgCmdExport void osgCmd_MousePressEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);

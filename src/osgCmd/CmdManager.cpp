@@ -1,19 +1,16 @@
 #include <osgCmd/CmdManager.h>
 #include <osgCmd/Renderer.h>
 #include <osgCmd/Utils.h>
-#include <osgCmd/Cmd.h>
+#include <osgCmd/BuiltinCmd.h>
 
 namespace osgCmd {
 
+static BuiltinCmd* s_builtinCmd = nullptr;
 CmdManager::CmdManager()
 	: _renderer(new Renderer())
 	, _curCmd(nullptr)
 	, _busying(false)
 {
-	_renderer->addEventHandler(new osgGA::StateSetManipulator(_renderer->getCamera()->getOrCreateStateSet()));
-	_rootNode = new osg::Group();
-	_renderer->setSceneData(_rootNode);
-	_renderer->realize();
 }
 
 CmdManager::~CmdManager()
@@ -24,6 +21,12 @@ CmdManager::~CmdManager()
 	delete _renderer;
 	while (isRunning())
 		OpenThreads::Thread::YieldCurrentThread();
+}
+
+void CmdManager::initBuiltinCmd()
+{
+	s_builtinCmd = ReflexFactory<>::getInstance().create<BuiltinCmd>("osgCmd::BuiltinCmd");
+	addCmd("__BUILTIN__", s_builtinCmd);
 }
 
 bool CmdManager::addCmd(const string& cmd, Cmd* pCmd)
@@ -73,7 +76,7 @@ void CmdManager::run()
 	_busying = false;
 }
 
-bool CmdManager::sendCmd(const vector<string>& arglist)
+bool CmdManager::sendCmd(const string& cmdline)
 {
 	if (!isRunning())
 	{
@@ -87,17 +90,34 @@ bool CmdManager::sendCmd(const vector<string>& arglist)
 		return false;
 	}
 
+	vector<string> arglist;
+	stringtok(arglist, cmdline);
 	int argc = arglist.size();
 	if (argc <= 0)
 	{
-		OSG_FATAL << "Null command!" << std::endl;
+		OSG_FATAL << "Please enter a command!" << std::endl;
 		return false;
 	}
 
-	auto it = _commands.find(strToUpper(arglist[0]));
-	if (it == _commands.end())
+	Cmd* pCmd = nullptr;
+	do
 	{
-		OSG_FATAL << "Illegal command!" << std::endl;
+		auto it = _commands.find(strToUpper(arglist[0]));
+		if (it != _commands.end())
+		{
+			pCmd = it->second.get();
+			break;
+		}
+
+		argc += 1;
+		arglist.insert(arglist.begin(), "__BUILTIN__");
+		pCmd = s_builtinCmd;
+
+	} while (0);
+
+	if (argc <= 1 || arglist[1][0] != '-')
+	{
+		OSG_FATAL << "Invalid command entered!" << std::endl;
 		return false;
 	}
 
@@ -106,13 +126,32 @@ bool CmdManager::sendCmd(const vector<string>& arglist)
 		argv[i] = const_cast<char*>(arglist[i].c_str());
 
 	osg::ArgumentParser cmdArg(&argc, argv);
-	Cmd* pCmd = it->second.get();
-	SignalTrigger::disconnect(pCmd->_subCmds);
-	if (!pCmd->parseCmdArg(cmdArg))
+	if (_curCmd != pCmd)
 	{
-		SAFE_DELETE_ARRAY(argv);
+		cmdArg.getApplicationUsage()->setCommandLineOptions(osg::ApplicationUsage::UsageMap());
+		cmdArg.getApplicationUsage()->setCommandLineOptionsDefaults(osg::ApplicationUsage::UsageMap());
+		cmdArg.getApplicationUsage()->setEnvironmentalVariables(osg::ApplicationUsage::UsageMap());
+		cmdArg.getApplicationUsage()->setEnvironmentalVariablesDefaults(osg::ApplicationUsage::UsageMap());
+		cmdArg.getApplicationUsage()->setKeyboardMouseBindings(osg::ApplicationUsage::UsageMap());
+	}
+
+	unsigned int helpType = 0;
+	if ((helpType = cmdArg.readHelpType()))
+	{
+		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options [args...]");
+		pCmd->helpInformation(cmdArg.getApplicationUsage());
+		cmdArg.getApplicationUsage()->write(std::cout, helpType);
+		return true;
+	}
+
+	SignalTrigger::disconnect(pCmd->_subCmds);
+	pCmd->parseCmdArg(cmdArg);
+	cmdArg.reportRemainingOptionsAsUnrecognized();
+	if (cmdArg.errors())
+	{
 		SignalTrigger::disconnect(pCmd->_subCmds);
-		OSG_FATAL << "Unresolved command!" << std::endl;
+		cmdArg.writeErrorMessages(std::cout);
+		SAFE_DELETE_ARRAY(argv);
 		return false;
 	}
 
@@ -120,11 +159,6 @@ bool CmdManager::sendCmd(const vector<string>& arglist)
 	_curCmd = pCmd;
 	_cmdBlock.release();
 	return true;
-}
-
-osg::Group* CmdManager::getRootNode() const
-{
-	return _rootNode.get();
 }
 
 Renderer* CmdManager::getRenderer() const
@@ -139,24 +173,6 @@ Cmd* CmdManager::findCmd(const char* cmd)
 	if (it == _commands.end())
 		return nullptr;
 	return it->second.get();
-}
-
-void CmdManager::initBuiltInCmd()
-{
-	const char* pszBuiltInCmd[] = {
-		"Exit",
-		"null"
-	};
-
-	string strCmd;
-	unsigned int idx = 0;
-	while (0 != strcmp(pszBuiltInCmd[idx], "null"))
-	{
-		strCmd = pszBuiltInCmd[idx++];
-		addCmd(strCmd, ReflexFactory<>::getInstance().create<Cmd>("osgCmd::" + strCmd + "Cmd"));
-	}
-
-	start();
 }
 
 }
