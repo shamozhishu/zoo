@@ -13,7 +13,7 @@ public:
 	virtual void helpInformation(osg::ApplicationUsage* usage) = 0;
 
 signals:
-	Signal _subCmds;
+	Signal _subCommands;
 };
 
 }

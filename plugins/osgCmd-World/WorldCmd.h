@@ -2,11 +2,12 @@
 
 #include <osgCmd/Cmd.h>
 
-class WorldEventHandler;
+class LongitudeLatitudeEventHandler;
 class WorldCmd : public osgCmd::Cmd
 {
 	REFLEX_DECLARE(WorldCmd)
 public:
+	~WorldCmd();
 	bool init();
 	void parseCmdArg(osg::ArgumentParser& cmdarg);
 	void helpInformation(osg::ApplicationUsage* usage);
@@ -15,9 +16,11 @@ public:
 
 private slots:
 	void flyTo(const osgCmd::UserData& userdata);
+	void LonLatAltitude(const osgCmd::UserData& userdata);
+	void measureDistance(const osgCmd::UserData& userdata);
 
 private:
 	osg::ref_ptr<osgEarth::MapNode> _mapNode;
-	osg::ref_ptr<WorldEventHandler> _eventHandler;
+	osg::ref_ptr<LongitudeLatitudeEventHandler> _lonLatHandler;
 	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;
 };

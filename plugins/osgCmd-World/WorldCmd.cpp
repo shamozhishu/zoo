@@ -1,5 +1,7 @@
 #include "WorldCmd.h"
-#include "WorldEventHandler.h"
+#include "WorldControls.h"
+#include "MeasureDistanceEventHandler.h"
+#include "LongitudeLatitudeEventHandler.h"
 #include <osgCmd/Renderer.h>
 #include <osgCmd/CmdManager.h>
 #include <osgCmd/Utils.h>
@@ -9,6 +11,11 @@ using namespace osgEarth;
 
 REGISTER_OSGCMDPLUGIN(WorldCmd)
 REFLEX_IMPLEMENT(WorldCmd);
+
+WorldCmd::~WorldCmd()
+{
+	WorldControls::destroy();
+}
 
 bool WorldCmd::init()
 {
@@ -21,7 +28,6 @@ bool WorldCmd::init()
 	_manipulator->getSettings()->setArcViewpointTransitions(true);
 	osgCmd::CmdManager::getSingleton().getRenderer()->setCameraManipulator(_manipulator);
 	_mapNode->addExtension(osgEarth::Extension::create("sky_simple", osgEarth::ConfigOptions()));
-	_eventHandler = new WorldEventHandler(this);
 	return true;
 }
 
@@ -29,24 +35,28 @@ void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 {
 	do
 	{
-		bool showGUI;
-		if (cmdarg.read("--gui", showGUI))
+		bool isShow;
+		if (cmdarg.read("--lla", isShow))
 		{
-			_subCmds.userData().setData(showGUI);
-			osgCmd::SignalTrigger::connect<WorldEventHandler>(_subCmds, _eventHandler.get(), &WorldEventHandler::showLabelControl);
+			_subCommands.userData().setData(isShow);
+			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::LonLatAltitude);
+			break;
 		}
 
 		float lon, lat, dist;
 		if (cmdarg.read("--fly", lon, lat, dist))
 		{
-			_subCmds.userData().setData("lon", lon);
-			_subCmds.userData().setData("lat", lat);
-			_subCmds.userData().setData("dist", dist);
-			osgCmd::SignalTrigger::connect<WorldCmd>(_subCmds, this, &WorldCmd::flyTo);
+			_subCommands.userData().setData("lon", lon);
+			_subCommands.userData().setData("lat", lat);
+			_subCommands.userData().setData("dist", dist);
+			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::flyTo);
+			break;
 		}
 
 		if (cmdarg.read("--dist"))
 		{
+			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::measureDistance);
+			break;
 		}
 
 	} while (0);
@@ -55,8 +65,8 @@ void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 void WorldCmd::helpInformation(osg::ApplicationUsage* usage)
 {
 	usage->setDescription("Word command: encapsulation of osgEarth.");
-	usage->addCommandLineOption("--gui", "Display panel information.");
-	usage->addCommandLineOption("--fly", "Set viewpoint to specified latitude and longitude.");
+	usage->addCommandLineOption("--lla <isShow:bool>", "Display panel information.");
+	usage->addCommandLineOption("--fly <longitude:float> <latitude:float> <distance:float>", "Set viewpoint to specified longitude, latitude and distance.");
 	usage->addCommandLineOption("--dist", "Ground measurement distance.");
 }
 
@@ -73,8 +83,37 @@ osgEarth::Util::EarthManipulator* WorldCmd::getEarthManipulator() const
 void WorldCmd::flyTo(const osgCmd::UserData& userdata)
 {
 	Viewpoint vp = _manipulator->getViewpoint();
-	vp.focalPoint().mutable_value().x() = osgCmd::any_cast<float>(_subCmds.userData().getData("lon"));
-	vp.focalPoint().mutable_value().y() = osgCmd::any_cast<float>(_subCmds.userData().getData("lat"));
-	vp.range() = osgCmd::any_cast<float>(_subCmds.userData().getData("dist"));
+	vp.focalPoint().mutable_value().x() = osgCmd::any_cast<float>(_subCommands.userData().getData("lon"));
+	vp.focalPoint().mutable_value().y() = osgCmd::any_cast<float>(_subCommands.userData().getData("lat"));
+	vp.range() = osgCmd::any_cast<float>(_subCommands.userData().getData("dist"));
 	_manipulator->setViewpoint(vp, 2);
+}
+
+void WorldCmd::LonLatAltitude(const osgCmd::UserData& userdata)
+{
+	bool show = osgCmd::any_cast<bool>(userdata.getData());
+	if (show)
+	{
+		if (!_lonLatHandler)
+		{
+			_lonLatHandler = new LongitudeLatitudeEventHandler(this);
+			osgCmd::CmdManager::getSingleton().getRenderer()->addEventHandler(_lonLatHandler.get());
+		}
+	}
+	else
+	{
+		if (_lonLatHandler)
+		{
+			osgCmd::CmdManager::getSingleton().getRenderer()->removeEventHandler(_lonLatHandler.get());
+			_lonLatHandler = nullptr;
+		}
+	}
+}
+
+void WorldCmd::measureDistance(const osgCmd::UserData& userdata)
+{
+	osg::ref_ptr<MeasureDistanceEventHandler> measureDistanceHandler = new MeasureDistanceEventHandler(this);
+	osgCmd::CmdManager::getSingleton().getRenderer()->addEventHandler(measureDistanceHandler.get());
+	osgCmd::CmdManager::getSingleton().block(true);
+	osgCmd::CmdManager::getSingleton().getRenderer()->removeEventHandler(measureDistanceHandler.get());
 }

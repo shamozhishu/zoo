@@ -32,18 +32,18 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 	{
 		if (cmdarg.argc() == 2 && cmdarg.read("--exit"))
 		{
-			SignalTrigger::connect<BuiltinCmd>(_subCmds, this, &BuiltinCmd::endMainLoop);
+			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::endMainLoop);
 			break;
 		}
 
 		float r, g, b, a;
 		if (cmdarg.read("--bgcolor", r, g, b, a))
 		{
-			_subCmds.userData().setData("red", r);
-			_subCmds.userData().setData("green", g);
-			_subCmds.userData().setData("blue", b);
-			_subCmds.userData().setData("alpha", a);
-			SignalTrigger::connect<BuiltinCmd>(_subCmds, this, &BuiltinCmd::changeBgColor);
+			_subCommands.userData().setData("red", r);
+			_subCommands.userData().setData("green", g);
+			_subCommands.userData().setData("blue", b);
+			_subCommands.userData().setData("alpha", a);
+			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::changeBgColor);
 			break;
 		}
 
@@ -54,7 +54,7 @@ void BuiltinCmd::helpInformation(osg::ApplicationUsage* usage)
 {
 	usage->setDescription("Built-in commands: encapsulation of many basic functions of OSG.");
 	usage->addCommandLineOption("--exit", "End OSG main loop.");
-	usage->addCommandLineOption("--bgcolor", "Change background color.");
+	usage->addCommandLineOption("--bgcolor <red:float> <green:float> <blue:float> <alpha:float>", "Change background color.");
 }
 
 void BuiltinCmd::endMainLoop(const UserData& userdata)

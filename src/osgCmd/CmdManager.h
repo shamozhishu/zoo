@@ -15,6 +15,7 @@ public:
 	bool addCmd(const string& cmd, Cmd* pCmd);
 	void removeCmd(const string& cmd);
 	void run();
+	void block(bool isBlock);
 	bool sendCmd(const string& cmdline);
 	Renderer* getRenderer() const;
 
@@ -29,9 +30,10 @@ protected:
 
 private:
 	Cmd*                                   _curCmd;
+	string                                 _cmdName;
 	bool                                   _busying;
 	Renderer*                              _renderer;
-	OpenThreads::Block                     _cmdBlock;
+	OpenThreads::Block                     _block[2];
 	unordered_map<string, shared_ptr<Cmd>> _commands;
 };
 

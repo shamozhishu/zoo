@@ -85,12 +85,16 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MeasureDistanceEventHandler.cpp" />
     <ClCompile Include="WorldCmd.cpp" />
-    <ClCompile Include="WorldEventHandler.cpp" />
+    <ClCompile Include="LongitudeLatitudeEventHandler.cpp" />
+    <ClCompile Include="WorldControls.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MeasureDistanceEventHandler.h" />
     <ClInclude Include="WorldCmd.h" />
-    <ClInclude Include="WorldEventHandler.h" />
+    <ClInclude Include="LongitudeLatitudeEventHandler.h" />
+    <ClInclude Include="WorldControls.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\osgCmd.vcxproj">

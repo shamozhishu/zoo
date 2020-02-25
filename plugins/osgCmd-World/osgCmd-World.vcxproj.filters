@@ -10,7 +10,13 @@
     <ClCompile Include="WorldCmd.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WorldEventHandler.cpp">
+    <ClCompile Include="MeasureDistanceEventHandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="LongitudeLatitudeEventHandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldControls.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -18,7 +24,13 @@
     <ClInclude Include="WorldCmd.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WorldEventHandler.h">
+    <ClInclude Include="MeasureDistanceEventHandler.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="LongitudeLatitudeEventHandler.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldControls.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -40,6 +40,7 @@ extern "C"
 #include <osgCmd/Common.h>
 
 #include <osg/Group>
+#include <osg/LineWidth>
 #include <osgViewer/Viewer>
 #include <osgUtil/Optimizer>
 #include <osgGA/StateSetManipulator>

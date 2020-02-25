@@ -16,7 +16,8 @@ CmdManager::CmdManager()
 CmdManager::~CmdManager()
 {
 	_renderer->setDone(true);
-	_cmdBlock.release();
+	_block[0].release();
+	_block[1].release();
 	_commands.clear();
 	delete _renderer;
 	while (isRunning())
@@ -54,26 +55,38 @@ void CmdManager::run()
 	bool running = true;
 	do
 	{
-		if (_curCmd)
+		if (!_busying && _curCmd)
 		{
 			_busying = true;
-			SignalTrigger::emit(_curCmd->_subCmds);
-			_curCmd->_subCmds.userData().clear();
-			_curCmd = nullptr;
+			SignalTrigger::emit(_curCmd->_subCommands);
+			_curCmd->_subCommands.userData().clear();
 		}
 		else
 		{
 			running = !testCancel() && !_renderer->done();
 			if (running)
 			{
-				_cmdBlock.reset();
+				_block[1].reset();
 				_busying = false;
-				_cmdBlock.block();
+				_block[1].block();
 			}
 		}
 
 	} while (running);
 	_busying = false;
+}
+
+void CmdManager::block(bool isBlock)
+{
+	if (isBlock)
+	{
+		_block[0].reset();
+		_block[0].block();
+	}
+	else
+	{
+		_block[0].release();
+	}
 }
 
 bool CmdManager::sendCmd(const string& cmdline)
@@ -100,24 +113,40 @@ bool CmdManager::sendCmd(const string& cmdline)
 	}
 
 	Cmd* pCmd = nullptr;
+	string cmdname = "";
 	do
 	{
-		auto it = _commands.find(strToUpper(arglist[0]));
+		if (arglist[0][0] == '-')
+		{
+			argc += 1;
+			arglist.insert(arglist.begin(), "__BUILTIN__");
+			pCmd = s_builtinCmd;
+			cmdname = "__BUILTIN__";
+			break;
+		}
+
+		cmdname = strToUpper(arglist[0]);
+		if (cmdname == _cmdName)
+		{
+			pCmd = _curCmd;
+			break;
+		}
+
+		auto it = _commands.find(cmdname);
 		if (it != _commands.end())
 		{
 			pCmd = it->second.get();
 			break;
 		}
 
-		argc += 1;
-		arglist.insert(arglist.begin(), "__BUILTIN__");
-		pCmd = s_builtinCmd;
+		OSG_FATAL << "Non-existent command!" << std::endl;
+		return false;
 
 	} while (0);
 
 	if (argc <= 1 || arglist[1][0] != '-')
 	{
-		OSG_FATAL << "Invalid command entered!" << std::endl;
+		OSG_FATAL << "Please enter valid command parameters!" << std::endl;
 		return false;
 	}
 
@@ -138,26 +167,30 @@ bool CmdManager::sendCmd(const string& cmdline)
 	unsigned int helpType = 0;
 	if ((helpType = cmdArg.readHelpType()))
 	{
+		_curCmd = pCmd;
+		_cmdName = cmdname;
 		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options [args...]");
 		pCmd->helpInformation(cmdArg.getApplicationUsage());
 		cmdArg.getApplicationUsage()->write(std::cout, helpType);
+		SAFE_DELETE_ARRAY(argv);
 		return true;
 	}
 
-	SignalTrigger::disconnect(pCmd->_subCmds);
+	SignalTrigger::disconnect(pCmd->_subCommands);
 	pCmd->parseCmdArg(cmdArg);
 	cmdArg.reportRemainingOptionsAsUnrecognized();
 	if (cmdArg.errors())
 	{
-		SignalTrigger::disconnect(pCmd->_subCmds);
+		SignalTrigger::disconnect(pCmd->_subCommands);
 		cmdArg.writeErrorMessages(std::cout);
 		SAFE_DELETE_ARRAY(argv);
 		return false;
 	}
 
-	SAFE_DELETE_ARRAY(argv);
 	_curCmd = pCmd;
-	_cmdBlock.release();
+	_cmdName = cmdname;
+	_block[1].release();
+	SAFE_DELETE_ARRAY(argv);
 	return true;
 }
 
