@@ -85,12 +85,14 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LocateModelEventHandler.cpp" />
     <ClCompile Include="MeasureDistanceEventHandler.cpp" />
     <ClCompile Include="WorldCmd.cpp" />
     <ClCompile Include="LongitudeLatitudeEventHandler.cpp" />
     <ClCompile Include="WorldControls.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LocateModelEventHandler.h" />
     <ClInclude Include="MeasureDistanceEventHandler.h" />
     <ClInclude Include="WorldCmd.h" />
     <ClInclude Include="LongitudeLatitudeEventHandler.h" />

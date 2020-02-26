@@ -17,6 +17,7 @@ public:
 	~WorldControls();
 	static WorldControls* getIns();
 	static void destroy();
+	bool isHasLabelControl(LabelIndex idx) const;
 	void addLabelTextDisplay(const string& text, LabelIndex idx);
 	void removeLabelTextDisplay(LabelIndex idx);
 

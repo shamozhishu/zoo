@@ -39,6 +39,13 @@ void WorldControls::destroy()
 	SAFE_DELETE(s_worldControls);
 }
 
+bool WorldControls::isHasLabelControl(LabelIndex idx) const
+{
+	if (idx < count_label_)
+		return _labelControls[idx] != nullptr;
+	return false;
+}
+
 void WorldControls::addLabelTextDisplay(const string& text, LabelIndex idx)
 {
 	if (idx < count_label_)
@@ -63,16 +70,19 @@ void WorldControls::removeLabelTextDisplay(LabelIndex idx)
 		_vboxControl->dirty();
 	}
 
-	bool isshow = false;
-	for (int i = lla_label_; i < count_label_; ++i)
+	if (_vboxControl->visible())
 	{
-		if (_labelControls[i])
+		bool isshow = false;
+		for (int i = lla_label_; i < count_label_; ++i)
 		{
-			isshow = true;
-			break;
+			if (_labelControls[i])
+			{
+				isshow = true;
+				break;
+			}
 		}
-	}
 
-	if (!isshow)
-		_vboxControl->setVisible(false);
+		if (!isshow)
+			_vboxControl->setVisible(false);
+	}
 }

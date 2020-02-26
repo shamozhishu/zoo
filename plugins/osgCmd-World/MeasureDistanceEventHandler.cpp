@@ -6,9 +6,8 @@
 
 using namespace osgEarth;
 
-MeasureDistanceEventHandler::MeasureDistanceEventHandler(WorldCmd* worldcmd)
-	: _worldCmd(worldcmd)
-	, _totalDistance(0)
+MeasureDistanceEventHandler::MeasureDistanceEventHandler()
+	: _totalDistance(0)
 {
 	_lineStrip = new osg::Geode();
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
@@ -35,7 +34,7 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 		return true;
 	}
 
-	double vpRange = _worldCmd->getEarthManipulator()->getViewpoint().getRange();
+	double vpRange = WorldCmd::getSingleton().getEarthManipulator()->getViewpoint().getRange();
 	if (vpRange > 100000)
 		return false;
 
@@ -63,9 +62,9 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 
 					_endPoint = pt;
 					GeoPoint mapPoint;
-					mapPoint.fromWorld(_worldCmd->getMapNode()->getMapSRS(), _startPoint);
+					mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), _startPoint);
 					osg::Vec3d startlla = mapPoint.vec3d();
-					mapPoint.fromWorld(_worldCmd->getMapNode()->getMapSRS(), _endPoint);
+					mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), _endPoint);
 					osg::Vec3d endlla = mapPoint.vec3d();
 
 					int dist = (_endPoint - _startPoint).length();
@@ -80,15 +79,15 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 							double lat = startlla.y() + i * deltaLat;
 
 							osg::Vec3d lowPt;
-							GeoPoint point(_worldCmd->getMapNode()->getMapSRS(), lon, lat, -1000, osgEarth::ALTMODE_ABSOLUTE);
+							GeoPoint point(WorldCmd::getSingleton().getMapNode()->getMapSRS(), lon, lat, -1000, osgEarth::ALTMODE_ABSOLUTE);
 							point.toWorld(lowPt);
 
 							osg::Vec3d heightPt;
-							point.set(_worldCmd->getMapNode()->getMapSRS(), lon, lat, 80000, osgEarth::ALTMODE_ABSOLUTE);
+							point.set(WorldCmd::getSingleton().getMapNode()->getMapSRS(), lon, lat, 80000, osgEarth::ALTMODE_ABSOLUTE);
 							point.toWorld(heightPt);
 
 							osg::Vec3d intersectPt;
-							if (!intersectPoint(intersectPt, lowPt, heightPt, _worldCmd->getMapNode()->getTerrainEngine()))
+							if (!intersectPoint(intersectPt, lowPt, heightPt, WorldCmd::getSingleton().getMapNode()->getTerrainEngine()))
 								continue;
 
 							_distPointSet->push_back(intersectPt);
@@ -106,7 +105,6 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 						geo->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, _distPointSet->size()));
 
 						_totalDistance += getDistance(_distPointSet);
-						_startPoint = _endPoint;
 						_distPointSet = new osg::Vec3dArray();
 						_distPointSet->push_back(pt);
 						_startPoint = pt;

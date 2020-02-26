@@ -19,6 +19,9 @@
     <ClCompile Include="WorldControls.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="LocateModelEventHandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WorldCmd.h">
@@ -31,6 +34,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="WorldControls.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="LocateModelEventHandler.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

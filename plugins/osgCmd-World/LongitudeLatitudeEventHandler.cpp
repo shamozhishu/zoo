@@ -6,10 +6,9 @@
 
 using namespace osgEarth;
 
-LongitudeLatitudeEventHandler::LongitudeLatitudeEventHandler(WorldCmd* worldcmd)
-	: _worldCmd(worldcmd)
+LongitudeLatitudeEventHandler::LongitudeLatitudeEventHandler()
 {
-	_nodePath.push_back(_worldCmd->getMapNode()->getTerrainEngine());
+	_nodePath.push_back(WorldCmd::getSingleton().getMapNode()->getTerrainEngine());
 }
 
 LongitudeLatitudeEventHandler::~LongitudeLatitudeEventHandler()
@@ -27,7 +26,7 @@ bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osg
 	if (ea.getEventType() == ea.FRAME)
 	{
 		char szbuf[512];
-		Viewpoint vp = _worldCmd->getEarthManipulator()->getViewpoint();
+		Viewpoint vp = WorldCmd::getSingleton().getEarthManipulator()->getViewpoint();
 		sprintf_s(szbuf, sizeof(szbuf), "[Viewpoint] Longitude: %.2f Latitude: %.2f Distance: %.2f", vp.focalPoint().get().x(), vp.focalPoint().get().y(), vp.getRange());
 		WorldControls::getIns()->addLabelTextDisplay(szbuf, lla_label_);
 
@@ -37,12 +36,12 @@ bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osg
 			osgUtil::LineSegmentIntersector::Intersection first = *(results.begin());
 			osg::Vec3d world = first.getWorldIntersectPoint();
 			GeoPoint mapPoint;
-			mapPoint.fromWorld(_worldCmd->getMapNode()->getMapSRS(), world);
+			mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), world);
 			osg::Vec3d lla = mapPoint.vec3d();
 			sprintf_s(szbuf, sizeof(szbuf), "[Mouse intersect point] Longitude: %.2f Latitude: %.2f Altitude: %.2f", lla.x(), lla.y(), lla.z());
 			WorldControls::getIns()->addLabelTextDisplay(szbuf, ipt_label_);
 		}
-		else
+		else if (WorldControls::getIns()->isHasLabelControl(ipt_label_))
 		{
 			WorldControls::getIns()->removeLabelTextDisplay(ipt_label_);
 		}
