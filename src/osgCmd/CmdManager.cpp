@@ -24,6 +24,47 @@ CmdManager::~CmdManager()
 		OpenThreads::Thread::YieldCurrentThread();
 }
 
+void CmdManager::run()
+{
+	bool running = true;
+	do
+	{
+		if (!_busying && _curCmd)
+		{
+			_busying = true;
+			SignalTrigger::emit(_curCmd->_subCommands);
+			_curCmd->_subCommands.userData().clear();
+			cancelRetValueBlock();
+		}
+		else
+		{
+			running = !testCancel() && !_renderer->done();
+			if (running)
+			{
+				_block[1].reset();
+				_busying = false;
+				_block[1].block();
+			}
+		}
+
+	} while (running);
+	cancelRetValueBlock();
+	_busying = false;
+}
+
+void CmdManager::block(bool isBlock)
+{
+	if (isBlock)
+	{
+		_block[0].reset();
+		_block[0].block();
+	}
+	else
+	{
+		_block[0].release();
+	}
+}
+
 void CmdManager::initBuiltinCmd()
 {
 	s_builtinCmd = ReflexFactory<>::getInstance().create<BuiltinCmd>("osgCmd::BuiltinCmd");
@@ -48,45 +89,6 @@ void CmdManager::removeCmd(const string& cmd)
 	auto it = _commands.find(strToUpper(cmd));
 	if (it != _commands.end())
 		_commands.erase(it);
-}
-
-void CmdManager::run()
-{
-	bool running = true;
-	do
-	{
-		if (!_busying && _curCmd)
-		{
-			_busying = true;
-			SignalTrigger::emit(_curCmd->_subCommands);
-			_curCmd->_subCommands.userData().clear();
-		}
-		else
-		{
-			running = !testCancel() && !_renderer->done();
-			if (running)
-			{
-				_block[1].reset();
-				_busying = false;
-				_block[1].block();
-			}
-		}
-
-	} while (running);
-	_busying = false;
-}
-
-void CmdManager::block(bool isBlock)
-{
-	if (isBlock)
-	{
-		_block[0].reset();
-		_block[0].block();
-	}
-	else
-	{
-		_block[0].release();
-	}
 }
 
 bool CmdManager::sendCmd(const string& cmdline)
@@ -189,14 +191,10 @@ bool CmdManager::sendCmd(const string& cmdline)
 
 	_curCmd = pCmd;
 	_cmdName = cmdname;
+	_retValue.clear();
 	_block[1].release();
 	SAFE_DELETE_ARRAY(argv);
 	return true;
-}
-
-Renderer* CmdManager::getRenderer() const
-{
-	return _renderer;
 }
 
 Cmd* CmdManager::findCmd(const char* cmd)
@@ -206,6 +204,78 @@ Cmd* CmdManager::findCmd(const char* cmd)
 	if (it == _commands.end())
 		return nullptr;
 	return it->second.get();
+}
+
+Renderer* CmdManager::getRenderer() const
+{
+	return _renderer;
+}
+
+bool CmdManager::setReturnValue(const string& key, const Any& retval)
+{
+	bool hasVal;
+	if (key == "____OSGCMD____")
+		hasVal = _retValue.getData().has_value();
+	else
+		hasVal = _retValue.getData(key).has_value();
+
+	if (!hasVal)
+	{
+		_retValue.setData(key, retval);
+		lazyInitPromise(key);
+		_promises[key].get()->set_value(retval);
+		return true;
+	}
+
+	return false;
+}
+
+Any CmdManager::getReturnValue(const string& key)
+{
+	lazyInitPromise(key);
+	std::future<Any> fut = _promises[key].get()->get_future();
+	return fut.get();
+}
+
+bool CmdManager::setErrorMessage(const string& errMessage)
+{
+	if (!_retValue.getData().has_value())
+	{
+		_retValue.setData(errMessage);
+		lazyInitPromise("____OSGCMD____");
+		_promises["____OSGCMD____"].get()->set_value(errMessage);
+		return true;
+	}
+
+	return false;
+}
+
+string CmdManager::getErrorMessage()
+{
+	lazyInitPromise("____OSGCMD____");
+	std::future<Any> fut = _promises["____OSGCMD____"].get()->get_future();
+	Any temp = fut.get();
+	if (temp.has_value())
+		return any_cast<string>(temp);
+	return "";
+}
+
+void CmdManager::lazyInitPromise(const string& key)
+{
+	OpenThreads::ScopedWriteLock lock(_rwMutex);
+	if (_promises.find(key) == _promises.end())
+	{
+		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
+		_promises[key] = ptr;
+	}
+}
+
+void CmdManager::cancelRetValueBlock()
+{
+	for (auto it = _promises.begin(); it != _promises.end(); ++it)
+		setReturnValue(it->first, Any());
+	_promises.clear();
+	_retValue.clear();
 }
 
 }

@@ -12,7 +12,7 @@ typedef const char* (*DllGetCmdTypeName)(void);
 
 static bool s_CmdRegister(const char* cmd)
 {
-	if (CmdManager::getSingleton().findCmd<Cmd>(cmd))
+	if (CmdManager::getSingleton().findCmd(cmd))
 		return true;
 
 	DynLib* lib = nullptr;
@@ -110,4 +110,72 @@ void osgCmd_MouseMoveEvent(int x, int y, unsigned int modkey)
 void osgCmd_WheelEvent(int x, int y, unsigned int modkey, osgCmd_Scroll scroll)
 {
 	CmdManager::getSingleton().getRenderer()->wheelEvent(x, y, modkey, (Scroll)scroll);
+}
+
+bool osgCmd_BoolValue(const char* variable, bool* value)
+{
+	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	if (val.has_value())
+	{
+		*value = any_cast<bool>(val);
+		return true;
+	}
+
+	return false;
+}
+
+bool osgCmd_IntValue(const char* variable, int* value)
+{
+	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	if (val.has_value())
+	{
+		*value = any_cast<int>(val);
+		return true;
+	}
+
+	return false;
+}
+
+bool osgCmd_FloatValue(const char* variable, float* value)
+{
+	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	if (val.has_value())
+	{
+		*value = any_cast<float>(val);
+		return true;
+	}
+
+	return false;
+}
+
+bool osgCmd_DoubleValue(const char* variable, double* value)
+{
+	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	if (val.has_value())
+	{
+		*value = any_cast<double>(val);
+		return true;
+	}
+
+	return false;
+}
+
+const char* osgCmd_StringValue(const char* variable)
+{
+	static std::string s_returnValue;
+	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	if (val.has_value())
+	{
+		s_returnValue = any_cast<string>(val);
+		return s_returnValue.c_str();
+	}
+
+	return "";
+}
+
+const char* osgCmd_ErrorMessage()
+{
+	static std::string s_errorMessage;
+	s_errorMessage = CmdManager::getSingleton().getErrorMessage().c_str();
+	return s_errorMessage.c_str();
 }

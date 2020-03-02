@@ -106,7 +106,7 @@ void Renderer::setupOSG(int windowWidth, int windowHeight, float windowScale)
 		_camera->setViewport(new osg::Viewport(0, 0, windowWidth * windowScale, windowHeight * windowScale));
 		_camera->setGraphicsContext(_osgGraphicsWnd.get());
 		setReleaseContextAtEndOfFrameHint(false);
-		setThreadingModel(osgViewer::Viewer::ThreadPerCamera);
+		setThreadingModel(osgViewer::Viewer::SingleThreaded);
 
 		osgViewer::Viewer::Windows windows;
 		getWindows(windows);

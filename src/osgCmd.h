@@ -86,7 +86,8 @@ extern "C"
 	_osgCmdExport void osgCmd_Destroy();
 	_osgCmdExport void osgCmd_Render();
 	_osgCmdExport void osgCmd_Resize(int windowWidth, int windowHeight, float windowScale);
-	// Event.
+
+	// Input event.
 	_osgCmdExport void osgCmd_KeyPressEvent(osgCmd_Key key, unsigned int modkey);
 	_osgCmdExport void osgCmd_KeyReleaseEvent(osgCmd_Key key, unsigned int modkey);
 	_osgCmdExport void osgCmd_MousePressEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);
@@ -94,4 +95,14 @@ extern "C"
 	_osgCmdExport void osgCmd_MouseDoubleClickEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);
 	_osgCmdExport void osgCmd_MouseMoveEvent(int x, int y, unsigned int modkey);
 	_osgCmdExport void osgCmd_WheelEvent(int x, int y, unsigned int modkey, osgCmd_Scroll scroll);
+
+	// Return value.
+	_osgCmdExport bool osgCmd_BoolValue(const char* variable, bool* value);
+	_osgCmdExport bool osgCmd_IntValue(const char* variable, int* value);
+	_osgCmdExport bool osgCmd_FloatValue(const char* variable, float* value);
+	_osgCmdExport bool osgCmd_DoubleValue(const char* variable, double* value);
+	_osgCmdExport const char* osgCmd_StringValue(const char* variable);
+
+	// Error message.
+	_osgCmdExport const char* osgCmd_ErrorMessage();
 }

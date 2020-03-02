@@ -12,6 +12,7 @@ MeasureDistanceEventHandler::MeasureDistanceEventHandler()
 	_lineStrip = new osg::Geode();
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
 	_lineStrip->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+	_lineStrip->getOrCreateStateSet()->setRenderBinDetails(11, "RenderBin");
 	osgCmd::CmdManager::getSingleton().getRenderer()->getRootNode()->addChild(_lineStrip);
 }
 

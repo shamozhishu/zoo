@@ -25,6 +25,8 @@
 #include <limits>
 #include <typeinfo>
 #include <memory>
+#include <future>
+#include <chrono>
 // C++ Stream stuff
 #include <fstream>
 #include <iostream>
