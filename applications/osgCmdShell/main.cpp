@@ -31,8 +31,44 @@ static void parsecmdline()
 			continue;
 		}
 
-		if (osgCmd_Send(pszCmdline) && 0 == strcmp(pszCmdline, "--exit"))
-			break;
+		if (osgCmd_Send(pszCmdline))
+		{
+			if (0 == strcmp(pszCmdline, "--exit"))
+				break;
+
+			bool bRet;
+			int iRet;
+			float fRet;
+			double dRet;
+
+			if (nullptr != strstr(pszCmdline, "--test-bool") && osgCmd_BoolValue("test_bool", &bRet))
+			{
+				char szbuf[32];
+				if (bRet)
+					sprintf_s(szbuf, sizeof(szbuf), "true");
+				else
+					sprintf_s(szbuf, sizeof(szbuf), "false");
+				printf("bool return value: %s\n", szbuf);
+			}
+			else if (nullptr != strstr(pszCmdline, "--test-int") && osgCmd_IntValue("test_int", &iRet))
+				printf("int return value: %d\n", iRet);
+			else if (nullptr != strstr(pszCmdline, "--test-float") && osgCmd_FloatValue("test_float", &fRet))
+				printf("float return value: %.3f\n", fRet);
+			else if (nullptr != strstr(pszCmdline, "--test-double") && osgCmd_DoubleValue("test_double", &dRet))
+				printf("double return value: %.6f\n", dRet);
+			else if (nullptr != strstr(pszCmdline, "--test-str"))
+			{
+				const char* szRet = osgCmd_StringValue("test_str");
+				if (szRet && strcmp(szRet, "") != 0)
+					printf("string return value: %s\n", szRet);
+			}
+			else if (nullptr != strstr(pszCmdline, "--test-err"))
+			{
+				const char* szErrMessage = osgCmd_ErrorMessage();
+				if (szErrMessage && strcmp(szErrMessage, "") != 0)
+					printf("error tip message: %s\n", szErrMessage);
+			}
+		}
 	}
 }
 
@@ -50,8 +86,8 @@ int main(int argc, char* args[])
 		for (int i = 0; i < cmdcount; ++i)
 			cmdset[i] = args[i + 2];
 	}
-	
-	osgCmd_Init(cmdcount, cmdset, workdir);
+
+	osgCmd_Init(cmdcount, (const char**)cmdset, workdir);
 
 	if (cmdset)
 		delete[] cmdset;

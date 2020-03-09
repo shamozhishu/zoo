@@ -11,11 +11,10 @@ public:
 	bool init();
 	void parseCmdArg(osg::ArgumentParser& cmdarg);
 	void helpInformation(osg::ApplicationUsage* usage);
+
 private slots:
 	void endMainLoop(const UserData& userdata);
-	void changeBgColor(const UserData& userdata);
-private:
-	osg::ref_ptr<osg::ClearNode> _clearNode;
+	void testReturnValue(const UserData& userdata);
 };
 
 }

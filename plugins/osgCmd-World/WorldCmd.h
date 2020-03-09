@@ -12,6 +12,7 @@ public:
 	bool init();
 	void parseCmdArg(osg::ArgumentParser& cmdarg);
 	void helpInformation(osg::ApplicationUsage* usage);
+	osgViewer::View* getView() const;
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;
 
@@ -22,6 +23,7 @@ private slots:
 	void locateModel(const osgCmd::UserData& userdata);
 
 private:
+	osgViewer::View* _view;
 	osg::ref_ptr<osgEarth::MapNode> _mapNode;
 	osg::ref_ptr<LongitudeLatitudeEventHandler> _lonLatHandler;
 	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;

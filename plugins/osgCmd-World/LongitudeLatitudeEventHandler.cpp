@@ -2,7 +2,7 @@
 #include "WorldCmd.h"
 #include "WorldControls.h"
 #include <osgCmd/CmdManager.h>
-#include <osgCmd/Renderer.h>
+#include <osgCmd/Viewers.h>
 
 using namespace osgEarth;
 
@@ -19,8 +19,8 @@ LongitudeLatitudeEventHandler::~LongitudeLatitudeEventHandler()
 
 bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
-	osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
-	if (!viewer)
+	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
+	if (!view)
 		return false;
 
 	if (ea.getEventType() == ea.FRAME)
@@ -31,7 +31,7 @@ bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osg
 		WorldControls::getIns()->addLabelTextDisplay(szbuf, lla_label_);
 
 		osgUtil::LineSegmentIntersector::Intersections results;
-		if (viewer->computeIntersections(ea.getX(), ea.getY(), _nodePath, results))
+		if (view->computeIntersections(ea.getX(), ea.getY(), _nodePath, results))
 		{
 			osgUtil::LineSegmentIntersector::Intersection first = *(results.begin());
 			osg::Vec3d world = first.getWorldIntersectPoint();

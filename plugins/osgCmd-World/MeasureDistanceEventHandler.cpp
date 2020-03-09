@@ -2,7 +2,7 @@
 #include "WorldCmd.h"
 #include "WorldControls.h"
 #include <osgCmd/CmdManager.h>
-#include <osgCmd/Renderer.h>
+#include <osgCmd/Viewers.h>
 
 using namespace osgEarth;
 
@@ -13,19 +13,19 @@ MeasureDistanceEventHandler::MeasureDistanceEventHandler()
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
 	_lineStrip->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 	_lineStrip->getOrCreateStateSet()->setRenderBinDetails(11, "RenderBin");
-	osgCmd::CmdManager::getSingleton().getRenderer()->getRootNode()->addChild(_lineStrip);
+	osgCmd::CmdManager::getSingleton().getViewers()->getRootNode(0)->addChild(_lineStrip);
 }
 
 MeasureDistanceEventHandler::~MeasureDistanceEventHandler()
 {
 	WorldControls::getIns()->removeLabelTextDisplay(dist_label_);
-	osgCmd::CmdManager::getSingleton().getRenderer()->getRootNode()->removeChild(_lineStrip);
+	osgCmd::CmdManager::getSingleton().getViewers()->getRootNode(0)->removeChild(_lineStrip);
 }
 
 bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
-	osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
-	if (!viewer)
+	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
+	if (!view)
 		return false;
 
 	if (ea.getButtonMask() == ea.RIGHT_MOUSE_BUTTON && ea.getEventType() == ea.DOUBLECLICK)
@@ -43,7 +43,7 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 	{
 		osg::Vec3d pt;
 		osgUtil::LineSegmentIntersector::Intersections intersections;
-		if (viewer->computeIntersections(ea.getX(), ea.getY(), intersections))
+		if (view->computeIntersections(ea.getX(), ea.getY(), intersections))
 		{
 			auto it = intersections.begin();
 			if (it != intersections.end())

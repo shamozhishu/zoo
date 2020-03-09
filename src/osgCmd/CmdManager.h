@@ -19,7 +19,7 @@ public:
 	void removeCmd(const string& cmd);
 	bool sendCmd(const string& cmdline);
 	Cmd* findCmd(const char* cmd);
-	Renderer* getRenderer() const;
+	Viewers* getViewers() const;
 	bool setReturnValue(const string& key, const Any& retval);
 	Any  getReturnValue(const string& key);
 	bool setErrorMessage(const string& errMessage);
@@ -33,10 +33,10 @@ private:
 	Cmd*                                   _curCmd;
 	string                                 _cmdName;
 	bool                                   _busying;
+	Viewers*                               _viewers;
 	OpenThreads::ReadWriteMutex            _rwMutex;
 	OpenThreads::Block                     _block[2];
 	UserData                               _retValue;
-	Renderer*                              _renderer;
 	map<string, shared_ptr<promise<Any>>>  _promises;
 	unordered_map<string, shared_ptr<Cmd>> _commands;
 };

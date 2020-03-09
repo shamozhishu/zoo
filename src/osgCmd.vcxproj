@@ -20,8 +20,9 @@
     <ClInclude Include="osgCmd\DynLib.h" />
     <ClInclude Include="osgCmd\DynLibManager.h" />
     <ClInclude Include="osgCmd\BuiltinCmd.h" />
+    <ClInclude Include="osgCmd\Interlock.h" />
     <ClInclude Include="osgCmd\Reflection.h" />
-    <ClInclude Include="osgCmd\Renderer.h" />
+    <ClInclude Include="osgCmd\Viewers.h" />
     <ClInclude Include="osgCmd\Sigslot.h" />
     <ClInclude Include="osgCmd\Singleton.h" />
     <ClInclude Include="osgCmd\Support.h" />
@@ -35,7 +36,7 @@
     <ClCompile Include="osgCmd\BuiltinCmd.cpp" />
     <ClCompile Include="osgCmd\osgCmd.cpp" />
     <ClCompile Include="osgCmd\Reflection.cpp" />
-    <ClCompile Include="osgCmd\Renderer.cpp" />
+    <ClCompile Include="osgCmd\Viewers.cpp" />
     <ClCompile Include="osgCmd\Sigslot.cpp" />
     <ClCompile Include="osgCmd\UserData.cpp" />
     <ClCompile Include="osgCmd\Utils.cpp" />
@@ -82,7 +83,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Code\osgCmd\src;D:\Program Files\OpenSceneGraph\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;D:\Program Files\OpenSceneGraph\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OSGCMD_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -106,7 +107,7 @@ xcopy /DY "..\$(Platform)\$(Configuration)\$(TargetName).lib" "D:\Program Files\
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Program Files\OpenSceneGraph\include;D:\Code\osgCmd\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;D:\Program Files\OpenSceneGraph\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OSGCMD_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

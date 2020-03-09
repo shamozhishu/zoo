@@ -35,9 +35,6 @@
     <ClInclude Include="osgCmd\Reflection.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="osgCmd\Renderer.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="osgCmd\Sigslot.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -59,6 +56,12 @@
     <ClInclude Include="osgCmd\BuiltinCmd.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="osgCmd\Viewers.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="osgCmd\Interlock.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="osgCmd\CmdManager.cpp">
@@ -76,9 +79,6 @@
     <ClCompile Include="osgCmd\Reflection.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="osgCmd\Renderer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="osgCmd\Sigslot.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -89,6 +89,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="osgCmd\BuiltinCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="osgCmd\Viewers.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,25 +1,31 @@
 #include <osgCmd/CmdManager.h>
-#include <osgCmd/Renderer.h>
+#include <osgCmd/Viewers.h>
 #include <osgCmd/Utils.h>
 #include <osgCmd/BuiltinCmd.h>
+#include <osgCmd/Interlock.h>
 
 namespace osgCmd {
 
+Interlock g_interlock;
+
 static BuiltinCmd* s_builtinCmd = nullptr;
 CmdManager::CmdManager()
-	: _renderer(new Renderer())
-	, _curCmd(nullptr)
+	: _curCmd(nullptr)
 	, _busying(false)
 {
+	osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
+	ds->setNvOptimusEnablement(1);
+	ds->setStereo(false);
+	_viewers = new Viewers();
 }
 
 CmdManager::~CmdManager()
 {
-	_renderer->setDone(true);
+	_viewers->setDone(true);
 	_block[0].release();
 	_block[1].release();
 	_commands.clear();
-	delete _renderer;
+	delete _viewers;
 	while (isRunning())
 		OpenThreads::Thread::YieldCurrentThread();
 }
@@ -32,13 +38,15 @@ void CmdManager::run()
 		if (!_busying && _curCmd)
 		{
 			_busying = true;
+			g_interlock.beginExchanging();
 			SignalTrigger::emit(_curCmd->_subCommands);
+			g_interlock.endExchanging();
 			_curCmd->_subCommands.userData().clear();
 			cancelRetValueBlock();
 		}
 		else
 		{
-			running = !testCancel() && !_renderer->done();
+			running = !testCancel() && !_viewers->done();
 			if (running)
 			{
 				_block[1].reset();
@@ -56,8 +64,10 @@ void CmdManager::block(bool isBlock)
 {
 	if (isBlock)
 	{
+		g_interlock.endExchanging();
 		_block[0].reset();
 		_block[0].block();
+		g_interlock.beginExchanging();
 	}
 	else
 	{
@@ -171,7 +181,7 @@ bool CmdManager::sendCmd(const string& cmdline)
 	{
 		_curCmd = pCmd;
 		_cmdName = cmdname;
-		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options [args...]");
+		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options <input-args...> || (retrun-value...)");
 		pCmd->helpInformation(cmdArg.getApplicationUsage());
 		cmdArg.getApplicationUsage()->write(std::cout, helpType);
 		SAFE_DELETE_ARRAY(argv);
@@ -206,9 +216,9 @@ Cmd* CmdManager::findCmd(const char* cmd)
 	return it->second.get();
 }
 
-Renderer* CmdManager::getRenderer() const
+Viewers* CmdManager::getViewers() const
 {
-	return _renderer;
+	return _viewers;
 }
 
 bool CmdManager::setReturnValue(const string& key, const Any& retval)

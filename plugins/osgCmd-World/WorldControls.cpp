@@ -1,13 +1,14 @@
 #include "WorldControls.h"
+#include "WorldCmd.h"
 #include <osgCmd/CmdManager.h>
-#include <osgCmd/Renderer.h>
+#include <osgCmd/Viewers.h>
 
 using namespace osgEarth::Util::Controls;
 static WorldControls* s_worldControls = nullptr;
 
 WorldControls::WorldControls()
 {
-	ControlCanvas* canvas = ControlCanvas::getOrCreate(osgCmd::CmdManager::getSingleton().getRenderer());
+	ControlCanvas* canvas = ControlCanvas::getOrCreate(WorldCmd::getSingleton().getView());
 	_vboxControl = new VBox();
 	_vboxControl->setBorderColor(0, 0, 0, 0);
 	_vboxControl->setBackColor(0.6f, 0.5f, 0.4f, 0.5f);
@@ -23,7 +24,7 @@ WorldControls::WorldControls()
 
 WorldControls::~WorldControls()
 {
-	ControlCanvas* canvas = ControlCanvas::getOrCreate(osgCmd::CmdManager::getSingleton().getRenderer());
+	ControlCanvas* canvas = ControlCanvas::getOrCreate(WorldCmd::getSingleton().getView());
 	canvas->removeControl(_vboxControl.get());
 }
 

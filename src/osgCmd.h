@@ -14,73 +14,80 @@ extern "C"
 {
 	enum osgCmd_MouseButton
 	{
-		NoButton = 0,
-		LeftButton,
-		MidButton,
-		RightButton
+		osgCmd_Button_No = 0,
+		osgCmd_Button_Left,
+		osgCmd_Button_Mid,
+		osgCmd_Button_Right
 	};
 
 	enum osgCmd_Key
 	{
-		Key_Escape = 0,
-		Key_Delete,
-		Key_Home,
-		Key_Enter,
-		Key_End,
-		Key_Return,
-		Key_PageUp,
-		Key_PageDown,
-		Key_Left,
-		Key_Right,
-		Key_Up,
-		Key_Down,
-		Key_Backspace,
-		Key_Tab,
-		Key_Space,
-		Key_Alt,
-		Key_Shift,
-		Key_Control,
-		Key_Meta,
-		Key_F1,
-		Key_F2,
-		Key_F3,
-		Key_F4,
-		Key_F5,
-		Key_F6,
-		Key_F7,
-		Key_F8,
-		Key_F9,
-		Key_F10,
-		Key_F11,
-		Key_F12,
-		Key_F13,
-		Key_F14,
-		Key_F15,
-		Key_F16,
-		Key_F17,
-		Key_F18,
-		Key_F19,
-		Key_F20,
-		Key_hyphen,
-		Key_Equal,
-		Key_division,
-		Key_multiply,
-		Key_Minus,
-		Key_Plus,
-		Key_Insert
+		osgCmd_Key_Escape = 0,
+		osgCmd_Key_Delete,
+		osgCmd_Key_Home,
+		osgCmd_Key_Enter,
+		osgCmd_Key_End,
+		osgCmd_Key_Return,
+		osgCmd_Key_PageUp,
+		osgCmd_Key_PageDown,
+		osgCmd_Key_Left,
+		osgCmd_Key_Right,
+		osgCmd_Key_Up,
+		osgCmd_Key_Down,
+		osgCmd_Key_Backspace,
+		osgCmd_Key_Tab,
+		osgCmd_Key_Space,
+		osgCmd_Key_Alt,
+		osgCmd_Key_Shift,
+		osgCmd_Key_Control,
+		osgCmd_Key_Meta,
+		osgCmd_Key_F1,
+		osgCmd_Key_F2,
+		osgCmd_Key_F3,
+		osgCmd_Key_F4,
+		osgCmd_Key_F5,
+		osgCmd_Key_F6,
+		osgCmd_Key_F7,
+		osgCmd_Key_F8,
+		osgCmd_Key_F9,
+		osgCmd_Key_F10,
+		osgCmd_Key_F11,
+		osgCmd_Key_F12,
+		osgCmd_Key_F13,
+		osgCmd_Key_F14,
+		osgCmd_Key_F15,
+		osgCmd_Key_F16,
+		osgCmd_Key_F17,
+		osgCmd_Key_F18,
+		osgCmd_Key_F19,
+		osgCmd_Key_F20,
+		osgCmd_Key_Hyphen,
+		osgCmd_Key_Equal,
+		osgCmd_Key_Division,
+		osgCmd_Key_Multiply,
+		osgCmd_Key_Minus,
+		osgCmd_Key_Plus,
+		osgCmd_Key_Insert
+	};
+
+	enum osgCmd_Modkey
+	{
+		osgCmd_Modkey_Shist = 1 << 0,
+		osgCmd_Modkey_Ctrl = 1 << 1,
+		osgCmd_Modkey_Alt = 1 << 2
 	};
 
 	enum osgCmd_Scroll
 	{
-		SCROLL_NONE = 0,
-		SCROLL_LEFT,
-		SCROLL_RIGHT,
-		SCROLL_UP,
-		SCROLL_DOWN,
-		SCROLL_2D
+		osgCmd_Scroll_None = 0,
+		osgCmd_Scroll_Left,
+		osgCmd_Scroll_Right,
+		osgCmd_Scroll_Up,
+		osgCmd_Scroll_Down,
+		osgCmd_Scroll_2D
 	};
 
-	_osgCmdExport void osgCmd_Init(int cmdcount, char* cmdset[], const char* workdir = nullptr, int wndWidth = 0, int wndHeight = 0, float wndScale = 1.0f);
+	_osgCmdExport void osgCmd_Init(int cmdcount, const char* cmdset[], const char* workdir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_osgCmdExport bool osgCmd_Send(const char* cmdline);
 	_osgCmdExport void osgCmd_Run();
 	_osgCmdExport void osgCmd_Destroy();
@@ -88,8 +95,8 @@ extern "C"
 	_osgCmdExport void osgCmd_Resize(int windowWidth, int windowHeight, float windowScale);
 
 	// Input event.
-	_osgCmdExport void osgCmd_KeyPressEvent(osgCmd_Key key, unsigned int modkey);
-	_osgCmdExport void osgCmd_KeyReleaseEvent(osgCmd_Key key, unsigned int modkey);
+	_osgCmdExport void osgCmd_KeyPressEvent(int key, unsigned int modkey);
+	_osgCmdExport void osgCmd_KeyReleaseEvent(int key, unsigned int modkey);
 	_osgCmdExport void osgCmd_MousePressEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);
 	_osgCmdExport void osgCmd_MouseReleaseEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);
 	_osgCmdExport void osgCmd_MouseDoubleClickEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button);
@@ -105,4 +112,7 @@ extern "C"
 
 	// Error message.
 	_osgCmdExport const char* osgCmd_ErrorMessage();
+
+	// Remap Keyboard.
+	_osgCmdExport void osgCmd_RemapKeyboard(osgCmd_Key key, int remapkey);
 }

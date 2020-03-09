@@ -1,6 +1,6 @@
 #include "WorldCmd.h"
 #include "WorldControls.h"
-#include <osgCmd/Renderer.h>
+#include <osgCmd/Viewers.h>
 #include <osgCmd/CmdManager.h>
 #include <osgCmd/Utils.h>
 #include <osgCmd/Sigslot.h>
@@ -9,6 +9,7 @@
 #include "LongitudeLatitudeEventHandler.h"
 
 using namespace osgEarth;
+using namespace osgCmd;
 
 REGISTER_OSGCMDPLUGIN(WorldCmd)
 REFLEX_IMPLEMENT(WorldCmd);
@@ -20,15 +21,22 @@ WorldCmd::~WorldCmd()
 
 bool WorldCmd::init()
 {
-	osg::Group* pRootNode = osgCmd::CmdManager::getSingleton().getRenderer()->getRootNode();
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(osgCmd::getWorkDir() + "world.earth");
+	Viewers* pViewers = CmdManager::getSingleton().getViewers();
+	_view = pViewers->createView(0, 1, 0, 1);
+	osg::Group* pRootNode = pViewers->getRootNode(0);
+
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(getWorkDir() + "world.earth");
 	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
 	pRootNode->addChild(_mapNode);
 	_manipulator = new osgEarth::Util::EarthManipulator();
 	_manipulator->setNode(_mapNode);
 	_manipulator->getSettings()->setArcViewpointTransitions(true);
-	osgCmd::CmdManager::getSingleton().getRenderer()->setCameraManipulator(_manipulator);
+	_view->setCameraManipulator(_manipulator);
 	_mapNode->addExtension(osgEarth::Extension::create("sky_simple", osgEarth::ConfigOptions()));
+
+	osgUtil::Optimizer optimzer;
+	optimzer.optimize(pRootNode);
+	_view->setSceneData(pRootNode);
 	return true;
 }
 
@@ -40,7 +48,7 @@ void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 		if (cmdarg.read("--lla", show))
 		{
 			_subCommands.userData().setData(show);
-			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::LonLatAltitude);
+			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::LonLatAltitude);
 			break;
 		}
 
@@ -50,13 +58,13 @@ void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 			_subCommands.userData().setData("lon", lon);
 			_subCommands.userData().setData("lat", lat);
 			_subCommands.userData().setData("dist", dist);
-			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::flyTo);
+			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::flyTo);
 			break;
 		}
 
 		if (cmdarg.read("--dist"))
 		{
-			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::measureDistance);
+			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::measureDistance);
 			break;
 		}
 
@@ -67,7 +75,7 @@ void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 			_subCommands.userData().setData("height", height);
 			_subCommands.userData().setData("scale", scale);
 			_subCommands.userData().setData("repeat", repeat);
-			osgCmd::SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::locateModel);
+			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::locateModel);
 			break;
 		}
 
@@ -83,6 +91,11 @@ void WorldCmd::helpInformation(osg::ApplicationUsage* usage)
 	usage->addCommandLineOption("--locate <model:string> <height:float> <scale:float> <repeat:bool>", "Ground placement model.");
 }
 
+osgViewer::View* WorldCmd::getView() const
+{
+	return _view;
+}
+
 osgEarth::MapNode* WorldCmd::getMapNode() const
 {
 	return _mapNode.get();
@@ -93,57 +106,57 @@ osgEarth::Util::EarthManipulator* WorldCmd::getEarthManipulator() const
 	return _manipulator.get();
 }
 
-void WorldCmd::flyTo(const osgCmd::UserData& userdata)
+void WorldCmd::flyTo(const UserData& userdata)
 {
 	Viewpoint vp = _manipulator->getViewpoint();
-	vp.focalPoint().mutable_value().x() = osgCmd::any_cast<float>(_subCommands.userData().getData("lon"));
-	vp.focalPoint().mutable_value().y() = osgCmd::any_cast<float>(_subCommands.userData().getData("lat"));
-	vp.range() = osgCmd::any_cast<float>(_subCommands.userData().getData("dist"));
+	vp.focalPoint().mutable_value().x() = any_cast<float>(_subCommands.userData().getData("lon"));
+	vp.focalPoint().mutable_value().y() = any_cast<float>(_subCommands.userData().getData("lat"));
+	vp.range() = any_cast<float>(_subCommands.userData().getData("dist"));
 	_manipulator->setViewpoint(vp, 2);
 }
 
-void WorldCmd::LonLatAltitude(const osgCmd::UserData& userdata)
+void WorldCmd::LonLatAltitude(const UserData& userdata)
 {
-	bool show = osgCmd::any_cast<bool>(userdata.getData());
+	bool show = any_cast<bool>(userdata.getData());
 	if (show)
 	{
 		if (!_lonLatHandler)
 		{
 			_lonLatHandler = new LongitudeLatitudeEventHandler();
-			osgCmd::CmdManager::getSingleton().getRenderer()->addEventHandler(_lonLatHandler.get());
+			_view->addEventHandler(_lonLatHandler.get());
 		}
 	}
 	else
 	{
 		if (_lonLatHandler)
 		{
-			osgCmd::CmdManager::getSingleton().getRenderer()->removeEventHandler(_lonLatHandler.get());
+			_view->removeEventHandler(_lonLatHandler.get());
 			_lonLatHandler = nullptr;
 		}
 	}
 }
 
-void WorldCmd::measureDistance(const osgCmd::UserData& userdata)
+void WorldCmd::measureDistance(const UserData& userdata)
 {
 	osg::ref_ptr<MeasureDistanceEventHandler> measureDistanceHandler = new MeasureDistanceEventHandler();
-	osgCmd::CmdManager::getSingleton().getRenderer()->addEventHandler(measureDistanceHandler.get());
-	osgCmd::CmdManager::getSingleton().block(true);
-	osgCmd::CmdManager::getSingleton().getRenderer()->removeEventHandler(measureDistanceHandler.get());
+	_view->addEventHandler(measureDistanceHandler.get());
+	CmdManager::getSingleton().block(true);
+	_view->removeEventHandler(measureDistanceHandler.get());
 }
 
-void WorldCmd::locateModel(const osgCmd::UserData& userdata)
+void WorldCmd::locateModel(const UserData& userdata)
 {
-	string model = osgCmd::any_cast<string>(_subCommands.userData().getData("model"));
-	float height = osgCmd::any_cast<float>(_subCommands.userData().getData("height"));
-	float scale = osgCmd::any_cast<float>(_subCommands.userData().getData("scale"));
-	bool repeat = osgCmd::any_cast<bool>(_subCommands.userData().getData("repeat"));
+	string model = any_cast<string>(_subCommands.userData().getData("model"));
+	float height = any_cast<float>(_subCommands.userData().getData("height"));
+	float scale = any_cast<float>(_subCommands.userData().getData("scale"));
+	bool repeat = any_cast<bool>(_subCommands.userData().getData("repeat"));
 
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(osgCmd::getWorkDir() + model);
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(getWorkDir() + model);
 	if (node)
 	{
 		osg::ref_ptr<LocateModelEventHandler> locateModelHandler = new LocateModelEventHandler(node, height, scale, repeat);
-		osgCmd::CmdManager::getSingleton().getRenderer()->addEventHandler(locateModelHandler.get());
-		osgCmd::CmdManager::getSingleton().block(true);
-		osgCmd::CmdManager::getSingleton().getRenderer()->removeEventHandler(locateModelHandler.get());
+		_view->addEventHandler(locateModelHandler.get());
+		CmdManager::getSingleton().block(true);
+		_view->removeEventHandler(locateModelHandler.get());
 	}
 }
