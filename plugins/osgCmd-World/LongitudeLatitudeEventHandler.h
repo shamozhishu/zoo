@@ -7,7 +7,6 @@ class LongitudeLatitudeEventHandler : public osgGA::GUIEventHandler
 {
 public:
 	LongitudeLatitudeEventHandler();
-	~LongitudeLatitudeEventHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
 private:

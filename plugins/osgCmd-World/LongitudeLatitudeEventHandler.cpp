@@ -11,12 +11,6 @@ LongitudeLatitudeEventHandler::LongitudeLatitudeEventHandler()
 	_nodePath.push_back(WorldCmd::getSingleton().getMapNode()->getTerrainEngine());
 }
 
-LongitudeLatitudeEventHandler::~LongitudeLatitudeEventHandler()
-{
-	WorldControls::getIns()->removeLabelTextDisplay(lla_label_);
-	WorldControls::getIns()->removeLabelTextDisplay(ipt_label_);
-}
-
 bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);

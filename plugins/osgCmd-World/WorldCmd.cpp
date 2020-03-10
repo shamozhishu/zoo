@@ -130,6 +130,8 @@ void WorldCmd::LonLatAltitude(const UserData& userdata)
 	{
 		if (_lonLatHandler)
 		{
+			WorldControls::getIns()->removeLabelTextDisplay(lla_label_);
+			WorldControls::getIns()->removeLabelTextDisplay(ipt_label_);
 			_view->removeEventHandler(_lonLatHandler.get());
 			_lonLatHandler = nullptr;
 		}
@@ -141,6 +143,7 @@ void WorldCmd::measureDistance(const UserData& userdata)
 	osg::ref_ptr<MeasureDistanceEventHandler> measureDistanceHandler = new MeasureDistanceEventHandler();
 	_view->addEventHandler(measureDistanceHandler.get());
 	CmdManager::getSingleton().block(true);
+	WorldControls::getIns()->removeLabelTextDisplay(dist_label_);
 	_view->removeEventHandler(measureDistanceHandler.get());
 }
 

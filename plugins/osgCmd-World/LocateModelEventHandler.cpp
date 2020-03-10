@@ -20,10 +20,6 @@ LocateModelEventHandler::LocateModelEventHandler(osg::Node* model, float height,
 	osgCmd::CmdManager::getSingleton().getViewers()->getRootNode(0)->addChild(_locateTransform);
 }
 
-LocateModelEventHandler::~LocateModelEventHandler()
-{
-}
-
 bool LocateModelEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);

@@ -6,6 +6,8 @@ namespace osgCmd {
 
 struct Interlock
 {
+	bool canExchange;
+	bool needExchange;
 	Interlock() : canExchange(false), needExchange(false) {}
 
 	inline void beginExchanging()
@@ -22,7 +24,7 @@ struct Interlock
 
 	inline void waitExchanged()
 	{
-		while (needExchange)
+		while (needExchange && canExchange)
 			OpenThreads::Thread::microSleep(1);
 		canExchange = false;
 	}
@@ -32,10 +34,6 @@ struct Interlock
 		if (needExchange)
 			canExchange = true;
 	}
-
-private:
-	bool canExchange;
-	bool needExchange;
 };
 
 }

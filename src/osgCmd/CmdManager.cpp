@@ -22,12 +22,15 @@ CmdManager::CmdManager()
 CmdManager::~CmdManager()
 {
 	_viewers->setDone(true);
+	g_interlock.canExchange = true;
 	_block[0].release();
+	if (!_busying)
+		_curCmd = nullptr;
 	_block[1].release();
-	_commands.clear();
-	delete _viewers;
 	while (isRunning())
 		OpenThreads::Thread::YieldCurrentThread();
+	_commands.clear();
+	delete _viewers;
 }
 
 void CmdManager::run()

@@ -6,7 +6,6 @@ class LocateModelEventHandler : public osgGA::GUIEventHandler
 {
 public:
 	LocateModelEventHandler(osg::Node* model, float height, float scale, bool repeat);
-	~LocateModelEventHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
 private:

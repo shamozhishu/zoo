@@ -18,7 +18,6 @@ MeasureDistanceEventHandler::MeasureDistanceEventHandler()
 
 MeasureDistanceEventHandler::~MeasureDistanceEventHandler()
 {
-	WorldControls::getIns()->removeLabelTextDisplay(dist_label_);
 	osgCmd::CmdManager::getSingleton().getViewers()->getRootNode(0)->removeChild(_lineStrip);
 }
 
