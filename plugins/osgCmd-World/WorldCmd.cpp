@@ -21,12 +21,14 @@ WorldCmd::~WorldCmd()
 
 bool WorldCmd::init()
 {
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(OSGCMD_DATA_DIR + "world.earth");
+	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
+	if (!_mapNode)
+		return false;
+
 	Viewers* pViewers = CmdManager::getSingleton().getViewers();
 	_view = pViewers->createView(0, 1, 0, 1);
 	osg::Group* pRootNode = pViewers->getRootNode(0);
-
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(getWorkDir() + "world.earth");
-	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
 	pRootNode->addChild(_mapNode);
 	_manipulator = new osgEarth::Util::EarthManipulator();
 	_manipulator->setNode(_mapNode);
@@ -40,7 +42,7 @@ bool WorldCmd::init()
 	return true;
 }
 
-void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
+void WorldCmd::parseCmdArg(osg::ArgumentParser& cmdarg, UserData& retValue)
 {
 	do
 	{
@@ -109,9 +111,9 @@ osgEarth::Util::EarthManipulator* WorldCmd::getEarthManipulator() const
 void WorldCmd::flyTo(const UserData& userdata)
 {
 	Viewpoint vp = _manipulator->getViewpoint();
-	vp.focalPoint().mutable_value().x() = any_cast<float>(_subCommands.userData().getData("lon"));
-	vp.focalPoint().mutable_value().y() = any_cast<float>(_subCommands.userData().getData("lat"));
-	vp.range() = any_cast<float>(_subCommands.userData().getData("dist"));
+	vp.focalPoint().mutable_value().x() = any_cast<float>(userdata.getData("lon"));
+	vp.focalPoint().mutable_value().y() = any_cast<float>(userdata.getData("lat"));
+	vp.range() = any_cast<float>(userdata.getData("dist"));
 	_manipulator->setViewpoint(vp, 2);
 }
 
@@ -149,12 +151,12 @@ void WorldCmd::measureDistance(const UserData& userdata)
 
 void WorldCmd::locateModel(const UserData& userdata)
 {
-	string model = any_cast<string>(_subCommands.userData().getData("model"));
-	float height = any_cast<float>(_subCommands.userData().getData("height"));
-	float scale = any_cast<float>(_subCommands.userData().getData("scale"));
-	bool repeat = any_cast<bool>(_subCommands.userData().getData("repeat"));
+	string model = any_cast<string>(userdata.getData("model"));
+	float height = any_cast<float>(userdata.getData("height"));
+	float scale = any_cast<float>(userdata.getData("scale"));
+	bool repeat = any_cast<bool>(userdata.getData("repeat"));
 
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(getWorkDir() + model);
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(OSGCMD_DATA_DIR + model);
 	if (node)
 	{
 		osg::ref_ptr<LocateModelEventHandler> locateModelHandler = new LocateModelEventHandler(node, height, scale, repeat);

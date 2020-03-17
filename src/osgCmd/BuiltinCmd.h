@@ -9,10 +9,10 @@ class _osgCmdExport BuiltinCmd : public Cmd
 	REFLEX_DECLARE(BuiltinCmd)
 public:
 	bool init();
-	void parseCmdArg(osg::ArgumentParser& cmdarg);
+	void parseCmdArg(osg::ArgumentParser& cmdarg, UserData& retValue);
 	void helpInformation(osg::ApplicationUsage* usage);
 
-private slots:
+private osgcmd_slots:
 	void endMainLoop(const UserData& userdata);
 	void testReturnValue(const UserData& userdata);
 };

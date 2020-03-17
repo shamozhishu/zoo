@@ -1,19 +1,32 @@
 #include <osgCmd.h>
 #include <osgCmd/CmdManager.h>
 #include <osgCmd/Reflection.h>
+#include <osgCmd/Interlock.h>
 #include <osgCmd/Viewers.h>
 #include <osgCmd/DynLib.h>
 #include <osgCmd/Utils.h>
 #include <osgCmd/Cmd.h>
 
+#ifdef _WIN32
+#include "Windows.h"
+#define GET_CURRENT_THREAD_ID() GetCurrentThreadId()
+#else
+#include "unistd.h"
+#define GET_CURRENT_THREAD_ID() gettid()
+#endif
+
 using namespace osgCmd;
 namespace osgCmd
 {
-	extern std::map<unsigned int, int> g_keyboardMap;
+	std::string ansi_data_dir;
+	std::string utf8_data_dir;
+	extern unsigned long g_renderThreadID;
+	std::map<unsigned int, int> g_keyboardMap;
 }
 
 typedef const char* (*DllGetCmdTypeName)(void);
 
+static bool s_isInited = false;
 static bool s_CmdRegister(const char* cmd)
 {
 	if (CmdManager::getSingleton().findCmd(cmd))
@@ -38,14 +51,22 @@ static bool s_CmdRegister(const char* cmd)
 	return CmdManager::getSingleton().addCmd(cmd, ReflexFactory<>::getInstance().create<Cmd>(getCmdTypeName()));
 }
 
-void osgCmd_Init(int cmdcount, const char* cmdset[], const char* workdir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+void osgCmd_InitA(int cmdcount, const char* cmdset[], const char* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
 {
-	if (workdir != nullptr && 0 != strcmp(workdir, ""))
-		setWorkDir(workdir);
+	if (datadir != nullptr && 0 != strcmp(datadir, ""))
+	{
+		ansi_data_dir = datadir;
+		unsigned int lastIdx = ansi_data_dir.size() - 1;
+		if (ansi_data_dir[lastIdx] != '/' && ansi_data_dir[lastIdx] != '\\')
+			ansi_data_dir += "/";
+	}
+	else
+		ansi_data_dir = "./";
 
+	utf8_data_dir = ansiToUtf8(ansi_data_dir);
 	CmdManager* pCmdMgr = new CmdManager();
 	pCmdMgr->getViewers()->init(windowWidth, windowHeight, windowScale);
-	
+
 	if (cmdset)
 	{
 		for (int i = 0; i < cmdcount; ++i)
@@ -54,70 +75,100 @@ void osgCmd_Init(int cmdcount, const char* cmdset[], const char* workdir /*= nul
 
 	pCmdMgr->initBuiltinCmd();
 	pCmdMgr->start();
+	s_isInited = true;
+}
+
+void osgCmd_InitW(int cmdcount, const char* cmdset[], const wchar_t* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+{
+	osgCmd_InitA(cmdcount, cmdset, w2a_(datadir).c_str(), windowWidth, windowHeight, windowScale);
 }
 
 bool osgCmd_Send(const char* cmdline)
 {
-	return CmdManager::getSingleton().sendCmd(cmdline);
+	if (s_isInited)
+		return CmdManager::getSingleton().sendCmd(cmdline);
+	return false;
 }
 
 void osgCmd_Run()
 {
-	CmdManager::getSingleton().getViewers()->run();
+	if (s_isInited)
+	{
+		g_renderThreadID = GET_CURRENT_THREAD_ID();
+		CmdManager::getSingleton().getViewers()->run();
+	}
 }
 
 void osgCmd_Destroy()
 {
+	s_isInited = false;
 	delete CmdManager::getSingletonPtr();
+	g_keyboardMap.clear();
 }
 
 void osgCmd_Render()
 {
-	CmdManager::getSingleton().getViewers()->frame();
+	if (s_isInited)
+	{
+		if (g_renderThreadID == -1)
+			g_renderThreadID = GET_CURRENT_THREAD_ID();
+		CmdManager::getSingleton().getViewers()->frame();
+	}
 }
 
 void osgCmd_Resize(int windowWidth, int windowHeight, float windowScale)
 {
-	CmdManager::getSingleton().getViewers()->resize(windowWidth, windowHeight, windowScale);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->resize(windowWidth, windowHeight, windowScale);
 }
 
 void osgCmd_KeyPressEvent(int key, unsigned int modkey)
 {
-	CmdManager::getSingleton().getViewers()->keyPressEvent(key, modkey);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->keyPressEvent(key, modkey);
 }
 
 void osgCmd_KeyReleaseEvent(int key, unsigned int modkey)
 {
-	CmdManager::getSingleton().getViewers()->keyReleaseEvent(key, modkey);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->keyReleaseEvent(key, modkey);
 }
 
 void osgCmd_MousePressEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button)
 {
-	CmdManager::getSingleton().getViewers()->mousePressEvent(x, y, modkey, button);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->mousePressEvent(x, y, modkey, button);
 }
 
 void osgCmd_MouseReleaseEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button)
 {
-	CmdManager::getSingleton().getViewers()->mouseReleaseEvent(x, y, modkey, button);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->mouseReleaseEvent(x, y, modkey, button);
 }
 
 void osgCmd_MouseDoubleClickEvent(int x, int y, unsigned int modkey, osgCmd_MouseButton button)
 {
-	CmdManager::getSingleton().getViewers()->mouseDoubleClickEvent(x, y, modkey, button);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->mouseDoubleClickEvent(x, y, modkey, button);
 }
 
 void osgCmd_MouseMoveEvent(int x, int y, unsigned int modkey)
 {
-	CmdManager::getSingleton().getViewers()->mouseMoveEvent(x, y, modkey);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->mouseMoveEvent(x, y, modkey);
 }
 
 void osgCmd_WheelEvent(int x, int y, unsigned int modkey, osgCmd_Scroll scroll)
 {
-	CmdManager::getSingleton().getViewers()->wheelEvent(x, y, modkey, scroll);
+	if (s_isInited)
+		CmdManager::getSingleton().getViewers()->wheelEvent(x, y, modkey, scroll);
 }
 
 bool osgCmd_BoolValue(const char* variable, bool* value)
 {
+	if (!s_isInited)
+		return false;
+
 	Any val = CmdManager::getSingleton().getReturnValue(variable);
 	if (val.has_value())
 	{
@@ -130,6 +181,9 @@ bool osgCmd_BoolValue(const char* variable, bool* value)
 
 bool osgCmd_IntValue(const char* variable, int* value)
 {
+	if (!s_isInited)
+		return false;
+
 	Any val = CmdManager::getSingleton().getReturnValue(variable);
 	if (val.has_value())
 	{
@@ -142,6 +196,9 @@ bool osgCmd_IntValue(const char* variable, int* value)
 
 bool osgCmd_FloatValue(const char* variable, float* value)
 {
+	if (!s_isInited)
+		return false;
+
 	Any val = CmdManager::getSingleton().getReturnValue(variable);
 	if (val.has_value())
 	{
@@ -154,6 +211,9 @@ bool osgCmd_FloatValue(const char* variable, float* value)
 
 bool osgCmd_DoubleValue(const char* variable, double* value)
 {
+	if (!s_isInited)
+		return false;
+
 	Any val = CmdManager::getSingleton().getReturnValue(variable);
 	if (val.has_value())
 	{
@@ -166,6 +226,9 @@ bool osgCmd_DoubleValue(const char* variable, double* value)
 
 const char* osgCmd_StringValue(const char* variable)
 {
+	if (!s_isInited)
+		return nullptr;
+
 	static std::string s_returnValue;
 	Any val = CmdManager::getSingleton().getReturnValue(variable);
 	if (val.has_value())
@@ -179,6 +242,9 @@ const char* osgCmd_StringValue(const char* variable)
 
 const char* osgCmd_ErrorMessage()
 {
+	if (!s_isInited)
+		return nullptr;
+
 	static std::string s_errorMessage;
 	s_errorMessage = CmdManager::getSingleton().getErrorMessage().c_str();
 	return s_errorMessage.c_str();

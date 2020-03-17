@@ -36,8 +36,6 @@ private:
 	Viewers*                               _viewers;
 	OpenThreads::ReadWriteMutex            _rwMutex;
 	OpenThreads::Block                     _block[2];
-	UserData                               _retValue;
-	map<string, shared_ptr<promise<Any>>>  _promises;
 	unordered_map<string, shared_ptr<Cmd>> _commands;
 };
 

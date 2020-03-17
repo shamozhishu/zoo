@@ -1,4 +1,6 @@
 #include "osgCmdWidget.h"
+#include <vector>
+#include <string>
 #include <osgCmd.h>
 #include <QScreen>
 #include <QWindow>
@@ -9,17 +11,59 @@
 #include <QMainWindow>
 #include <QApplication>
 #include <QInputDialog>
+#include <QtCore/QThread>
 
-static int s_cmdcount = 0;
-static const char** s_cmdset = nullptr;
-static const char* s_workdir = nullptr;
-osgCmdWidget::osgCmdWidget(int cmdcount, const char* cmdset[], const char* workdir /*= Q_NULLPTR*/, QWidget* parent /*= Q_NULLPTR*/
+class osgCmdInitThread : public QThread
+{
+public:
+	osgCmdInitThread(osgCmdWidget* cmdWidget, QStringList cmdset, QString datadir = "")
+		: _osgCmdWidget(cmdWidget)
+		, _cmdset(cmdset)
+		, _datadir(datadir) {}
+
+	void init()
+	{
+		QScreen* screen = _osgCmdWidget->windowHandle() && _osgCmdWidget->windowHandle()->screen() ? _osgCmdWidget->windowHandle()->screen() : qApp->screens().front();
+
+		char** cmdset = nullptr;
+		int cmdcount = _cmdset.size();
+		std::vector<std::string> vecCmdset;
+		if (cmdcount > 0)
+		{
+			vecCmdset.resize(cmdcount);
+			cmdset = new char*[cmdcount];
+			for (int i = 0; i < cmdcount; ++i)
+			{
+				vecCmdset[i] = _cmdset[i].toStdString();
+				cmdset[i] = const_cast<char*>(vecCmdset[i].c_str());
+			}
+		}
+
+		osgCmd_Destroy();
+		osgCmd_InitW(cmdcount, (const char**)cmdset, _datadir.toStdWString().c_str(), _osgCmdWidget->width(), _osgCmdWidget->height(), screen->devicePixelRatio());
+
+		if (cmdset)
+			delete[] cmdset;
+	}
+
+protected:
+	void run() override
+	{
+		init();
+	}
+
+private:
+	QStringList   _cmdset;
+	QString       _datadir;
+	osgCmdWidget* _osgCmdWidget;
+};
+
+osgCmdWidget::osgCmdWidget(QStringList cmdset, QString datadir /*= ""*/, bool mainThreadInit /*= true*/, QWidget* parent /*= Q_NULLPTR*/
 	, const QGLWidget* shareWidget /*= Q_NULLPTR*/, Qt::WindowFlags f /*= Qt::WindowFlags()*/)
 	: QGLWidget(parent, shareWidget, f)
+	, _initThread(new osgCmdInitThread(this, cmdset, datadir))
+	, _mainThreadInit(mainThreadInit)
 {
-	s_cmdcount = cmdcount;
-	s_cmdset = cmdset;
-	s_workdir = workdir;
 	setFocusPolicy(Qt::ClickFocus);
 
 	osgCmd_RemapKeyboard(osgCmd_Key_Escape, Qt::Key_Escape);
@@ -72,16 +116,22 @@ osgCmdWidget::osgCmdWidget(int cmdcount, const char* cmdset[], const char* workd
 
 osgCmdWidget::~osgCmdWidget()
 {
+	while (_initThread->isRunning())
+		QThread::sleep(1);
+
+	delete _initThread;
 	osgCmd_Destroy();
 }
 
 void osgCmdWidget::initializeGL()
 {
-	osgCmd_Destroy();
-	QScreen* screen = windowHandle() && windowHandle()->screen() ? windowHandle()->screen() : qApp->screens().front();
-	osgCmd_Init(s_cmdcount, s_cmdset, s_workdir, width(), height(), screen->devicePixelRatio());
-	connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-	_timer.start(20);
+	if (_mainThreadInit)
+		((osgCmdInitThread*)_initThread)->init();
+	else
+		_initThread->start();
+
+	connect(&_frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+	_frameTimer.start(20);
 }
 
 void osgCmdWidget::resizeGL(int w, int h)

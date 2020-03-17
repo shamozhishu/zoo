@@ -69,7 +69,7 @@ private:
 class _osgCmdExport SignalTrigger
 {
 public:
-	static void emit(const Signal& sig);
+	static void trigger(const Signal& sig);
 	static void connect(const Signal& sig, SlotFunction::SLOT_FUNCTION func);
 	static void disconnect(const Signal& sig, SlotFunction::SLOT_FUNCTION func);
 	template<typename T> static void connect(const Signal& sig, T* caller, typename SlotMethod<T>::SLOT_METHOD meth);

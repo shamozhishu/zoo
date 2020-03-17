@@ -29,10 +29,12 @@
 #	endif
 #endif
 
+#ifdef _WIN32
 #define WIN32 1
+#endif
 
-#define signals public
-#define slots
+#define osgcmd_signals public
+#define osgcmd_slots
 
 #define SAFE_DELETE(p)       do { if (p) { delete (p); (p) = 0; } } while (0)
 #define SAFE_DELETE_ARRAY(p) do { if (p) { delete [] (p); (p) = 0; } } while (0)

@@ -43,6 +43,7 @@ extern "C"
 
 #include <osg/Group>
 #include <osg/LineWidth>
+#include <osg/MatrixTransform>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/ViewerEventHandlers>
@@ -89,10 +90,18 @@ extern "C"
 #endif
 #endif
 
+#ifdef OSG_USE_UTF8_FILENAME
+#define OSGCMD_DATA_DIR osgCmd::utf8_data_dir
+#else
+#define OSGCMD_DATA_DIR osgCmd::ansi_data_dir
+#endif
+
 using namespace std;
 
 namespace osgCmd {
 
+_osgCmdExport extern std::string ansi_data_dir;
+_osgCmdExport extern std::string utf8_data_dir;
 template<typename ...Args> class ReflexFactory;
 template class _osgCmdExport ReflexFactory<>;
 class Cmd;

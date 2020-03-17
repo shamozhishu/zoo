@@ -10,13 +10,13 @@ class WorldCmd : public osgCmd::Cmd, public osgCmd::Singleton<WorldCmd>
 public:
 	~WorldCmd();
 	bool init();
-	void parseCmdArg(osg::ArgumentParser& cmdarg);
+	void parseCmdArg(osg::ArgumentParser& cmdarg, osgCmd::UserData& retValue);
 	void helpInformation(osg::ApplicationUsage* usage);
 	osgViewer::View* getView() const;
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;
 
-private slots:
+private osgcmd_slots:
 	void flyTo(const osgCmd::UserData& userdata);
 	void LonLatAltitude(const osgCmd::UserData& userdata);
 	void measureDistance(const osgCmd::UserData& userdata);

@@ -3,10 +3,22 @@
 #include <osgCmd/Utils.h>
 #include <osgCmd/BuiltinCmd.h>
 #include <osgCmd/Interlock.h>
+#ifdef _WIN32
+#include "Windows.h"
+#define GET_CURRENT_THREAD_ID() GetCurrentThreadId()
+#else
+#include "unistd.h"
+#define GET_CURRENT_THREAD_ID() gettid()
+#endif
+#define OSGCMD_ERROR_MESSAGE "OSGCMD_ERROR_MESSAGE"
 
 namespace osgCmd {
 
 Interlock g_interlock;
+unsigned long g_renderThreadID = -1;
+static UserData s_retValue;
+static bool s_blockWhenWaitReturnValue = false;
+static map<string, std::pair<bool, shared_ptr<promise<Any>>>> s_promises;
 
 static BuiltinCmd* s_builtinCmd = nullptr;
 CmdManager::CmdManager()
@@ -31,6 +43,8 @@ CmdManager::~CmdManager()
 		OpenThreads::Thread::YieldCurrentThread();
 	_commands.clear();
 	delete _viewers;
+	s_promises.clear();
+	s_retValue.clear();
 }
 
 void CmdManager::run()
@@ -42,7 +56,7 @@ void CmdManager::run()
 		{
 			_busying = true;
 			g_interlock.beginExchanging();
-			SignalTrigger::emit(_curCmd->_subCommands);
+			SignalTrigger::trigger(_curCmd->_subCommands);
 			g_interlock.endExchanging();
 			_curCmd->_subCommands.userData().clear();
 			cancelRetValueBlock();
@@ -59,7 +73,6 @@ void CmdManager::run()
 		}
 
 	} while (running);
-	cancelRetValueBlock();
 	_busying = false;
 }
 
@@ -67,10 +80,14 @@ void CmdManager::block(bool isBlock)
 {
 	if (isBlock)
 	{
-		g_interlock.endExchanging();
-		_block[0].reset();
-		_block[0].block();
-		g_interlock.beginExchanging();
+		if (getThreadId() == (int)GET_CURRENT_THREAD_ID())
+		{
+			g_interlock.endExchanging();
+			cancelRetValueBlock();
+			_block[0].reset();
+			_block[0].block();
+			g_interlock.beginExchanging();
+		}
 	}
 	else
 	{
@@ -192,7 +209,10 @@ bool CmdManager::sendCmd(const string& cmdline)
 	}
 
 	SignalTrigger::disconnect(pCmd->_subCommands);
-	pCmd->parseCmdArg(cmdArg);
+	s_promises.clear();
+	s_retValue.clear();
+	s_retValue.setData(string(""));
+	pCmd->parseCmdArg(cmdArg, s_retValue);
 	cmdArg.reportRemainingOptionsAsUnrecognized();
 	if (cmdArg.errors())
 	{
@@ -204,9 +224,9 @@ bool CmdManager::sendCmd(const string& cmdline)
 
 	_curCmd = pCmd;
 	_cmdName = cmdname;
-	_retValue.clear();
-	_block[1].release();
+	s_blockWhenWaitReturnValue = true;
 	SAFE_DELETE_ARRAY(argv);
+	_block[1].release();
 	return true;
 }
 
@@ -226,18 +246,16 @@ Viewers* CmdManager::getViewers() const
 
 bool CmdManager::setReturnValue(const string& key, const Any& retval)
 {
-	bool hasVal;
-	if (key == "____OSGCMD____")
-		hasVal = _retValue.getData().has_value();
-	else
-		hasVal = _retValue.getData(key).has_value();
-
-	if (!hasVal)
+	if (key != OSGCMD_ERROR_MESSAGE && s_retValue.getData(key).has_value())
 	{
-		_retValue.setData(key, retval);
 		lazyInitPromise(key);
-		_promises[key].get()->set_value(retval);
-		return true;
+		if (!s_promises[key].first)
+		{
+			s_promises[key].first = true;
+			s_promises[key].second->set_value(retval);
+			s_retValue.setData(key, retval);
+			return true;
+		}
 	}
 
 	return false;
@@ -245,19 +263,40 @@ bool CmdManager::setReturnValue(const string& key, const Any& retval)
 
 Any CmdManager::getReturnValue(const string& key)
 {
-	lazyInitPromise(key);
-	std::future<Any> fut = _promises[key].get()->get_future();
-	return fut.get();
+	if (key != OSGCMD_ERROR_MESSAGE && s_retValue.getData(key).has_value())
+	{
+		if (s_blockWhenWaitReturnValue)
+		{
+			lazyInitPromise(key);
+			std::future<Any> fut = s_promises[key].second->get_future();
+
+			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
+			if (g_renderThreadID == GET_CURRENT_THREAD_ID())
+				g_interlock.canExchange = true;
+
+			Any temp = fut.get();
+			if (temp.has_value())
+				return temp;
+		}
+
+		return s_retValue.getData(key);
+	}
+
+	return Any();
 }
 
 bool CmdManager::setErrorMessage(const string& errMessage)
 {
-	if (!_retValue.getData().has_value())
+	if (s_retValue.getData().has_value())
 	{
-		_retValue.setData(errMessage);
-		lazyInitPromise("____OSGCMD____");
-		_promises["____OSGCMD____"].get()->set_value(errMessage);
-		return true;
+		lazyInitPromise(OSGCMD_ERROR_MESSAGE);
+		if (!s_promises[OSGCMD_ERROR_MESSAGE].first)
+		{
+			s_promises[OSGCMD_ERROR_MESSAGE].first = true;
+			s_promises[OSGCMD_ERROR_MESSAGE].second->set_value(errMessage);
+			s_retValue.setData(errMessage);
+			return true;
+		}
 	}
 
 	return false;
@@ -265,30 +304,44 @@ bool CmdManager::setErrorMessage(const string& errMessage)
 
 string CmdManager::getErrorMessage()
 {
-	lazyInitPromise("____OSGCMD____");
-	std::future<Any> fut = _promises["____OSGCMD____"].get()->get_future();
-	Any temp = fut.get();
-	if (temp.has_value())
-		return any_cast<string>(temp);
+	if (s_retValue.getData().has_value())
+	{
+		if (s_blockWhenWaitReturnValue)
+		{
+			lazyInitPromise(OSGCMD_ERROR_MESSAGE);
+			std::future<Any> fut = s_promises[OSGCMD_ERROR_MESSAGE].second->get_future();
+
+			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
+			if (g_renderThreadID == GET_CURRENT_THREAD_ID())
+				g_interlock.canExchange = true;
+
+			Any temp = fut.get();
+			if (temp.has_value())
+				return any_cast<string>(temp);
+		}
+
+		return any_cast<string>(s_retValue.getData());
+	}
+
 	return "";
 }
 
 void CmdManager::lazyInitPromise(const string& key)
 {
 	OpenThreads::ScopedWriteLock lock(_rwMutex);
-	if (_promises.find(key) == _promises.end())
+	if (s_promises.find(key) == s_promises.end())
 	{
 		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
-		_promises[key] = ptr;
+		s_promises[key] = std::make_pair(false, ptr);
 	}
 }
 
 void CmdManager::cancelRetValueBlock()
 {
-	for (auto it = _promises.begin(); it != _promises.end(); ++it)
-		setReturnValue(it->first, Any());
-	_promises.clear();
-	_retValue.clear();
+	s_blockWhenWaitReturnValue = false;
+	setErrorMessage(any_cast<string>(s_retValue.getData()));
+	for (auto it = s_promises.begin(); it != s_promises.end(); ++it)
+		setReturnValue(it->first, s_retValue.getData(it->first));
 }
 
 }

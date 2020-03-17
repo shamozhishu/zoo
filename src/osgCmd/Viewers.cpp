@@ -5,7 +5,7 @@
 namespace osgCmd {
 
 extern Interlock g_interlock;
-std::map<unsigned int, int> g_keyboardMap;
+extern std::map<unsigned int, int> g_keyboardMap;
 
 Viewers::Viewers()
 	: _osgInited(false)

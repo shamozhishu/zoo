@@ -18,7 +18,7 @@ Signal::~Signal()
 	SignalTrigger::disconnect(*this);
 }
 
-void SignalTrigger::emit(const Signal& sig)
+void SignalTrigger::trigger(const Signal& sig)
 {
 	vector<Slot*>::const_iterator itSlot = sig._slotset.cbegin();
 	for (; itSlot != sig._slotset.cend(); ++itSlot)

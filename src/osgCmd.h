@@ -87,7 +87,8 @@ extern "C"
 		osgCmd_Scroll_2D
 	};
 
-	_osgCmdExport void osgCmd_Init(int cmdcount, const char* cmdset[], const char* workdir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
+	_osgCmdExport void osgCmd_InitA(int cmdcount, const char* cmdset[], const char* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
+	_osgCmdExport void osgCmd_InitW(int cmdcount, const char* cmdset[], const wchar_t* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_osgCmdExport bool osgCmd_Send(const char* cmdline);
 	_osgCmdExport void osgCmd_Run();
 	_osgCmdExport void osgCmd_Destroy();
@@ -103,14 +104,14 @@ extern "C"
 	_osgCmdExport void osgCmd_MouseMoveEvent(int x, int y, unsigned int modkey);
 	_osgCmdExport void osgCmd_WheelEvent(int x, int y, unsigned int modkey, osgCmd_Scroll scroll);
 
-	// Return value.
+	// Return value, record the return value of the most recently executed command.
 	_osgCmdExport bool osgCmd_BoolValue(const char* variable, bool* value);
 	_osgCmdExport bool osgCmd_IntValue(const char* variable, int* value);
 	_osgCmdExport bool osgCmd_FloatValue(const char* variable, float* value);
 	_osgCmdExport bool osgCmd_DoubleValue(const char* variable, double* value);
 	_osgCmdExport const char* osgCmd_StringValue(const char* variable);
 
-	// Error message.
+	// Error message, record the error tip message of the most recently executed command.
 	_osgCmdExport const char* osgCmd_ErrorMessage();
 
 	// Remap Keyboard.

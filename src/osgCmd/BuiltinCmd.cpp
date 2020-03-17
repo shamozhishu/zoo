@@ -12,7 +12,7 @@ bool BuiltinCmd::init()
 	return true;
 }
 
-void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
+void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg, UserData& retValue)
 {
 	do
 	{
@@ -25,6 +25,7 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 		bool b;
 		if (cmdarg.read("--test-bool", b))
 		{
+			retValue.setData("test_bool", false);
 			_subCommands.userData().setData("test_bool", b);
 			_subCommands.userData().setData("test_mark", 0);
 			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::testReturnValue);
@@ -34,6 +35,7 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 		int i;
 		if (cmdarg.read("--test-int", i))
 		{
+			retValue.setData("test_int", 0);
 			_subCommands.userData().setData("test_int", i);
 			_subCommands.userData().setData("test_mark", 1);
 			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::testReturnValue);
@@ -43,6 +45,7 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 		float f;
 		if (cmdarg.read("--test-float", f))
 		{
+			retValue.setData("test_float", 0.0f);
 			_subCommands.userData().setData("test_float", f);
 			_subCommands.userData().setData("test_mark", 2);
 			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::testReturnValue);
@@ -52,6 +55,7 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 		double d;
 		if (cmdarg.read("--test-double", d))
 		{
+			retValue.setData("test_double", 0.0);
 			_subCommands.userData().setData("test_double", d);
 			_subCommands.userData().setData("test_mark", 3);
 			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::testReturnValue);
@@ -60,6 +64,7 @@ void BuiltinCmd::parseCmdArg(osg::ArgumentParser& cmdarg)
 
 		if (cmdarg.read("--test-str"))
 		{
+			retValue.setData("test_str", string(""));
 			_subCommands.userData().setData("test_str", string("osgCmd is generated for module decoupling!"));
 			_subCommands.userData().setData("test_mark", 4);
 			SignalTrigger::connect<BuiltinCmd>(_subCommands, this, &BuiltinCmd::testReturnValue);

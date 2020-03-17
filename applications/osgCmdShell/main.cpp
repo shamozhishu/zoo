@@ -74,9 +74,9 @@ static void parsecmdline()
 
 int main(int argc, char* args[])
 {
-	const char* workdir = nullptr;
+	const char* datadir = nullptr;
 	if (argc > 1)
-		workdir = args[1];
+		datadir = args[1];
 
 	int cmdcount = argc - 2;
 	char** cmdset = nullptr;
@@ -87,7 +87,7 @@ int main(int argc, char* args[])
 			cmdset[i] = args[i + 2];
 	}
 
-	osgCmd_Init(cmdcount, (const char**)cmdset, workdir);
+	osgCmd_InitA(cmdcount, (const char**)cmdset, datadir);
 
 	if (cmdset)
 		delete[] cmdset;

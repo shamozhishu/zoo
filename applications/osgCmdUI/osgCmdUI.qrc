@@ -1,4 +1,6 @@
 <RCC>
-    <qresource prefix="osgCmdUI">
+    <qresource prefix="/images">
+        <file>Resources/images/setup.png</file>
+        <file>Resources/images/app.png</file>
     </qresource>
 </RCC>

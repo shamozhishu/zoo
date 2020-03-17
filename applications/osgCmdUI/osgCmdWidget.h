@@ -1,21 +1,20 @@
 #pragma once
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
 #include <QtCore/QTimer>
+#include <QtCore/QString>
 #include <QtOpenGL/QGL>
 
+class QThread;
 class QKeyEvent;
 class QInputEvent;
 class QMouseEvent;
 class QWheelEvent;
-
 class osgCmdWidget : public QGLWidget
 {
 	Q_OBJECT
 public:
-	osgCmdWidget(int cmdcount, const char* cmdset[], const char* workdir = Q_NULLPTR,
-		QWidget* parent = Q_NULLPTR, const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+	osgCmdWidget(QStringList cmdset, QString datadir = "", bool mainThreadInit = true, QWidget* parent = Q_NULLPTR,
+		const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
 	~osgCmdWidget();
 
 protected:
@@ -36,5 +35,7 @@ private:
 	unsigned int getKeyboardModifiers(QInputEvent* event);
 
 private:
-	QTimer _timer;
+	bool _mainThreadInit;
+	QTimer   _frameTimer;
+	QThread* _initThread;
 };

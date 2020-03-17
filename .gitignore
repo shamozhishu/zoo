@@ -259,6 +259,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/resource/file_cache
-/resource/srtm30plus_stripped.tif
-/resource/world.qix
+/data/file_cache
+/data/srtm30plus_stripped.tif
+/data/world.qix
