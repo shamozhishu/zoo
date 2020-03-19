@@ -10,8 +10,10 @@
 #	endif
 #endif
 
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 	enum osgCmd_MouseButton
 	{
 		osgCmd_Button_No = 0,
@@ -89,6 +91,7 @@ extern "C"
 
 	_osgCmdExport void osgCmd_InitA(int cmdcount, const char* cmdset[], const char* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_osgCmdExport void osgCmd_InitW(int cmdcount, const char* cmdset[], const wchar_t* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
+	_osgCmdExport bool osgCmd_IsInited();
 	_osgCmdExport bool osgCmd_Send(const char* cmdline);
 	_osgCmdExport void osgCmd_Run();
 	_osgCmdExport void osgCmd_Destroy();
@@ -116,4 +119,7 @@ extern "C"
 
 	// Remap Keyboard.
 	_osgCmdExport void osgCmd_RemapKeyboard(osgCmd_Key key, int remapkey);
+
+#ifdef __cplusplus
 }
+#endif

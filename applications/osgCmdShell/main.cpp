@@ -33,7 +33,7 @@ static void parsecmdline()
 
 		if (osgCmd_Send(pszCmdline))
 		{
-			if (0 == strcmp(pszCmdline, "--exit"))
+			if (0 == strcmp(pszCmdline, "-exit"))
 				break;
 
 			bool bRet;

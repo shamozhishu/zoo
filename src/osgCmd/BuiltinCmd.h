@@ -14,6 +14,9 @@ public:
 
 private osgcmd_slots:
 	void endMainLoop(const UserData& userdata);
+	void loadSceneData(const UserData& userdata);
+	void saveSceneData(const UserData& userdata);
+	void viewHomePosition(const UserData& userdata);
 	void testReturnValue(const UserData& userdata);
 };
 

@@ -17,6 +17,9 @@ public:
 		const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
 	~osgCmdWidget();
 
+signals:
+	void inited();
+
 protected:
 	void initializeGL() override;
 	void resizeGL(int w, int h) override;
@@ -35,6 +38,7 @@ private:
 	unsigned int getKeyboardModifiers(QInputEvent* event);
 
 private:
+	bool _isInited;
 	bool _mainThreadInit;
 	QTimer   _frameTimer;
 	QThread* _initThread;

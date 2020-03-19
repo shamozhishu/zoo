@@ -17,8 +17,68 @@ Viewers::~Viewers()
 {
 }
 
-osg::Group* Viewers::getRootNode(unsigned int idx /*= -1*/)
+void Viewers::init(int windowWidth, int windowHeight, float windowScale)
 {
+	if (windowWidth > 0 && windowHeight > 0)
+	{
+		_osgInited = true;
+		_windowScale = windowScale;
+		_osgWinEmb = new osgViewer::GraphicsWindowEmbedded(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+		_osgWinEmb->getEventQueue()->syncWindowRectangleWithGraphicsContext();
+		setReleaseContextAtEndOfFrameHint(false);
+		setThreadingModel(osgViewer::Viewer::SingleThreaded);
+		_frameTime.setStartTick(0);
+	}
+
+	setKeyEventSetsDone(0);
+}
+
+void Viewers::frame(double simulationTime)
+{
+	// limit the frame rate
+	if (getRunMaxFrameRate() > 0.0)
+	{
+		double dt = _frameTime.time_s();
+		double minFrameTime = 1.0 / getRunMaxFrameRate();
+		if (dt < minFrameTime)
+			OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (minFrameTime - dt)));
+	}
+
+	// avoid excessive CPU loading when no frame is required in ON_DEMAND mode
+	if (getRunFrameScheme() == osgViewer::ViewerBase::ON_DEMAND)
+	{
+		double dt = _frameTime.time_s();
+		if (dt < 0.01)
+			OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (0.01 - dt)));
+	}
+
+	// record start frame time
+	_frameTime.setStartTick();
+
+	g_interlock.waitExchanged();
+	osgViewer::CompositeViewer::frame(simulationTime);
+	g_interlock.releaseWait();
+}
+
+void Viewers::resize(int windowWidth, int windowHeight, float windowScale)
+{
+	if (_osgInited)
+	{
+		_windowScale = windowScale;
+		_osgWinEmb->getEventQueue()->windowResize(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+		_osgWinEmb->resized(0, 0, windowWidth * windowScale, windowHeight * windowScale);
+	}
+}
+
+osg::Group* Viewers::getRootNode(unsigned int idx /*= -1*/, bool createIfNot /*= true*/)
+{
+	if (!createIfNot)
+	{
+		if (idx < s_rootNodeCount)
+			return _rootNodes[idx].get();
+		return nullptr;
+	}
+
 	if (idx < s_rootNodeCount)
 	{
 		if (!_rootNodes[idx].get())
@@ -29,7 +89,7 @@ osg::Group* Viewers::getRootNode(unsigned int idx /*= -1*/)
 
 		return _rootNodes[idx].get();
 	}
-	
+
 
 	for (unsigned int i = 0; i < s_rootNodeCount; ++i)
 	{
@@ -86,59 +146,6 @@ osgViewer::View* Viewers::createView(float ratioLeft, float ratioRight, float ra
 	view->addEventHandler(new osgViewer::StatsHandler);
 	view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
 	return view;
-}
-
-void Viewers::init(int windowWidth, int windowHeight, float windowScale)
-{
-	if (windowWidth > 0 && windowHeight > 0)
-	{
-		_osgInited = true;
-		_windowScale = windowScale;
-		_osgWinEmb = new osgViewer::GraphicsWindowEmbedded(0, 0, windowWidth * windowScale, windowHeight * windowScale);
-		_osgWinEmb->getEventQueue()->syncWindowRectangleWithGraphicsContext();
-		setReleaseContextAtEndOfFrameHint(false);
-		setThreadingModel(osgViewer::Viewer::SingleThreaded);
-		_frameTime.setStartTick(0);
-	}
-
-	setKeyEventSetsDone(0);
-}
-
-void Viewers::frame(double simulationTime)
-{
-	// limit the frame rate
-	if (getRunMaxFrameRate() > 0.0)
-	{
-		double dt = _frameTime.time_s();
-		double minFrameTime = 1.0 / getRunMaxFrameRate();
-		if (dt < minFrameTime)
-			OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (minFrameTime - dt)));
-	}
-
-	// avoid excessive CPU loading when no frame is required in ON_DEMAND mode
-	if (getRunFrameScheme() == osgViewer::ViewerBase::ON_DEMAND)
-	{
-		double dt = _frameTime.time_s();
-		if (dt < 0.01)
-			OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (0.01 - dt)));
-	}
-
-	// record start frame time
-	_frameTime.setStartTick();
-
-	g_interlock.waitExchanged();
-	osgViewer::CompositeViewer::frame(simulationTime);
-	g_interlock.releaseWait();
-}
-
-void Viewers::resize(int windowWidth, int windowHeight, float windowScale)
-{
-	if (_osgInited)
-	{
-		_windowScale = windowScale;
-		_osgWinEmb->getEventQueue()->windowResize(0, 0, windowWidth * windowScale, windowHeight * windowScale);
-		_osgWinEmb->resized(0, 0, windowWidth * windowScale, windowHeight * windowScale);
-	}
 }
 
 void Viewers::keyPressEvent(int key, unsigned int modkey)

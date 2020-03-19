@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <osgCmd.h>
+#include <QThread>
 #include <QScreen>
 #include <QWindow>
 #include <QLayout>
@@ -11,7 +12,6 @@
 #include <QMainWindow>
 #include <QApplication>
 #include <QInputDialog>
-#include <QtCore/QThread>
 
 class osgCmdInitThread : public QThread
 {
@@ -63,6 +63,7 @@ osgCmdWidget::osgCmdWidget(QStringList cmdset, QString datadir /*= ""*/, bool ma
 	: QGLWidget(parent, shareWidget, f)
 	, _initThread(new osgCmdInitThread(this, cmdset, datadir))
 	, _mainThreadInit(mainThreadInit)
+	, _isInited(false)
 {
 	setFocusPolicy(Qt::ClickFocus);
 
@@ -125,13 +126,19 @@ osgCmdWidget::~osgCmdWidget()
 
 void osgCmdWidget::initializeGL()
 {
-	if (_mainThreadInit)
-		((osgCmdInitThread*)_initThread)->init();
-	else
-		_initThread->start();
+	if (!_isInited)
+	{
+		_isInited = true;
 
-	connect(&_frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-	_frameTimer.start(20);
+		if (_mainThreadInit)
+			((osgCmdInitThread*)_initThread)->init();
+		else
+			_initThread->start();
+
+		emit inited();
+		connect(&_frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+		_frameTimer.start(20);
+	}
 }
 
 void osgCmdWidget::resizeGL(int w, int h)

@@ -40,16 +40,59 @@ extern "C"
 }
 
 #include <osgCmd/Common.h>
-
+#include <osg/Vec3>
+#include <osg/Vec4>
+#include <osg/Quat>
 #include <osg/Group>
+#include <osg/Geode>
+#include <osg/Depth>
+#include <osg/TexMat>
+#include <osg/TexGen>
+#include <osg/TexEnv>
+#include <osg/Matrix>
+#include <osg/CullFace>
+#include <osg/Material>
+#include <osg/Geometry>
+#include <osg/Transform>
 #include <osg/LineWidth>
+#include <osg/NodeCallback>
+#include <osg/ShapeDrawable>
+#include <osg/TextureCubeMap>
 #include <osg/MatrixTransform>
+#include <osgText/Text>
+#include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
+#include <osgUtil/Optimizer>
+#include <osgSim/DOFTransform>
 #include <osgViewer/Viewer>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/ViewerEventHandlers>
-#include <osgUtil/Optimizer>
-#include <osgGA/StateSetManipulator>
 #include <OpenThreads/ReadWriteMutex>
+#include <osgGA/DriveManipulator>
+#include <osgGA/FlightManipulator>
+#include <osgGA/TerrainManipulator>
+#include <osgGA/StateSetManipulator>
+#include <osgGA/TrackballManipulator>
+#include <osgGA/SphericalManipulator>
+#include <osgGA/NodeTrackerManipulator>
+#include <osgGA/AnimationPathManipulator>
+#include <osgGA/KeySwitchMatrixManipulator>
+#include <osgParticle/FireEffect>
+#include <osgParticle/SmokeEffect>
+#include <osgParticle/SectorPlacer>
+#include <osgParticle/AccelOperator>
+#include <osgParticle/ParticleSystem>
+#include <osgParticle/ModularEmitter>
+#include <osgParticle/ModularProgram>
+#include <osgParticle/ExplosionEffect>
+#include <osgParticle/SmokeTrailEffect>
+#include <osgParticle/RandomRateCounter>
+#include <osgParticle/LinearInterpolator>
+#include <osgParticle/MultiSegmentPlacer>
+#include <osgParticle/PrecipitationEffect>
+#include <osgParticle/ExplosionDebrisEffect>
+#include <osgParticle/ParticleSystemUpdater>
+#include <osgParticle/FluidFrictionOperator>
 #ifdef NEED_OSGEARTH_LIBRARY
 #include <osgEarth/MapNode>
 #include <osgEarth/SpatialReference>
@@ -68,6 +111,7 @@ extern "C"
 #pragma comment(lib, "osgFXd.lib")
 #pragma comment(lib, "osgTextd.lib")
 #pragma comment(lib, "osgGAd.lib")
+#pragma comment(lib, "osgParticled.lib")
 #pragma comment(lib, "OpenThreadsd.lib")
 #ifdef NEED_OSGEARTH_LIBRARY
 #pragma comment(lib, "osgEarthd.lib")
@@ -83,6 +127,7 @@ extern "C"
 #pragma comment(lib, "osgFX.lib")
 #pragma comment(lib, "osgText.lib")
 #pragma comment(lib, "osgGA.lib")
+#pragma comment(lib, "osgParticle.lib")
 #pragma comment(lib, "OpenThreads.lib")
 #ifdef NEED_OSGEARTH_LIBRARY
 #pragma comment(lib, "osgEarth.lib")

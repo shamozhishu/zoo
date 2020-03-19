@@ -9,10 +9,10 @@ class _osgCmdExport Viewers : public osgViewer::CompositeViewer
 public:
 	Viewers();
 	~Viewers();
-	osg::Group* getRootNode(unsigned int idx = -1);
 	void init(int windowWidth, int windowHeight, float windowScale);
 	void frame(double simulationTime = USE_REFERENCE_TIME) override;
 	void resize(int windowWidth, int windowHeight, float windowScale);
+	osg::Group* getRootNode(unsigned int idx = -1, bool createIfNot = true);
 	osgViewer::View* createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop);
 
 	void keyPressEvent(int key, unsigned int modkey);

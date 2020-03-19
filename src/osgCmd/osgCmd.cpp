@@ -60,20 +60,33 @@ void osgCmd_InitA(int cmdcount, const char* cmdset[], const char* datadir /*= nu
 		if (ansi_data_dir[lastIdx] != '/' && ansi_data_dir[lastIdx] != '\\')
 			ansi_data_dir += "/";
 	}
-	else
-		ansi_data_dir = "./";
 
-	utf8_data_dir = ansiToUtf8(ansi_data_dir);
+	if (ansi_data_dir != "")
+		utf8_data_dir = ansiToUtf8(ansi_data_dir);
+
 	CmdManager* pCmdMgr = new CmdManager();
 	pCmdMgr->getViewers()->init(windowWidth, windowHeight, windowScale);
 
 	if (cmdset)
 	{
+		string strCmdset;
 		for (int i = 0; i < cmdcount; ++i)
-			s_CmdRegister(cmdset[i]);
+		{
+			if (!s_CmdRegister(cmdset[i]))
+			{
+				if (strCmdset == "")
+					strCmdset = cmdset[i];
+				else
+					strCmdset += (string(", ") + cmdset[i]);
+			}
+		}
+
+		if (strCmdset != "")
+			pCmdMgr->setErrorMessage(string("¼ÓÔØ[") + strCmdset + "]ÃüÁî²å¼þÊ§°Ü£¡");
 	}
 
 	pCmdMgr->initBuiltinCmd();
+	pCmdMgr->cancelRetValueBlock();
 	pCmdMgr->start();
 	s_isInited = true;
 }
@@ -81,6 +94,11 @@ void osgCmd_InitA(int cmdcount, const char* cmdset[], const char* datadir /*= nu
 void osgCmd_InitW(int cmdcount, const char* cmdset[], const wchar_t* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
 {
 	osgCmd_InitA(cmdcount, cmdset, w2a_(datadir).c_str(), windowWidth, windowHeight, windowScale);
+}
+
+bool osgCmd_IsInited()
+{
+	return s_isInited;
 }
 
 bool osgCmd_Send(const char* cmdline)
@@ -102,6 +120,7 @@ void osgCmd_Run()
 void osgCmd_Destroy()
 {
 	s_isInited = false;
+	g_renderThreadID = -1;
 	delete CmdManager::getSingletonPtr();
 	g_keyboardMap.clear();
 }
@@ -166,10 +185,7 @@ void osgCmd_WheelEvent(int x, int y, unsigned int modkey, osgCmd_Scroll scroll)
 
 bool osgCmd_BoolValue(const char* variable, bool* value)
 {
-	if (!s_isInited)
-		return false;
-
-	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
 		*value = any_cast<bool>(val);
@@ -181,10 +197,7 @@ bool osgCmd_BoolValue(const char* variable, bool* value)
 
 bool osgCmd_IntValue(const char* variable, int* value)
 {
-	if (!s_isInited)
-		return false;
-
-	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
 		*value = any_cast<int>(val);
@@ -196,10 +209,7 @@ bool osgCmd_IntValue(const char* variable, int* value)
 
 bool osgCmd_FloatValue(const char* variable, float* value)
 {
-	if (!s_isInited)
-		return false;
-
-	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
 		*value = any_cast<float>(val);
@@ -211,10 +221,7 @@ bool osgCmd_FloatValue(const char* variable, float* value)
 
 bool osgCmd_DoubleValue(const char* variable, double* value)
 {
-	if (!s_isInited)
-		return false;
-
-	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
 		*value = any_cast<double>(val);
@@ -226,11 +233,8 @@ bool osgCmd_DoubleValue(const char* variable, double* value)
 
 const char* osgCmd_StringValue(const char* variable)
 {
-	if (!s_isInited)
-		return nullptr;
-
 	static std::string s_returnValue;
-	Any val = CmdManager::getSingleton().getReturnValue(variable);
+	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
 		s_returnValue = any_cast<string>(val);
@@ -242,11 +246,8 @@ const char* osgCmd_StringValue(const char* variable)
 
 const char* osgCmd_ErrorMessage()
 {
-	if (!s_isInited)
-		return nullptr;
-
 	static std::string s_errorMessage;
-	s_errorMessage = CmdManager::getSingleton().getErrorMessage().c_str();
+	s_errorMessage = CmdManager::getErrorMessage().c_str();
 	return s_errorMessage.c_str();
 }
 

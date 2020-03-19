@@ -17,7 +17,8 @@ namespace osgCmd {
 Interlock g_interlock;
 unsigned long g_renderThreadID = -1;
 static UserData s_retValue;
-static bool s_blockWhenWaitReturnValue = false;
+static OpenThreads::ReadWriteMutex s_rwMutex;
+static bool s_blockWhenWaitReturnValue = true;
 static map<string, std::pair<bool, shared_ptr<promise<Any>>>> s_promises;
 
 static BuiltinCmd* s_builtinCmd = nullptr;
@@ -29,6 +30,7 @@ CmdManager::CmdManager()
 	ds->setNvOptimusEnablement(1);
 	ds->setStereo(false);
 	_viewers = new Viewers();
+	s_blockWhenWaitReturnValue = true;
 }
 
 CmdManager::~CmdManager()
@@ -45,6 +47,7 @@ CmdManager::~CmdManager()
 	delete _viewers;
 	s_promises.clear();
 	s_retValue.clear();
+	s_blockWhenWaitReturnValue = true;
 }
 
 void CmdManager::run()
@@ -201,7 +204,7 @@ bool CmdManager::sendCmd(const string& cmdline)
 	{
 		_curCmd = pCmd;
 		_cmdName = cmdname;
-		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options <input-args...> || (retrun-value...)");
+		cmdArg.getApplicationUsage()->setCommandLineUsage(cmdArg.getApplicationName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
 		pCmd->helpInformation(cmdArg.getApplicationUsage());
 		cmdArg.getApplicationUsage()->write(std::cout, helpType);
 		SAFE_DELETE_ARRAY(argv);
@@ -211,7 +214,6 @@ bool CmdManager::sendCmd(const string& cmdline)
 	SignalTrigger::disconnect(pCmd->_subCommands);
 	s_promises.clear();
 	s_retValue.clear();
-	s_retValue.setData(string(""));
 	pCmd->parseCmdArg(cmdArg, s_retValue);
 	cmdArg.reportRemainingOptionsAsUnrecognized();
 	if (cmdArg.errors())
@@ -287,16 +289,13 @@ Any CmdManager::getReturnValue(const string& key)
 
 bool CmdManager::setErrorMessage(const string& errMessage)
 {
-	if (s_retValue.getData().has_value())
+	lazyInitPromise(OSGCMD_ERROR_MESSAGE);
+	if (!s_promises[OSGCMD_ERROR_MESSAGE].first)
 	{
-		lazyInitPromise(OSGCMD_ERROR_MESSAGE);
-		if (!s_promises[OSGCMD_ERROR_MESSAGE].first)
-		{
-			s_promises[OSGCMD_ERROR_MESSAGE].first = true;
-			s_promises[OSGCMD_ERROR_MESSAGE].second->set_value(errMessage);
-			s_retValue.setData(errMessage);
-			return true;
-		}
+		s_promises[OSGCMD_ERROR_MESSAGE].first = true;
+		s_promises[OSGCMD_ERROR_MESSAGE].second->set_value(errMessage);
+		s_retValue.setData(errMessage);
+		return true;
 	}
 
 	return false;
@@ -304,44 +303,48 @@ bool CmdManager::setErrorMessage(const string& errMessage)
 
 string CmdManager::getErrorMessage()
 {
-	if (s_retValue.getData().has_value())
+	if (s_blockWhenWaitReturnValue)
 	{
-		if (s_blockWhenWaitReturnValue)
-		{
-			lazyInitPromise(OSGCMD_ERROR_MESSAGE);
-			std::future<Any> fut = s_promises[OSGCMD_ERROR_MESSAGE].second->get_future();
+		lazyInitPromise(OSGCMD_ERROR_MESSAGE);
+		std::future<Any> fut = s_promises[OSGCMD_ERROR_MESSAGE].second->get_future();
 
-			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
-			if (g_renderThreadID == GET_CURRENT_THREAD_ID())
-				g_interlock.canExchange = true;
+		// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
+		if (g_renderThreadID == GET_CURRENT_THREAD_ID())
+			g_interlock.canExchange = true;
 
-			Any temp = fut.get();
-			if (temp.has_value())
-				return any_cast<string>(temp);
-		}
-
-		return any_cast<string>(s_retValue.getData());
+		Any temp = fut.get();
+		if (temp.has_value())
+			return any_cast<string>(temp);
 	}
+
+	if (s_retValue.getData().has_value())
+		return any_cast<string>(s_retValue.getData());
 
 	return "";
-}
-
-void CmdManager::lazyInitPromise(const string& key)
-{
-	OpenThreads::ScopedWriteLock lock(_rwMutex);
-	if (s_promises.find(key) == s_promises.end())
-	{
-		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
-		s_promises[key] = std::make_pair(false, ptr);
-	}
 }
 
 void CmdManager::cancelRetValueBlock()
 {
 	s_blockWhenWaitReturnValue = false;
-	setErrorMessage(any_cast<string>(s_retValue.getData()));
+
+	string errTip = "";
+	if (s_retValue.getData().has_value())
+		errTip = any_cast<string>(s_retValue.getData());
+
+	setErrorMessage(errTip);
+
 	for (auto it = s_promises.begin(); it != s_promises.end(); ++it)
 		setReturnValue(it->first, s_retValue.getData(it->first));
+}
+
+void CmdManager::lazyInitPromise(const string& key)
+{
+	OpenThreads::ScopedWriteLock lock(s_rwMutex);
+	if (s_promises.find(key) == s_promises.end())
+	{
+		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
+		s_promises[key] = std::make_pair(false, ptr);
+	}
 }
 
 }
