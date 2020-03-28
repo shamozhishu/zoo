@@ -11,18 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D63E2EB8-3D09-44BB-9162-EE7B2E8195DD}</ProjectGuid>
+    <ProjectGuid>{E87D921E-C251-4832-9640-849C85CE78BF}</ProjectGuid>
     <Keyword>QtVS_v302</Keyword>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+    <ProjectName>libqt5_pluginfw_admin</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -41,16 +42,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;widgets</QtModules>
+    <QtModules>core</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;widgets</QtModules>
+    <QtModules>core</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
@@ -62,17 +64,15 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalIncludeDirectories>D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\$(ProjectName)d.exe</OutputFile>
+      <OutputFile>$(OutDir)\$(ProjectName)d.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>CTKCored.lib;CTKPluginFrameworkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent />
-    <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\osgCmd\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -80,19 +80,22 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <AdditionalIncludeDirectories>D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
+      <OutputFile>$(OutDir)\$(ProjectName).dll</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
-    <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\osgCmd\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="PluginfwAdminInterface.h" />
+    <QtMoc Include="PluginFrameworkAdmin.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PluginFrameworkAdmin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
@@ -100,4 +103,9 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" MocOptions="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

@@ -11,18 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D63E2EB8-3D09-44BB-9162-EE7B2E8195DD}</ProjectGuid>
+    <ProjectGuid>{05AB661F-0672-4D1B-8881-249B04FD4D70}</ProjectGuid>
     <Keyword>QtVS_v302</Keyword>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -39,18 +39,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
     <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;widgets</QtModules>
+    <QtModules>core;gui;opengl;widgets</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;widgets</QtModules>
+    <QtModules>core;gui;opengl;widgets</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
@@ -62,17 +66,16 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PreprocessorDefinitions>LIBCTK_OSGCMD_UI_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Program Files\osgCmd\include;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\$(ProjectName)d.exe</OutputFile>
+      <OutputFile>$(OutDir)\$(ProjectName)d.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CTKCored.lib;CTKPluginFrameworkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent />
-    <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\osgCmd\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -80,19 +83,46 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PreprocessorDefinitions>LIBCTK_OSGCMD_UI_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Program Files\osgCmd\include;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
+      <OutputFile>$(OutDir)\$(ProjectName).dll</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\osgCmd\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="DebugStream.h" />
+    <QtMoc Include="UIActivator.h" />
+    <QtMoc Include="SetupDlg.h" />
+    <QtMoc Include="osgCmdWidget.h" />
+    <QtMoc Include="osgCmdUI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="osgCmdUI.cpp" />
+    <ClCompile Include="osgCmdWidget.cpp" />
+    <ClCompile Include="SetupDlg.cpp" />
+    <ClCompile Include="UIActivator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="libctk_osgcmd_ui.qrc" />
+    <QtRcc Include="osgCmdUI.qrc" />
+    <QtRcc Include="SetupDlg.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="osgCmdUI.ui" />
+    <QtUic Include="SetupDlg.ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\osgCmd.vcxproj">
+      <Project>{e2463d34-fde1-48a5-9345-10f28b9696eb}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MANIFEST.MF" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
@@ -100,4 +130,9 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\osgCmd\bin"</Command>
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" MocOptions="" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

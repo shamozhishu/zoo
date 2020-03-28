@@ -17,6 +17,11 @@ xcopy /y /s /e %source_path%\src\osgCmd\*.* %target_path%\src\osgCmd\
 echo ----------------------------------------plugins catalog
 
 xcopy /y %source_path%\plugins\osgCmd-World\*.* %target_path%\plugins\osgCmd-World\*.*
+xcopy /y %source_path%\plugins\libqt5_pluginfw_admin\*.* %target_path%\plugins\libqt5_pluginfw_admin\*.*
+xcopy /y %source_path%\plugins\libctk_war_scene\*.* %target_path%\plugins\libctk_war_scene\*.*
+xcopy /y %source_path%\plugins\libctk_osgcmd_ui\*.* %target_path%\plugins\libctk_osgcmd_ui\*.*
+xcopy /y /s /e %source_path%\plugins\libctk_osgcmd_ui\Resources\*.* %target_path%\plugins\libctk_osgcmd_ui\Resources\
+
 
 echo ----------------------------------------applications catalog
 

@@ -1,0 +1,7 @@
+﻿Plugin-SymbolicName: ctk.osgcmd.ui
+Plugin-Category: plugins
+Plugin-ContactAddress: https://github.com/shamozhishu
+Plugin-Description: A plugin for osgCmdUI
+Plugin-Name: ctk_osgcmd_ui
+Plugin-Vendor: shamozhishu
+Plugin-Version: 1.0.0
