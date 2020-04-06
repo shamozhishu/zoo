@@ -5,10 +5,10 @@
 class RedArmy : public Entity
 {
 	friend class Scene;
-	RedArmy(int id);
+	RedArmy();
 	~RedArmy();
 public:
-	void update(float dt);
-	Entity* clone();
 	ENTITY_TYPE getType() const;
+	void serialize(stringstream& ss);
+	void deserialize(TableCSV* pTable);
 };

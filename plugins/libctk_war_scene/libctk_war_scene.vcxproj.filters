@@ -1,14 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="res">
-      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
-      <Extensions>qrc;*</Extensions>
-      <ParseFiles>false</ParseFiles>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{3fb0c1ca-9313-4dcc-b54e-36fe76ab6109}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -21,7 +19,16 @@
     <ClInclude Include="Effect.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="EntitiesCache.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="Entity.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceReleaser.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PublicEnum.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="RedArmy.h">
@@ -33,13 +40,13 @@
     <ClInclude Include="StaticObj.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WarActivator.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="Weapon.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="war_global.h">
+    <ClInclude Include="WarService.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScript.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +60,13 @@
     <ClCompile Include="Effect.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="EntitiesCache.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="Entity.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="InstanceReleaser.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="RedArmy.cpp">
@@ -68,9 +81,23 @@
     <ClCompile Include="WarActivator.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="WarManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="Weapon.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="WarServiceImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScript.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="libctk_war_scene.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <None Include="MANIFEST.MF">
@@ -78,8 +105,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_war_scene.qrc">
-      <Filter>res</Filter>
-    </QtRcc>
+    <QtMoc Include="WarActivator.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="WarManager.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="WarServiceImpl.h">
+      <Filter>src</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

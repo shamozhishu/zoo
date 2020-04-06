@@ -5,10 +5,10 @@
 class Weapon : public Entity
 {
 	friend class Scene;
-	Weapon(int id);
+	Weapon();
 	~Weapon();
 public:
-	void update(float dt);
-	Entity* clone();
 	ENTITY_TYPE getType() const;
+	void serialize(stringstream& ss);
+	void deserialize(TableCSV* pTable);
 };

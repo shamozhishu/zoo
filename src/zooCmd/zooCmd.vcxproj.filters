@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="api">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AppUsage.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BuiltinCmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Cmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdParser.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Support.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="zooCmd.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="InputAdapter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AppUsage.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BuiltinCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdParser.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="zooCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

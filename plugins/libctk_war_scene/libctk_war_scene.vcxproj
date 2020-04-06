@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9B4DD784-85F7-43A8-90B2-E0E23CE542AB}</ProjectGuid>
+    <ProjectGuid>{2C6C4160-14F9-4CEB-BBA5-129FC3EAA8BA}</ProjectGuid>
     <Keyword>QtVS_v302</Keyword>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
@@ -39,8 +39,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
     <TargetName>$(ProjectName)d</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
@@ -50,11 +50,11 @@
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core</QtModules>
+    <QtModules>core;multimedia</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core</QtModules>
+    <QtModules>core;multimedia</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
@@ -66,16 +66,19 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PreprocessorDefinitions>LIBCTK_WAR_SCENE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName)d.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CTKCored.lib;CTKPluginFrameworkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CTKCored.lib;CTKPluginFrameworkd.lib;libluad.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir "D:\Program Files\zoo\bin\plugins"
+xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -83,38 +86,52 @@
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PreprocessorDefinitions>LIBCTK_WAR_SCENE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).dll</OutputFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Program Files\CTK\lib\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;liblua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir "D:\Program Files\zoo\bin\plugins"
+xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AllyArmy.h" />
     <ClInclude Include="BlueArmy.h" />
     <ClInclude Include="Effect.h" />
+    <ClInclude Include="EntitiesCache.h" />
     <ClInclude Include="Entity.h" />
-    <ClInclude Include="war_global.h" />
+    <ClInclude Include="InstanceReleaser.h" />
+    <ClInclude Include="LuaScript.h" />
+    <ClInclude Include="PublicEnum.h" />
     <ClInclude Include="RedArmy.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="StaticObj.h" />
-    <ClInclude Include="WarActivator.h" />
+    <QtMoc Include="WarActivator.h" />
+    <QtMoc Include="WarManager.h" />
+    <ClInclude Include="WarService.h" />
+    <QtMoc Include="WarServiceImpl.h" />
     <ClInclude Include="Weapon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AllyArmy.cpp" />
     <ClCompile Include="BlueArmy.cpp" />
     <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="EntitiesCache.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="InstanceReleaser.cpp" />
+    <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="RedArmy.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="StaticObj.cpp" />
     <ClCompile Include="WarActivator.cpp" />
+    <ClCompile Include="WarManager.cpp" />
+    <ClCompile Include="WarServiceImpl.cpp" />
     <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +139,11 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="libctk_war_scene.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
+      <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

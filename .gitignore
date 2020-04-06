@@ -262,3 +262,5 @@ __pycache__/
 /data/file_cache
 /data/srtm30plus_stripped.tif
 /data/world.qix
+/applications/zooCmdShell/log.txt
+/applications/zooCmdUI/log.txt

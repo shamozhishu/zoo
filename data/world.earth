@@ -24,7 +24,7 @@
 	</image>
 	<options>
 		<cache type="filesystem">
-			<path>file_cache</path>
+			<path>tmp/file_cache</path>
 		</cache>
 	</options>
 </map>

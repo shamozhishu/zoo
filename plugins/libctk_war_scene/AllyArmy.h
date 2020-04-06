@@ -5,10 +5,10 @@
 class AllyArmy : public Entity
 {
 	friend class Scene;
-	AllyArmy(int id);
+	AllyArmy();
 	~AllyArmy();
 public:
-	void update(float dt);
-	Entity* clone();
 	ENTITY_TYPE getType() const;
+	void serialize(stringstream& ss);
+	void deserialize(TableCSV* pTable);
 };

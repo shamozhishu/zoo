@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/ctk.zoocmd.ui/META-INF">
+        <file>MANIFEST.MF</file>
+    </qresource>
+    <qresource prefix="/ctk.zoocmd.uid/META-INF">
+        <file>MANIFEST.MF</file>
+    </qresource>
+</RCC>

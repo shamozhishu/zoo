@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Any.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BitState.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DynLib.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DynLibManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Interlock.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Sigslot.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Support.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="UserData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Block.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DoF.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabaseCSV.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DynLib.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DynLibManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Sigslot.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="UserData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DoF.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabaseCSV.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

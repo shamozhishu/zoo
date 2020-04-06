@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="SetupDlg.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="UIActivator.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="ZooCmdUI.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="ZooCmdWidget.h">
+      <Filter>src</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SetupDlg.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="UIActivator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ZooCmdUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ZooCmdWidget.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MANIFEST.MF">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="libctk_zoocmd_ui.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+    <QtRcc Include="SetupDlg.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+    <QtRcc Include="ZooCmdUI.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="SetupDlg.ui">
+      <Filter>res</Filter>
+    </QtUic>
+    <QtUic Include="ZooCmdUI.ui">
+      <Filter>res</Filter>
+    </QtUic>
+  </ItemGroup>
+</Project>

@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/ctk.osgcmd.ui/META-INF">
-        <file>MANIFEST.MF</file>
-    </qresource>
-    <qresource prefix="/ctk.osgcmd.uid/META-INF">
-        <file>MANIFEST.MF</file>
-    </qresource>
-</RCC>

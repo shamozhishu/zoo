@@ -5,10 +5,10 @@
 class Effect : public Entity
 {
 	friend class Scene;
-	Effect(int id);
+	Effect();
 	~Effect();
 public:
-	void update(float dt);
-	Entity* clone();
 	ENTITY_TYPE getType() const;
+	void serialize(stringstream& ss);
+	void deserialize(TableCSV* pTable);
 };

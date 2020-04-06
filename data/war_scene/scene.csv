@@ -1,0 +1,3 @@
+场景编号,描述,自由度,特效,武器,红军,蓝军,盟军,静物
+id,description,dof,effect,weapon,redarmy,bluearmy,allyarmy,staticobj
+1,山区场景,dof.xml,effect.csv,weapon.csv,redarmy.csv,bluearmy.csv,allyarmy.csv,staticobj.csv

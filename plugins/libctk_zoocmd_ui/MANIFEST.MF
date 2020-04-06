@@ -1,0 +1,7 @@
+﻿Plugin-SymbolicName: ctk.zoocmd.ui
+Plugin-Category: plugins
+Plugin-ContactAddress: https://github.com/shamozhishu
+Plugin-Description: A plugin for zooCmdUI
+Plugin-Name: ctk_zoocmd_ui
+Plugin-Vendor: shamozhishu
+Plugin-Version: 1.0.0

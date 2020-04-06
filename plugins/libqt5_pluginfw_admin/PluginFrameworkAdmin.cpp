@@ -1,6 +1,7 @@
 #include "PluginFrameworkAdmin.h"
 #include <QPair>
 #include <QDebug>
+#include <QSettings>
 #include <QDirIterator>
 #include <QCoreApplication>
 #include <ctkPluginContext.h>
@@ -48,6 +49,18 @@ public:
 				{
 					qCritical() << e.what();
 				}
+				catch (const ctkRuntimeException& e)
+				{
+					qCritical() << e.what();
+				}
+				catch (const ctkException& e)
+				{
+					qCritical() << e.what();
+				}
+				catch (const std::exception& e)
+				{
+					qCritical() << e.what();
+				}
 			}
 			else
 			{
@@ -77,6 +90,18 @@ public:
 			{
 				qCritical() << e.what();
 			}
+			catch (const ctkRuntimeException& e)
+			{
+				qCritical() << e.what();
+			}
+			catch (const ctkException& e)
+			{
+				qCritical() << e.what();
+			}
+			catch (const std::exception& e)
+			{
+				qCritical() << e.what();
+			}
 		}
 		else
 		{
@@ -99,6 +124,18 @@ public:
 			{
 				qCritical() << e.what();
 			}
+			catch (const ctkRuntimeException& e)
+			{
+				qCritical() << e.what();
+			}
+			catch (const ctkException& e)
+			{
+				qCritical() << e.what();
+			}
+			catch (const std::exception& e)
+			{
+				qCritical() << e.what();
+			}
 		}
 		else
 		{
@@ -110,8 +147,15 @@ public:
 PluginFrameworkAdmin::PluginFrameworkAdmin()
 	: d_ptr(new PluginFrameworkAdminPrivate())
 {
+	ctkProperties fwProps;
+	QSettings settings(QCoreApplication::applicationDirPath() + "/cktpluginfw_props.ini", QSettings::IniFormat);
+	QStringList keys = settings.allKeys();
+	int len = keys.size();
+	for (int i = 0; i < len; ++i)
+		fwProps.insert(keys[i], settings.value(keys[i]));
+
 	Q_D(PluginFrameworkAdmin);
-	d->_fwFactory = new ctkPluginFrameworkFactory();
+	d->_fwFactory = new ctkPluginFrameworkFactory(fwProps);
 	QSharedPointer<ctkPluginFramework> framework = d->_fwFactory->getFramework();
 	framework->init();
 	framework->start();

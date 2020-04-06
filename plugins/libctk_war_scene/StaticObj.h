@@ -5,10 +5,10 @@
 class StaticObj : public Entity
 {
 	friend class Scene;
-	StaticObj(int id);
+	StaticObj();
 	~StaticObj();
 public:
-	void update(float dt);
-	Entity* clone();
 	ENTITY_TYPE getType() const;
+	void serialize(stringstream& ss);
+	void deserialize(TableCSV* pTable);
 };

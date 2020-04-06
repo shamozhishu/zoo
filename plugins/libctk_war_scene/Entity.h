@@ -1,49 +1,34 @@
 #pragma once
 
-#include <map>
+#include <sstream>
+#include "PublicEnum.h"
+#include <zoo/DoF.h>
+#include <ctkPluginFramework_global.h>
 
-enum ENTITY_TYPE
-{
-	ENTITY_SCENE = 0,
-	ENTITY_EFFECT,
-	ENTITY_WEAPON,
-	ENTITY_REDARMY,
-	ENTITY_BLUEARMY,
-	ENTITY_ALLYARMY,
-	ENTITY_STATICOBJ
-};
+using namespace std;
+using namespace zoo;
+class LuaScript;
 
 class Entity
 {
+	friend class Scene;
+	friend class EntitiesCache;
+	PROPERTY_R(int, _id, ID)
+	PROPERTY_R(DoF*, _dof, DoF)
 protected:
-	Entity(int id);
+	Entity();
 	virtual ~Entity();
+	ctkProperties& getProps();
+	const ctkProperties& getProps() const;
+
 public:
-	virtual void reset();
-	virtual int getID() const;
+	virtual void init();
 	virtual void update(float dt);
-	virtual Entity* clone() = 0;
 	virtual ENTITY_TYPE getType() const = 0;
-	virtual void setPos(double x, double y, double z);
-	virtual void setRot(double h, double p, double r);
-	virtual void setScale(double scale);
-
-
-public:
-	int getChildrenCount() const;
-	void addChild(Entity* ent);
-	void removeChild(int id, int type);
-	Entity* findChild(int id, int type);
+	virtual void serialize(stringstream& ss) = 0;
+	virtual void deserialize(TableCSV* pTable) = 0;
 
 protected:
-	int _id;
-	double _x;
-	double _y;
-	double _z;
-	double _h;
-	double _p;
-	double _r;
-	double _scale;
-	Entity* _parent;
-	std::map<long long, Entity*> _children;
+	LuaScript* _script;
+	ctkProperties _props;
 };
