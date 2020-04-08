@@ -40,11 +40,12 @@ class _zooExport DatabaseCSV : public Singleton<DatabaseCSV>
 public:
 	DatabaseCSV();
 	~DatabaseCSV();
-	bool init(string& csvTablePath);
+	bool init(string& csvTablePath, const string& mainTable = "");
 	bool loadTable(const string& csvTablePath, string& tableDataBuff);
 	void clear();
 	int  getTableCount() const;
 	TableCSV* getTable(const string& tableName);
+	TableCSV* getMainTable() const;
 
 private:
 	void  lazyInit();
@@ -55,6 +56,7 @@ private:
 	char*                            _buffer;
 	unordered_map<string, TableCSV*> _tables;
 	bool                             _canInit;
+	TableCSV*                        _mainTable;
 	int                              _curCharOffset;
 	int                              _maxBufferSize;
 	const int                        _startValidLine;

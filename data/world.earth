@@ -3,11 +3,11 @@
         <url>world.tif</url>
     </image>
 	<heightfield name="world_heightfield" driver="gdal">
-        <url>srtm30plus_stripped.tif</url>
+        <url>tmp/srtm30plus_stripped.tif</url>
     </heightfield>
 	<image name="world_boundaries" driver="agglite" opacity="0.5">
 		<features name="world_shape" driver="ogr">
-			<url>world.shp</url>
+			<url>tmp/world.shp</url>
 			<build_spatial_index>true</build_spatial_index>
 		</features>
 		<geometry_type>line</geometry_type>

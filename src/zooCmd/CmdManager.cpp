@@ -106,7 +106,7 @@ void CmdManager::removeCmd(const string& cmd)
 		_commands.erase(it);
 }
 
-bool CmdManager::sendCmd(const string& cmdline)
+bool CmdManager::sendCmd(vector<string> arglist)
 {
 	if (!_running)
 	{
@@ -120,8 +120,6 @@ bool CmdManager::sendCmd(const string& cmdline)
 		return false;
 	}
 
-	vector<string> arglist;
-	stringtok(arglist, cmdline);
 	int argc = arglist.size();
 	if (argc <= 0)
 	{
@@ -174,11 +172,11 @@ bool CmdManager::sendCmd(const string& cmdline)
 	CmdParser cmdArg(&argc, argv);
 	if (_curCmd != pCmd)
 	{
-		cmdArg.getAppUsage()->setCommandLineOptions(AppUsage::UsageMap());
-		cmdArg.getAppUsage()->setCommandLineOptionsDefaults(AppUsage::UsageMap());
-		cmdArg.getAppUsage()->setEnvironmentalVariables(AppUsage::UsageMap());
-		cmdArg.getAppUsage()->setEnvironmentalVariablesDefaults(AppUsage::UsageMap());
-		cmdArg.getAppUsage()->setKeyboardMouseBindings(AppUsage::UsageMap());
+		cmdArg.getCmdUsage()->setCommandLineOptions(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setCommandLineOptionsDefaults(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setEnvironmentalVariables(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setEnvironmentalVariablesDefaults(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setKeyboardMouseBindings(CmdUsage::UsageMap());
 	}
 
 	unsigned int helpType = 0;
@@ -186,9 +184,9 @@ bool CmdManager::sendCmd(const string& cmdline)
 	{
 		_curCmd = pCmd;
 		_cmdName = cmdname;
-		cmdArg.getAppUsage()->setCommandLineUsage(cmdArg.getAppName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
-		pCmd->helpInformation(cmdArg.getAppUsage());
-		cmdArg.getAppUsage()->write(std::cout, helpType);
+		cmdArg.getCmdUsage()->setCommandLineUsage(cmdArg.getCmdName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
+		pCmd->helpInformation(cmdArg.getCmdUsage());
+		cmdArg.getCmdUsage()->write(std::cout, helpType);
 		SAFE_DELETE_ARRAY(argv);
 		return true;
 	}

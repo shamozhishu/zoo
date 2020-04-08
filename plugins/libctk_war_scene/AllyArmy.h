@@ -8,6 +8,7 @@ class AllyArmy : public Entity
 	AllyArmy();
 	~AllyArmy();
 public:
+	void init();
 	ENTITY_TYPE getType() const;
 	void serialize(stringstream& ss);
 	void deserialize(TableCSV* pTable);

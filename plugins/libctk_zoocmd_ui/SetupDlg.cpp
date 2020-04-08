@@ -1,10 +1,10 @@
 #include "SetupDlg.h"
+#include <QSettings>
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QStandardItemModel>
 #include "ZooCmdUI.h"
 
-static QString s_datadir;
 SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	: QDialog(parent)
 {
@@ -13,9 +13,6 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
 	connect(ui.pushButton_datadir, SIGNAL(clicked()), this, SLOT(onSetDataDir()));
 	connect(ui.okButton, SIGNAL(clicked()), this, SLOT(onOk()));
-
-	if (!s_datadir.isEmpty())
-		ui.lineEdit_datadir->setText(s_datadir);
 
 	QStringList cmdlist;
 	QStringList pluginLibFilter;
@@ -38,6 +35,15 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	_model->setHeaderData(0, Qt::Horizontal, QString::fromLocal8Bit(""));
 	_model->setHeaderData(1, Qt::Horizontal, QString::fromLocal8Bit("命令"));
 
+	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+	settings.beginGroup("ZOO_CMDSET");
+
+	QString datadir = settings.value("datadir").toString();
+	if (!datadir.isEmpty())
+		ui.lineEdit_datadir->setText(datadir);
+
+	QStringList cmdset = settings.value("activecmd").toStringList();
+
 	if (rowCount > 0)
 	{
 		_model->setRowCount(rowCount);
@@ -48,6 +54,9 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 			pStandardItem->setCheckable(true);
 			pStandardItem->setCheckState(Qt::Unchecked);
 			_model->setItem(i, pStandardItem);
+			if (cmdset.contains(cmdlist[i], Qt::CaseInsensitive))
+				pStandardItem->setCheckState(Qt::Checked);
+
 			pStandardItem = new QStandardItem(cmdlist[i]);
 			pStandardItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 			_model->setItem(i, 1, pStandardItem);
@@ -64,6 +73,8 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 		ui.tableView_cmdset->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		ui.tableView_cmdset->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 	}
+
+	settings.endGroup();
 }
 
 QString SetupDlg::getDataDir() const
@@ -92,8 +103,5 @@ void SetupDlg::onSetDataDir()
 {
 	QString datadir = QFileDialog::getExistingDirectory(this, QString::fromLocal8Bit("选择资源路径"));
 	if (!datadir.isEmpty())
-	{
-		s_datadir = datadir;
 		ui.lineEdit_datadir->setText(datadir);
-	}
 }

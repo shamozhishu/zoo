@@ -28,7 +28,6 @@ void UIActivator::start(ctkPluginContext* context)
 	QSurfaceFormat::setDefaultFormat(format);
 
 	_ui = new ZooCmdUI();
-	_ui->showMaximized();
 	_pluginContext = context;
 }
 

@@ -1,5 +1,6 @@
 #include "RedArmy.h"
 #include <zoo/DatabaseCSV.h>
+#include <zooCmd/zooCmd.h>
 
 RedArmy::RedArmy()
 {
@@ -8,6 +9,13 @@ RedArmy::RedArmy()
 
 RedArmy::~RedArmy()
 {
+}
+
+void RedArmy::init()
+{
+	Entity::init();
+	string model_file = _props.value("model_file").toString().toStdString();
+	zooCmd_Send("war --bluearmy %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE RedArmy::getType() const

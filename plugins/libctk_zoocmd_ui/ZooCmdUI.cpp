@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QLineEdit>
 #include <QKeyEvent>
+#include <QSettings>
 #include <QMessageBox>
 #include <QProgressBar>
 #include "SetupDlg.h"
@@ -14,6 +15,7 @@
 ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	: QMainWindow(parent)
 	, _idx(0)
+	, _mainWidget(nullptr)
 	, _inputAdaName("zooCmd_osg")
 {
 	ui.setupUi(this);
@@ -29,13 +31,19 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	_progressBar->setFixedWidth(100);
 	_progressBar->setVisible(false);
 	_progressBar->setTextVisible(false);
-	
-	_mainWidget = new ZooCmdWidget(QStringList(), _inputAdaName, "", true, this);
-	setCentralWidget(_mainWidget);
 
 	connect(_cmdlineEdit, SIGNAL(returnPressed()), this, SLOT(onCmd()));
 	connect(ui.action_sim, SIGNAL(triggered(bool)), this, SLOT(onSim(bool)));
 	connect(ui.action_setup, SIGNAL(triggered()), this, SLOT(onSetup()));
+
+	showMaximized();
+
+	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+	settings.beginGroup("ZOO_CMDSET");
+	QString datadir = settings.value("datadir").toString();
+	QStringList cmdset = settings.value("activecmd").toStringList();
+	settings.endGroup();
+	createZooCmdWidget(cmdset, datadir);
 }
 
 void ZooCmdUI::keyPressEvent(QKeyEvent *event)
@@ -109,9 +117,9 @@ void ZooCmdUI::onSim(bool checked)
 		if (service != Q_NULLPTR)
 		{
 			if (checked)
-				service->enterScene(1);
+				service->openScene(1);
 			else
-				service->exitScene(1);
+				service->closeScene(1);
 		}
 	}
 }
@@ -120,45 +128,59 @@ void ZooCmdUI::onSetup()
 {
 	SetupDlg dlg(_inputAdaName);
 	if (dlg.exec() == QDialog::Accepted)
+		createZooCmdWidget(dlg.getCmdset(), dlg.getDataDir());
+}
+
+void ZooCmdUI::createZooCmdWidget(QStringList cmdset, QString datadir)
+{
+	if (_mainWidget)
 	{
-		if (_mainWidget)
+		delete _mainWidget;
+		_mainWidget = nullptr;
+	}
+
+	bool mainThreadInit = false;
+	_cmdlineEdit->setEnabled(false);
+	_mainWidget = new ZooCmdWidget(cmdset, _inputAdaName, datadir, mainThreadInit, this);
+	setCentralWidget(_mainWidget);
+	connect(_mainWidget, &ZooCmdWidget::inited, [this, cmdset, datadir, mainThreadInit]
+	{
+		if (!mainThreadInit)
 		{
-			delete _mainWidget;
-			_mainWidget = nullptr;
+			_progressBar->setValue(0);
+			_progressBar->setVisible(true);
+
+			int i = 0;
+			while (true)
+			{
+				if (zooCmd_IsInited())
+				{
+					_progressBar->setValue(100);
+					_progressBar->setVisible(false);
+					break;
+				}
+
+				QThread::msleep(5);
+				_progressBar->setValue(i++);
+				if (i > 100)
+					i = 0;
+			}
 		}
 
-		bool mainThreadInit = false;
-		_cmdlineEdit->setEnabled(false);
-		_mainWidget = new ZooCmdWidget(dlg.getCmdset(), _inputAdaName, dlg.getDataDir(), mainThreadInit, this);
-		setCentralWidget(_mainWidget);
-		connect(_mainWidget, &ZooCmdWidget::inited, [this, mainThreadInit]
+		const char* szMessage = zooCmd_ErrorMessage();
+		if (0 != strcmp(szMessage, ""))
 		{
-			if (!mainThreadInit)
-			{
-				_progressBar->setValue(0);
-				_progressBar->setVisible(true);
+			QMessageBox::warning(this, QString::fromLocal8Bit("少御"), QString::fromLocal8Bit(szMessage));
+		}
+		else
+		{
+			QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+			settings.beginGroup("ZOO_CMDSET");
+			settings.setValue("datadir", datadir);
+			settings.setValue("activecmd", cmdset);
+			settings.endGroup();
+		}
 
-				int i = 0;
-				while (true)
-				{
-					if (zooCmd_IsInited())
-					{
-						_progressBar->setValue(100);
-						_progressBar->setVisible(false);
-						break;
-					}
-
-					QThread::msleep(10);
-					_progressBar->setValue(i++);
-					if (i > 100)
-						i = 0;
-				}
-			}
-
-			const char* szMessage = zooCmd_ErrorMessage();
-			if (0 != strcmp(szMessage, ""))
-				QMessageBox::warning(this, QString::fromLocal8Bit("少御"), QString::fromLocal8Bit(szMessage));
-			_cmdlineEdit->setEnabled(true);
-		});
-	}
+		_cmdlineEdit->setEnabled(true);
+	});
 }

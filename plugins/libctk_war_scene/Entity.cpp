@@ -4,6 +4,7 @@
 Entity::Entity()
 	: _id(-1)
 	, _dof(nullptr)
+	, _hasScript(false)
 	, _script(new LuaScript)
 {
 }
@@ -26,12 +27,13 @@ const ctkProperties& Entity::getProps() const
 
 void Entity::init()
 {
-	_script->executeScriptFile(_props.value("script").toString().toStdString());
-	_script->executeGlobalFunction("Init");
+	_hasScript = _script->executeScriptFile(_props.value("script").toString().toStdString());
+	if (_hasScript)
+		_script->executeGlobalFunction("Init");
 }
 
 void Entity::update(float dt)
 {
-	_script->pushFloat(dt);
-	_script->executeGlobalFunction("Update");
+	if (_hasScript)
+		_script->executeGlobalFunction("Update");
 }

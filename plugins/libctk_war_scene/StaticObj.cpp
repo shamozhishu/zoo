@@ -1,5 +1,6 @@
 #include "StaticObj.h"
 #include <zoo/DatabaseCSV.h>
+#include <zooCmd/zooCmd.h>
 
 StaticObj::StaticObj()
 {
@@ -8,6 +9,13 @@ StaticObj::StaticObj()
 
 StaticObj::~StaticObj()
 {
+}
+
+void StaticObj::init()
+{
+	Entity::init();
+	string model_file = _props.value("model_file").toString().toStdString();
+	zooCmd_Send("war --staticobj %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE StaticObj::getType() const

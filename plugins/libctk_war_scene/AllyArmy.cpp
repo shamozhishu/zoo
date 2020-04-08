@@ -1,5 +1,6 @@
 #include "AllyArmy.h"
 #include <zoo/DatabaseCSV.h>
+#include <zooCmd/zooCmd.h>
 
 AllyArmy::AllyArmy()
 {
@@ -8,6 +9,13 @@ AllyArmy::AllyArmy()
 
 AllyArmy::~AllyArmy()
 {
+}
+
+void AllyArmy::init()
+{
+	Entity::init();
+	string model_file = _props.value("model_file").toString().toStdString();
+	zooCmd_Send("war --allyarmy %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE AllyArmy::getType() const

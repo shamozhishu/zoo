@@ -17,11 +17,12 @@ xcopy /y %source_path%\src\zooCmd_osg\*.* %target_path%\src\zooCmd_osg\*.*
 
 echo ----------------------------------------plugins catalog
 
+xcopy /y %source_path%\plugins\zooCmd_osg-war\*.* %target_path%\plugins\zooCmd_osg-war\*.*
 xcopy /y %source_path%\plugins\zooCmd_osg-world\*.* %target_path%\plugins\zooCmd_osg-world\*.*
 xcopy /y %source_path%\plugins\libqt5_pluginfw_admin\*.* %target_path%\plugins\libqt5_pluginfw_admin\*.*
+xcopy /y %source_path%\plugins\libctk_war_scene\*.* %target_path%\plugins\libctk_war_scene\*.*
 xcopy /y %source_path%\plugins\libctk_zoocmd_ui\*.* %target_path%\plugins\libctk_zoocmd_ui\*.*
 xcopy /y /s /e %source_path%\plugins\libctk_zoocmd_ui\Resources\*.* %target_path%\plugins\libctk_zoocmd_ui\Resources\
-xcopy /y %source_path%\plugins\libctk_war_scene\*.* %target_path%\plugins\libctk_war_scene\*.*
 
 
 echo ----------------------------------------applications catalog
@@ -36,7 +37,8 @@ xcopy /y /s /e %source_path%\tools\*.* %target_path%\tools\
 echo ----------------------------------------data catalog
 
 xcopy /y %source_path%\data\*.* %target_path%\data\*.*
-xcopy /y /s /e %source_path%\data\war_scene\*.* %target_path%\data\war_scene\
+xcopy /y /s /e %source_path%\data\scripts\*.* %target_path%\data\scripts\
+xcopy /y /s /e %source_path%\data\tables\*.* %target_path%\data\tables\
 
 echo ----------------------------------------
 

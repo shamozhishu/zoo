@@ -71,9 +71,16 @@ inline void Log::print(ELogLevel level, const char* szFormat, ...)
 	{
 		if (s_pLogger->_hasConsole)
 		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), level | 8);
+			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+			switch (level)
+			{
+			case ELL_INFORMATION: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
+			case ELL_WARNING: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
+			}
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
 			printf("%s\n", szArgMessage);
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), ELL_DEBUG | 8);
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 		}
 
 		if (s_pLogger->_fout)
@@ -95,9 +102,16 @@ inline void Log::wprint(ELogLevel level, const wchar_t* szFormat, ...)
 	{
 		if (s_pLogger->_hasConsole)
 		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), level | 8);
+			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+			switch (level)
+			{
+			case ELL_INFORMATION: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
+			case ELL_WARNING: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
+			}
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
 			wprintf(L"%s\n", szArgMessage);
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), ELL_DEBUG | 8);
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 		}
 
 		if (s_pLogger->_fout)

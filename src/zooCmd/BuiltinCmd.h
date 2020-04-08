@@ -10,7 +10,7 @@ class _zooCmdExport BuiltinCmd : public Cmd
 public:
 	bool init();
 	void parseCmdArg(CmdParser& cmdarg, UserData& retValue);
-	void helpInformation(AppUsage* usage);
+	void helpInformation(CmdUsage* usage);
 
 private zoo_slots:
 	void endMainLoop(const UserData& userdata);

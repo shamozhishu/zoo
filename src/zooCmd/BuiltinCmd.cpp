@@ -81,7 +81,7 @@ void BuiltinCmd::parseCmdArg(CmdParser& cmdarg, UserData& retValue)
 	} while (0);
 }
 
-void BuiltinCmd::helpInformation(AppUsage* usage)
+void BuiltinCmd::helpInformation(CmdUsage* usage)
 {
 	usage->setDescription("Built-in commands: encapsulation of many basic functions.");
 	usage->addCommandLineOption("-exit", "End main loop.");

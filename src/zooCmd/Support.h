@@ -17,10 +17,10 @@ using namespace zoo;
 namespace zooCmd {
 
 class Cmd;
-class BuiltinCmd;
-class CmdManager;
-class AppUsage;
+class CmdUsage;
 class CmdParser;
+class CmdManager;
+class BuiltinCmd;
 class InputAdapter;
 template class _zooCmdExport ReflexFactory<>;
 _zooCmdExport extern Interlock g_interlock;

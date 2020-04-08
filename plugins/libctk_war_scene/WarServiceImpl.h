@@ -10,6 +10,6 @@ class WarServiceImpl : public QObject, public WarService
 public:
 	WarServiceImpl();
 	~WarServiceImpl();
-	bool enterScene(int sceneId) Q_DECL_OVERRIDE;
-	void exitScene(int sceneId) Q_DECL_OVERRIDE;
+	bool openScene(int sceneId) Q_DECL_OVERRIDE;
+	void closeScene(int sceneId) Q_DECL_OVERRIDE;
 };

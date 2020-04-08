@@ -5,13 +5,13 @@
 #include "Scene.h"
 
 using namespace zoo;
-WarManager::WarManager(string resPath)
+WarManager::WarManager(string resPath, string mainTable)
 	: _resPath(resPath)
 	, _startup(false)
 	, _curScene(nullptr)
 {
 	new zoo::DatabaseCSV();
-	zoo::DatabaseCSV::getSingleton().init(_resPath);
+	zoo::DatabaseCSV::getSingleton().init(_resPath, mainTable);
 	connect(&_tickTimer, SIGNAL(timeout()), this, SLOT(tick()));
 	_tickTimer.start(20);
 }
@@ -43,7 +43,7 @@ bool WarManager::enterScene(int sceneId)
 		return true;
 	}
 
-	TableCSV* pTable = DatabaseCSV::getSingleton().getTable(_resPath + "scene.csv");
+	TableCSV* pTable = DatabaseCSV::getSingleton().getMainTable();
 	if (!pTable)
 		return false;
 

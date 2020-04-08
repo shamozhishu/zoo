@@ -7,9 +7,9 @@ namespace zoo {
 enum ELogLevel
 {
 	ELL_DEBUG = 0,
-	ELL_INFORMATION = 2,
-	ELL_WARNING = 6,
-	ELL_ERROR = 4
+	ELL_INFORMATION,
+	ELL_WARNING,
+	ELL_ERROR
 };
 
 class _zooExport Log

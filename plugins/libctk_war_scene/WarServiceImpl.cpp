@@ -9,12 +9,12 @@ WarServiceImpl::~WarServiceImpl()
 {
 }
 
-bool WarServiceImpl::enterScene(int sceneId)
+bool WarServiceImpl::openScene(int sceneId)
 {
 	return WarManager::getSingleton().enterScene(sceneId);
 }
 
-void WarServiceImpl::exitScene(int sceneId)
+void WarServiceImpl::closeScene(int sceneId)
 {
 	WarManager::getSingleton().exitScene(sceneId);
 }

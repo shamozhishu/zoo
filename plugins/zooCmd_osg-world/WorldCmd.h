@@ -12,7 +12,7 @@ public:
 	~WorldCmd();
 	bool init();
 	void parseCmdArg(CmdParser& cmdarg, zoo::UserData& retValue);
-	void helpInformation(AppUsage* usage);
+	void helpInformation(CmdUsage* usage);
 	osgViewer::View* getView() const;
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;

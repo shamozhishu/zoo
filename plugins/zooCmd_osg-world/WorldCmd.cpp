@@ -83,9 +83,9 @@ void WorldCmd::parseCmdArg(CmdParser& cmdarg, UserData& retValue)
 	} while (0);
 }
 
-void WorldCmd::helpInformation(AppUsage* usage)
+void WorldCmd::helpInformation(CmdUsage* usage)
 {
-	usage->setDescription("Word command: encapsulation of osgEarth.");
+	usage->setDescription("world command: encapsulation of osgEarth.");
 	usage->addCommandLineOption("--lla <show:bool>", "Display longitude, latitude and altitude information.");
 	usage->addCommandLineOption("--fly <longitude:float> <latitude:float> <distance:float>", "Set viewpoint to specified longitude, latitude and distance.");
 	usage->addCommandLineOption("--dist", "Ground measurement distance.");

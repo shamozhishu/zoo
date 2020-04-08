@@ -29,6 +29,7 @@ public:
 	virtual void deserialize(TableCSV* pTable) = 0;
 
 protected:
+	bool _hasScript;
 	LuaScript* _script;
 	ctkProperties _props;
 };

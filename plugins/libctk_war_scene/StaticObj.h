@@ -8,6 +8,7 @@ class StaticObj : public Entity
 	StaticObj();
 	~StaticObj();
 public:
+	void init();
 	ENTITY_TYPE getType() const;
 	void serialize(stringstream& ss);
 	void deserialize(TableCSV* pTable);

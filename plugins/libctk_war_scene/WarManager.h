@@ -12,7 +12,7 @@ class WarManager : public QObject, public zoo::Singleton<WarManager>
 {
 	Q_OBJECT
 public:
-	WarManager(string resPath);
+	WarManager(string resPath, string mainTable);
 	~WarManager();
 	const string& getResPath() const;
 	bool enterScene(int sceneId);

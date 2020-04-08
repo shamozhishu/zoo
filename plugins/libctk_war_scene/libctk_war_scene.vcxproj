@@ -141,6 +141,9 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <QtRcc Include="libctk_war_scene.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\zooCmd\zooCmd.vcxproj">
+      <Project>{e2463d34-fde1-48a5-9345-10f28b9696eb}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
       <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
     </ProjectReference>

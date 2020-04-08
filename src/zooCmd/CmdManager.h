@@ -18,7 +18,7 @@ public:
 	void block(bool isBlock);
 	bool addCmd(const string& cmd, Cmd* pCmd);
 	void removeCmd(const string& cmd);
-	bool sendCmd(const string& cmdline);
+	bool sendCmd(vector<string> arglist);
 	Cmd* findCmd(const char* cmd);
 	InputAdapter* getInputAdapter() const;
 	static bool setReturnValue(const string& key, const Any& retval);

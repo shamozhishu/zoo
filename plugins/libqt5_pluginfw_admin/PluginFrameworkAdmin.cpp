@@ -148,11 +148,13 @@ PluginFrameworkAdmin::PluginFrameworkAdmin()
 	: d_ptr(new PluginFrameworkAdminPrivate())
 {
 	ctkProperties fwProps;
-	QSettings settings(QCoreApplication::applicationDirPath() + "/cktpluginfw_props.ini", QSettings::IniFormat);
-	QStringList keys = settings.allKeys();
+	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+	settings.beginGroup("CTK_PLUGIN_FRAMEWORK_PROPS");
+	QStringList keys = settings.childKeys();
 	int len = keys.size();
 	for (int i = 0; i < len; ++i)
 		fwProps.insert(keys[i], settings.value(keys[i]));
+	settings.endGroup();
 
 	Q_D(PluginFrameworkAdmin);
 	d->_fwFactory = new ctkPluginFrameworkFactory(fwProps);

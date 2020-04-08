@@ -21,6 +21,9 @@ private Q_SLOTS:
 	void onSetup();
 
 private:
+	void createZooCmdWidget(QStringList cmdset, QString datadir);
+
+private:
 	int _idx;
 	Ui::ZooCmdUIClass ui;
 	QString _inputAdaName;

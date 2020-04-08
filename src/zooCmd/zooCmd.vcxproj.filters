@@ -11,9 +11,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AppUsage.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="BuiltinCmd.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -35,11 +32,11 @@
     <ClInclude Include="InputAdapter.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="CmdUsage.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppUsage.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="BuiltinCmd.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="zooCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdUsage.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

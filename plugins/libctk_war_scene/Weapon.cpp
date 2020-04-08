@@ -1,5 +1,6 @@
 #include "Weapon.h"
 #include <zoo/DatabaseCSV.h>
+#include <zooCmd/zooCmd.h>
 
 Weapon::Weapon()
 {
@@ -8,6 +9,13 @@ Weapon::Weapon()
 
 Weapon::~Weapon()
 {
+}
+
+void Weapon::init()
+{
+	Entity::init();
+	string model_file = _props.value("model_file").toString().toStdString();
+	zooCmd_Send("war --weapon %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE Weapon::getType() const

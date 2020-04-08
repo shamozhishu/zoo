@@ -138,11 +138,20 @@ bool zooCmd_IsInited()
 	return s_isInited;
 }
 
-bool zooCmd_Send(const char* cmdline)
+bool zooCmd_Send(const char* cmdlineFormat, ...)
 {
-	if (s_isInited)
-		return CmdManager::getSingleton().sendCmd(cmdline);
-	return false;
+	if (!s_isInited)
+		return false;
+
+	static char szbuf[2048] = { 0 };
+	va_list args;
+	va_start(args, cmdlineFormat);
+	vsprintf_s(szbuf, sizeof(szbuf), cmdlineFormat, args);
+	va_end(args);
+
+	vector<string> arglist;
+	stringtok(arglist, szbuf);
+	return CmdManager::getSingleton().sendCmd(arglist);
 }
 
 int zooCmd_Run()

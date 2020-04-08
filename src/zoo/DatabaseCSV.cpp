@@ -99,6 +99,7 @@ float TableCSV::item2float(int rowIdx, const char* colIdx)
 DatabaseCSV::DatabaseCSV()
 	: _buffer(NULL)
 	, _canInit(true)
+	, _mainTable(nullptr)
 	, _curCharOffset(0)
 	, _maxBufferSize(BUFFER_MAX_SIZE * BUFFER_MAX_SIZE * 3)
 	, _startValidLine(2)
@@ -110,8 +111,9 @@ DatabaseCSV::~DatabaseCSV()
 	clear();
 }
 
-bool DatabaseCSV::init(string& csvTablePath)
+bool DatabaseCSV::init(string& csvTablePath, const string& mainTable /*= ""*/)
 {
+	_mainTable = nullptr;
 	if (_canInit)
 	{
 		clear();
@@ -120,6 +122,7 @@ bool DatabaseCSV::init(string& csvTablePath)
 			csvTablePath += "\\";
 
 		vector<string> allFilePath;
+		csvTablePath = strReplaceAll(csvTablePath, "/", "\\");
 		findFileDir(allFilePath, csvTablePath, "csv");
 
 		string tableDataBuff;
@@ -131,6 +134,19 @@ bool DatabaseCSV::init(string& csvTablePath)
 			loadTable(allFilePath[i], tableDataBuff);
 
 		_canInit = false;
+	}
+
+	string tablename;
+	auto it = _tables.begin();
+	for (; it != _tables.end(); ++it)
+	{
+		tablename = it->first;
+		tablename = tablename.substr(tablename.find_last_of('\\') + 1);
+		if (zoo::compareNoCase(mainTable, tablename))
+		{
+			_mainTable = it->second;
+			break;
+		}
 	}
 
 	return true;
@@ -270,6 +286,11 @@ TableCSV* DatabaseCSV::getTable(const string& tableName)
 	if (findVal != _tables.end())
 		return findVal->second;
 	return NULL;
+}
+
+TableCSV* DatabaseCSV::getMainTable() const
+{
+	return _mainTable;
 }
 
 void DatabaseCSV::lazyInit()
