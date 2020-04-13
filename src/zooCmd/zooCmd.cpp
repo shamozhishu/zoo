@@ -13,7 +13,6 @@ namespace zooCmd
 {
 	std::string ansi_data_dir;
 	std::string utf8_data_dir;
-	std::map<int, int> g_keyboardMap;
 	extern InputAdapter* g_inputAdapter;
 	extern std::thread::id g_renderThreadID;
 }
@@ -39,14 +38,14 @@ static bool s_AdaRegister(const char* input_adapter)
 	DllGetTypeName getTypeName = (DllGetTypeName)lib->getSymbol("dllGetTypeName");
 	if (!getTypeName)
 	{
-		Log::print(ELL_ERROR, "%s: Input adapter is not registered!", input_adapter);
+		zoo_error("%s: Input adapter is not registered!", input_adapter);
 		return false;
 	}
 
 	g_inputAdapter = ReflexFactory<>::getInstance().create<InputAdapter>(getTypeName());
 	if (!g_inputAdapter)
 	{
-		Log::print(ELL_ERROR, "Input adapter %s does not exist!", getTypeName());
+		zoo_error("Input adapter %s does not exist!", getTypeName());
 		return false;
 	}
 
@@ -70,7 +69,7 @@ static bool s_CmdRegister(const char* cmd, const char* input_adapter)
 	DllGetTypeName getTypeName = (DllGetTypeName)lib->getSymbol("dllGetTypeName");
 	if (!getTypeName)
 	{
-		Log::print(ELL_ERROR, "%s: Plugin cannot be registered!", cmd);
+		zoo_error("%s: Plugin is not registered!", cmd);
 		return false;
 	}
 
@@ -122,7 +121,7 @@ bool zooCmd_InitA(int cmdcount, const char* cmdset[], const char* input_adapter,
 	}
 
 	pCmdMgr->initBuiltinCmd();
-	pCmdMgr->cancelRetValueBlock();
+	CmdManager::cancelRetValueBlock();
 	pCmdMgr->start();
 	s_isInited = true;
 	return true;
@@ -162,12 +161,18 @@ int zooCmd_Run()
 	return g_inputAdapter->run();
 }
 
+void zooCmd_Tick()
+{
+	if (s_isInited)
+		CmdManager::getSingleton().update();
+}
+
 void zooCmd_Destroy()
 {
 	s_isInited = false;
 	g_renderThreadID = std::thread::id();
 	delete CmdManager::getSingletonPtr();
-	g_keyboardMap.clear();
+	InputAdapter::clearKeyboardMap();
 }
 
 void zooCmd_Render()
@@ -301,5 +306,5 @@ const char* zooCmd_ErrorMessage()
 
 void zooCmd_RemapKeyboard(zooCmd_Key key, int remapkey)
 {
-	g_keyboardMap[remapkey] = key;
+	InputAdapter::remapKeyboard(key, remapkey);
 }

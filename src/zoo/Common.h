@@ -29,8 +29,17 @@
 #	endif
 #endif
 
-#define zoo_signals public
-#define zoo_slots
+#if defined(_DEBUG) || defined(ZOO_ENABLE_LOG_PRINT)
+#define zoo_debug(format, ...)       zoo::Log::print(zoo::ELL_DEBUG, format, ##__VA_ARGS__)
+#define zoo_information(format, ...) zoo::Log::print(zoo::ELL_INFORMATION, format, ##__VA_ARGS__)
+#define zoo_warning(format, ...)     zoo::Log::print(zoo::ELL_WARNING, "[%d][%s][%s]:"##format, __LINE__, __FUNCTION__, __FILE__, ##__VA_ARGS__)
+#define zoo_error(format, ...)       zoo::Log::print(zoo::ELL_ERROR, "[%d][%s][%s]:"##format, __LINE__, __FUNCTION__, __FILE__, ##__VA_ARGS__)
+#else
+#define zoo_debug(format, ...)
+#define zoo_information(format, ...)
+#define zoo_warning(format, ...)
+#define zoo_error(format, ...)
+#endif
 
 #define REFLEX_DECLARE(CLASS_TYPE) private: static zoo::Reflex<CLASS_TYPE> _dynReflex;
 #define REFLEX_IMPLEMENT(CLASS_TYPE) zoo::Reflex<CLASS_TYPE> CLASS_TYPE::_dynReflex

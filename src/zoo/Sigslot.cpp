@@ -38,7 +38,7 @@ void SignalTrigger::connect(const Signal& sig, SlotFunction::SLOT_FUNCTION func)
 		SlotFunction* item = dynamic_cast<SlotFunction*>(*it);
 		if (NULL != item && func == item->_function)
 		{
-			Log::print(ELL_WARNING, "The slot don't support same function in same signal id %d", sig.getSignalID());
+			zoo_warning("The slot don't support same function in same signal id %d", sig.getSignalID());
 			return;
 		}
 	}

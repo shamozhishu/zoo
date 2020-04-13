@@ -43,9 +43,6 @@
     <ClInclude Include="Weapon.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WarService.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="LuaScript.h">
       <Filter>src</Filter>
     </ClInclude>

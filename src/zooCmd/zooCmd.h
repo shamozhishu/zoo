@@ -94,6 +94,7 @@ extern "C" {
 	_zooCmdExport bool zooCmd_IsInited();
 	_zooCmdExport bool zooCmd_Send(const char* cmdlineFormat, ...);
 	_zooCmdExport int  zooCmd_Run();
+	_zooCmdExport void zooCmd_Tick();
 	_zooCmdExport void zooCmd_Destroy();
 	_zooCmdExport void zooCmd_Render();
 	_zooCmdExport void zooCmd_Resize(int windowWidth, int windowHeight, float windowScale);

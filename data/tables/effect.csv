@@ -1,6 +1,0 @@
-特效编号,描述,模型文件,脚本
-id,description,model_file,script
-1,尾焰,particleEffects/tail_flame.osg,
-2,火焰,particleEffects/tank_fire.osg,
-3,爆炸,particleEffects/explosion_large.osg,
-4,烟雾,particleEffects/tank_dust.osg,

@@ -41,42 +41,42 @@ bool WorldCmd::init()
 	return true;
 }
 
-void WorldCmd::parseCmdArg(CmdParser& cmdarg, UserData& retValue)
+void WorldCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 {
 	do
 	{
 		bool show;
 		if (cmdarg.read("--lla", show))
 		{
-			_subCommands.userData().setData(show);
-			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::LonLatAltitude);
+			subCmd.userData().setData(show);
+			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onLonLatAltitude);
 			break;
 		}
 
 		float lon, lat, dist;
 		if (cmdarg.read("--fly", lon, lat, dist))
 		{
-			_subCommands.userData().setData("lon", lon);
-			_subCommands.userData().setData("lat", lat);
-			_subCommands.userData().setData("dist", dist);
-			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::flyTo);
+			subCmd.userData().setData("lon", lon);
+			subCmd.userData().setData("lat", lat);
+			subCmd.userData().setData("dist", dist);
+			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onFlyTo);
 			break;
 		}
 
 		if (cmdarg.read("--dist"))
 		{
-			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::measureDistance);
+			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onMeasureDistance);
 			break;
 		}
 
 		string model;  float height, scale; bool repeat;
 		if (cmdarg.read("--locate", model, height, scale, repeat))
 		{
-			_subCommands.userData().setData("model", model);
-			_subCommands.userData().setData("height", height);
-			_subCommands.userData().setData("scale", scale);
-			_subCommands.userData().setData("repeat", repeat);
-			SignalTrigger::connect<WorldCmd>(_subCommands, this, &WorldCmd::locateModel);
+			subCmd.userData().setData("model", model);
+			subCmd.userData().setData("height", height);
+			subCmd.userData().setData("scale", scale);
+			subCmd.userData().setData("repeat", repeat);
+			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onLocateModel);
 			break;
 		}
 
@@ -107,7 +107,7 @@ osgEarth::Util::EarthManipulator* WorldCmd::getEarthManipulator() const
 	return _manipulator.get();
 }
 
-void WorldCmd::flyTo(const UserData& userdata)
+void WorldCmd::onFlyTo(const UserData& userdata)
 {
 	Viewpoint vp = _manipulator->getViewpoint();
 	vp.focalPoint().mutable_value().x() = any_cast<float>(userdata.getData("lon"));
@@ -116,7 +116,7 @@ void WorldCmd::flyTo(const UserData& userdata)
 	_manipulator->setViewpoint(vp, 2);
 }
 
-void WorldCmd::LonLatAltitude(const UserData& userdata)
+void WorldCmd::onLonLatAltitude(const UserData& userdata)
 {
 	bool show = any_cast<bool>(userdata.getData());
 	if (show)
@@ -139,7 +139,7 @@ void WorldCmd::LonLatAltitude(const UserData& userdata)
 	}
 }
 
-void WorldCmd::measureDistance(const UserData& userdata)
+void WorldCmd::onMeasureDistance(const UserData& userdata)
 {
 	osg::ref_ptr<MeasureDistanceEventHandler> measureDistanceHandler = new MeasureDistanceEventHandler();
 	_view->addEventHandler(measureDistanceHandler.get());
@@ -148,7 +148,7 @@ void WorldCmd::measureDistance(const UserData& userdata)
 	_view->removeEventHandler(measureDistanceHandler.get());
 }
 
-void WorldCmd::locateModel(const UserData& userdata)
+void WorldCmd::onLocateModel(const UserData& userdata)
 {
 	string model = any_cast<string>(userdata.getData("model"));
 	float height = any_cast<float>(userdata.getData("height"));

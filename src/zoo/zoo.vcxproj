@@ -16,7 +16,6 @@
     <ClInclude Include="Block.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="DatabaseCSV.h" />
-    <ClInclude Include="DoF.h" />
     <ClInclude Include="DynLib.h" />
     <ClInclude Include="DynLibManager.h" />
     <ClInclude Include="Interlock.h" />
@@ -31,7 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DatabaseCSV.cpp" />
-    <ClCompile Include="DoF.cpp" />
     <ClCompile Include="DynLib.cpp" />
     <ClCompile Include="DynLibManager.cpp" />
     <ClCompile Include="Log.cpp" />

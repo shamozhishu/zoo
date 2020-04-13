@@ -9,12 +9,12 @@ class _zooCmdExport BuiltinCmd : public Cmd
 	REFLEX_DECLARE(BuiltinCmd)
 public:
 	bool init();
-	void parseCmdArg(CmdParser& cmdarg, UserData& retValue);
+	void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue);
 	void helpInformation(CmdUsage* usage);
 
-private zoo_slots:
-	void endMainLoop(const UserData& userdata);
-	void testReturnValue(const UserData& userdata);
+private:
+	void onEndMainLoop(const UserData& userdata);
+	void onTestReturnValue(const UserData& userdata);
 };
 
 }

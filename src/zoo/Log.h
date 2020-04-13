@@ -16,7 +16,7 @@ class _zooExport Log
 {
 public:
 	static void print(ELogLevel level, const char* szFormat, ...);
-	static void wprint(ELogLevel level, const wchar_t* szFormat, ...);
+	static void setLevel(ELogLevel level);
 };
 
 }

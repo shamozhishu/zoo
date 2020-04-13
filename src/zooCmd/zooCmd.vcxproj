@@ -25,6 +25,7 @@
     <ClCompile Include="BuiltinCmd.cpp" />
     <ClCompile Include="CmdManager.cpp" />
     <ClCompile Include="CmdParser.cpp" />
+    <ClCompile Include="InputAdapter.cpp" />
     <ClCompile Include="zooCmd.cpp" />
   </ItemGroup>
   <ItemGroup>

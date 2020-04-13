@@ -151,6 +151,7 @@ void ZooCmdWidget::resizeGL(int w, int h)
 
 void ZooCmdWidget::paintGL()
 {
+	zooCmd_Tick();
 	zooCmd_Render();
 }
 

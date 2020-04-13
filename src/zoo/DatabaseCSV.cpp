@@ -158,7 +158,7 @@ bool DatabaseCSV::loadTable(const string& csvTablePath, string& tableDataBuff)
 	fileName = strReplaceAll(fileName, "/", "\\");
 	if (csvTablePath.rfind(".csv") == string::npos)
 	{
-		Log::wprint(ELL_ERROR, L"CSV表[%s]文件格式错误", a2w_(fileName).c_str());
+		zoo_error("CSV表[%s]文件格式错误", fileName.c_str());
 		return false;
 	}
 
@@ -167,7 +167,7 @@ bool DatabaseCSV::loadTable(const string& csvTablePath, string& tableDataBuff)
 	ifstream fin(fileName);
 	if (!fin)
 	{
-		Log::wprint(ELL_ERROR, L"CSV表[%s]打开失败", a2w_(fileName).c_str());
+		zoo_error("CSV表[%s]打开失败", fileName.c_str());
 		return false;
 	}
 
@@ -177,7 +177,7 @@ bool DatabaseCSV::loadTable(const string& csvTablePath, string& tableDataBuff)
 	fin.seekg(0, std::ios_base::beg);
 	if (sizeToRead == 0)
 	{
-		Log::wprint(ELL_ERROR, L"CSV表[%s]为空", a2w_(fileName).c_str());
+		zoo_error("CSV表[%s]为空", fileName.c_str());
 		return false;
 	}
 
@@ -191,7 +191,7 @@ bool DatabaseCSV::loadTable(const string& csvTablePath, string& tableDataBuff)
 	sizeToRead = (int)fin.gcount();
 	if (sizeToRead == 0)
 	{
-		Log::wprint(ELL_ERROR, L"CSV表[%s]读取失败", a2w_(fileName).c_str());
+		zoo_error("CSV表[%s]读取失败", fileName.c_str());
 		return false;
 	}
 

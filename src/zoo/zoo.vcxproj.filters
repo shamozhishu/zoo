@@ -52,9 +52,6 @@
     <ClInclude Include="Timer.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DoF.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="DatabaseCSV.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -79,9 +76,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="DoF.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="DatabaseCSV.cpp">

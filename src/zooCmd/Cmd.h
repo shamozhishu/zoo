@@ -12,11 +12,9 @@ class _zooCmdExport Cmd : public Type
 {
 public:
 	virtual bool init() { return true; }
-	virtual void parseCmdArg(CmdParser& cmdarg, UserData& retValue) = 0;
+	virtual void update() {}
+	virtual void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue) = 0;
 	virtual void helpInformation(CmdUsage* usage) = 0;
-
-zoo_signals:
-	Signal _subCommands;
 };
 
 }

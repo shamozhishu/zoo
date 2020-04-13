@@ -10,7 +10,9 @@
 
 using namespace zoo;
 
-Scene::Scene()
+Scene::Scene(int id, string description)
+	: _id(id)
+	, _desc(description)
 {
 }
 
@@ -23,11 +25,53 @@ Scene::~Scene()
 
 void Scene::visit(float dt)
 {
-	std::map<long long, Entity*> ents = _entities;
-	auto it = ents.begin();
-	auto itEnd = ents.end();
-	for (; it != itEnd; ++it)
-		it->second->update(dt);
+	std::list<Effect*> effects = _effects;
+	{
+		auto it = effects.begin();
+		auto itEnd = effects.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}
+
+	std::list<Weapon*> weapons = _weapons;
+	{
+		auto it = weapons.begin();
+		auto itEnd = weapons.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}
+
+	std::list<RedArmy*> redArmies = _redArmies;
+	{
+		auto it = redArmies.begin();
+		auto itEnd = redArmies.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}
+
+	std::list<BlueArmy*> blueArmies = _blueArmies;
+	{
+		auto it = blueArmies.begin();
+		auto itEnd = blueArmies.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}
+
+	std::list<AllyArmy*> allyArmies = _allyArmies;
+	{
+		auto it = allyArmies.begin();
+		auto itEnd = allyArmies.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}
+
+	std::list<StaticObj*> staticObjs = _staticObjs;
+	{
+		auto it = staticObjs.begin();
+		auto itEnd = staticObjs.end();
+		for (; it != itEnd; ++it)
+			(*it)->update(dt);
+	}	
 }
 
 Effect* Scene::createEffect(int id, TableCSV* pTable)
@@ -41,6 +85,7 @@ Effect* Scene::createEffect(int id, TableCSV* pTable)
 
 		pEffect->_id = id;
 		addEntity(pEffect);
+		_effects.push_back(pEffect);
 	}
 
 	if (pTable)
@@ -71,6 +116,7 @@ Weapon* Scene::createWeapon(int id, TableCSV* pTable)
 
 		pWeapon->_id = id;
 		addEntity(pWeapon);
+		_weapons.push_back(pWeapon);
 	}
 
 	if (pTable)
@@ -101,6 +147,7 @@ RedArmy* Scene::createRedArmy(int id, TableCSV* pTable)
 
 		pRedArmy->_id = id;
 		addEntity(pRedArmy);
+		_redArmies.push_back(pRedArmy);
 	}
 
 	if (pTable)
@@ -131,6 +178,7 @@ BlueArmy* Scene::createBlueArmy(int id, TableCSV* pTable)
 
 		pBlueArmy->_id = id;
 		addEntity(pBlueArmy);
+		_blueArmies.push_back(pBlueArmy);
 	}
 
 	if (pTable)
@@ -161,6 +209,7 @@ AllyArmy* Scene::createAllyArmy(int id, TableCSV* pTable)
 
 		pAllyArmy->_id = id;
 		addEntity(pAllyArmy);
+		_allyArmies.push_back(pAllyArmy);
 	}
 
 	if (pTable)
@@ -191,6 +240,7 @@ StaticObj* Scene::createStaticObj(int id, TableCSV* pTable)
 
 		pStaticObj->_id = id;
 		addEntity(pStaticObj);
+		_staticObjs.push_back(pStaticObj);
 	}
 
 	if (pTable)
@@ -216,9 +266,7 @@ void Scene::addEntity(Entity* ent)
 	int type = ent->getType();
 	long long i64ID = type;
 	i64ID = i64ID << 32 | id;
-	std::map<long long, Entity*>::iterator it = _entities.find(i64ID);
-	if (it == _entities.end())
-		_entities[i64ID] = ent;
+	_entities[i64ID] = ent;
 }
 
 void Scene::removeEntity(int id, int type)
@@ -228,8 +276,55 @@ void Scene::removeEntity(int id, int type)
 	std::map<long long, Entity*>::iterator it = _entities.find(i64ID);
 	if (it != _entities.end())
 	{
-		EntitiesCache::getIns().putIn(it->second);
+		Entity* pEnt = it->second;
+		EntitiesCache::getIns().putIn(pEnt);
 		_entities.erase(it);
+
+		switch (type)
+		{
+		case ENTITY_EFFECT:
+		{
+			auto it = std::find(_effects.begin(), _effects.end(), pEnt);
+			if (it != _effects.end())
+				_effects.erase(it);
+		}
+		break;
+		case ENTITY_WEAPON:
+		{
+			auto it = std::find(_weapons.begin(), _weapons.end(), pEnt);
+			if (it != _weapons.end())
+				_weapons.erase(it);
+		}
+		break;
+		case ENTITY_REDARMY:
+		{
+			auto it = std::find(_redArmies.begin(), _redArmies.end(), pEnt);
+			if (it != _redArmies.end())
+				_redArmies.erase(it);
+		}
+		break;
+		case ENTITY_BLUEARMY:
+		{
+			auto it = std::find(_blueArmies.begin(), _blueArmies.end(), pEnt);
+			if (it != _blueArmies.end())
+				_blueArmies.erase(it);
+		}
+		break;
+		case ENTITY_ALLYARMY:
+		{
+			auto it = std::find(_allyArmies.begin(), _allyArmies.end(), pEnt);
+			if (it != _allyArmies.end())
+				_allyArmies.erase(it);
+		}
+		break;
+		case ENTITY_STATICOBJ:
+		{
+			auto it = std::find(_staticObjs.begin(), _staticObjs.end(), pEnt);
+			if (it != _staticObjs.end())
+				_staticObjs.erase(it);
+		}
+		break;
+		}
 	}
 }
 

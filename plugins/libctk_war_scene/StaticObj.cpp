@@ -1,10 +1,10 @@
 #include "StaticObj.h"
 #include <zoo/DatabaseCSV.h>
 #include <zooCmd/zooCmd.h>
+#include <zoo/Utils.h>
 
 StaticObj::StaticObj()
 {
-	_dof = new zoo::DoF(_id, ENTITY_STATICOBJ);
 }
 
 StaticObj::~StaticObj()
@@ -25,12 +25,14 @@ ENTITY_TYPE StaticObj::getType() const
 
 void StaticObj::serialize(stringstream& ss)
 {
-	ss << _id << "," << _props.value("description").toString().toStdString()
+	ss << _id << "," << utf8ToAnsi(_props.value("description").toString().toStdString())
+		<< "," << _props.value("script").toString().toStdString()
 		<< "," << _props.value("model_file").toString().toStdString() << std::endl;
 }
 
 void StaticObj::deserialize(TableCSV* pTable)
 {
 	_props["description"] = QString::fromLocal8Bit(pTable->item2str(_id, "description"));
+	_props["script"] = QString::fromLocal8Bit(pTable->item2str(_id, "script"));
 	_props["model_file"] = QString::fromLocal8Bit(pTable->item2str(_id, "model_file"));
 }

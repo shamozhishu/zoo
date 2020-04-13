@@ -34,11 +34,10 @@ echo ----------------------------------------tools catalog
 
 xcopy /y /s /e %source_path%\tools\*.* %target_path%\tools\
 
-echo ----------------------------------------data catalog
+echo ----------------------------------------dependency catalog
 
-xcopy /y %source_path%\data\*.* %target_path%\data\*.*
-xcopy /y /s /e %source_path%\data\scripts\*.* %target_path%\data\scripts\
-xcopy /y /s /e %source_path%\data\tables\*.* %target_path%\data\tables\
+xcopy /y %source_path%\dependency\SharedObject\*.* %target_path%\dependency\SharedObject\*.*
+xcopy /y /s /e %source_path%\dependency\ctk_service\*.* %target_path%\dependency\ctk_service\
 
 echo ----------------------------------------
 

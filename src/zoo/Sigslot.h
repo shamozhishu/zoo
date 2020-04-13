@@ -89,7 +89,7 @@ void SignalTrigger::connect(const Signal& sig, T* caller, typename SlotMethod<T>
 		SlotMethod<T>* item = dynamic_cast<SlotMethod<T>*>(*it);
 		if (NULL != item && caller == item->_caller && meth == item->_method)
 		{
-			Log::print(ELL_WARNING, "The slot don't support same method in same signal id %d", sig.getSignalID());
+			zoo_warning("The slot don't support same method in same signal id %d", sig.getSignalID());
 			return;
 		}
 	}

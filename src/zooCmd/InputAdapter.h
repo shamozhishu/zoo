@@ -1,8 +1,10 @@
 #pragma once
 
+#include <zooCmd/Support.h>
+
 namespace zooCmd {
 
-class InputAdapter
+class _zooCmdExport InputAdapter
 {
 public:
 	virtual ~InputAdapter() {};
@@ -20,6 +22,14 @@ public:
 	virtual void mousePress(int x, int y, unsigned int modkey, unsigned int button) = 0;
 	virtual void mouseRelease(int x, int y, unsigned int modkey, unsigned int button) = 0;
 	virtual void mouseDoubleClick(int x, int y, unsigned int modkey, unsigned int button) = 0;
+
+public:
+	static void remapKeyboard(int zoocmdKey, int remapKey);
+	static void clearKeyboardMap();
+
+protected:
+	virtual int remap(int key) = 0;
+	static std::map<int, int> _keyboardMap;
 };
 
 }

@@ -10,7 +10,7 @@
 #include "SetupDlg.h"
 #include "ZooCmdWidget.h"
 #include "UIActivator.h"
-#include "../libctk_war_scene/WarService.h"
+#include <ctk_service/war_scene/WarService.h>
 
 ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	: QMainWindow(parent)
@@ -33,6 +33,8 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	_progressBar->setTextVisible(false);
 
 	connect(_cmdlineEdit, SIGNAL(returnPressed()), this, SLOT(onCmd()));
+	connect(ui.action_open, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.action_save, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.action_sim, SIGNAL(triggered(bool)), this, SLOT(onSim(bool)));
 	connect(ui.action_setup, SIGNAL(triggered()), this, SLOT(onSetup()));
 
@@ -108,20 +110,31 @@ void ZooCmdUI::onCmd()
 	_idx = _cmdlines.size() - 1;
 }
 
-void ZooCmdUI::onSim(bool checked)
+void ZooCmdUI::onOpen()
 {
 	ctkServiceReference ref = UIActivator::getPluginContext()->getServiceReference<WarService>();
 	if (ref)
 	{
 		WarService* service = qobject_cast<WarService*>(UIActivator::getPluginContext()->getService(ref));
 		if (service != Q_NULLPTR)
-		{
-			if (checked)
-				service->openScene(1);
-			else
-				service->closeScene(1);
-		}
+			service->openScene(1);
 	}
+}
+
+void ZooCmdUI::onSave()
+{
+	ctkServiceReference ref = UIActivator::getPluginContext()->getServiceReference<WarService>();
+	if (ref)
+	{
+		WarService* service = qobject_cast<WarService*>(UIActivator::getPluginContext()->getService(ref));
+		if (service != Q_NULLPTR)
+			service->saveScene();
+	}
+}
+
+void ZooCmdUI::onSim(bool checked)
+{
+	
 }
 
 void ZooCmdUI::onSetup()

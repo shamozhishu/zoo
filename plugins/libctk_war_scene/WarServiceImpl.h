@@ -1,7 +1,7 @@
 #pragma once
 
-#include "WarService.h"
 #include <QObject>
+#include <ctk_service/war_scene/WarService.h>
 
 class WarServiceImpl : public QObject, public WarService
 {
@@ -11,5 +11,5 @@ public:
 	WarServiceImpl();
 	~WarServiceImpl();
 	bool openScene(int sceneId) Q_DECL_OVERRIDE;
-	void closeScene(int sceneId) Q_DECL_OVERRIDE;
+	void saveScene() Q_DECL_OVERRIDE;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <zooCmd/Support.h>
+#include <zooCmd/Cmd.h>
 #include <zoo/Block.h>
 #include <zoo/UserData.h>
 #include <zoo/Singleton.h>
@@ -14,6 +15,7 @@ public:
 	CmdManager();
 	~CmdManager();
 	void start();
+	void update();
 	void initBuiltinCmd();
 	void block(bool isBlock);
 	bool addCmd(const string& cmd, Cmd* pCmd);
@@ -21,6 +23,11 @@ public:
 	bool sendCmd(vector<string> arglist);
 	Cmd* findCmd(const char* cmd);
 	InputAdapter* getInputAdapter() const;
+
+public:
+	static void waitExchanged();
+	static void releaseWait();
+public:
 	static bool setReturnValue(const string& key, const Any& retval);
 	static Any  getReturnValue(const string& key);
 	static bool setErrorMessage(const string& errMessage);
@@ -28,16 +35,16 @@ public:
 	static void cancelRetValueBlock();
 
 private:
+	void runCmd();
 	static void lazyInitPromise(const string& key);
-	void run();
 
 private:
-	Cmd*                                   _curCmd;
-	thread*                                _thread;
-	string                                 _cmdName;
-	bool                                   _busying;
-	bool                                   _running;
-	Block                                  _block[2];
+	bool _running;
+	Cmd* _lastCmd;
+	string _lastCmdName;
+	thread* _cmdThread;
+	zoo::Block _block[2];
+	queue<shared_ptr<Signal>> _cmdQueue;
 	unordered_map<string, shared_ptr<Cmd>> _commands;
 };
 

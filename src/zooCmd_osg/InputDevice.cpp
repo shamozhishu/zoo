@@ -8,67 +8,6 @@ ZOO_REGISTER(zooCmd_osg::InputDevice)
 
 namespace zooCmd_osg {
 
-static int s_remapKey(int key)
-{
-	auto it = g_keyboardMap.find(key);
-	if (it == g_keyboardMap.end())
-		return key;
-
-	int k = g_keyboardMap[key];
-	switch (k)
-	{
-	case zooCmd_Key_Escape: key = osgGA::GUIEventAdapter::KEY_Escape; break;
-	case zooCmd_Key_Delete: key = osgGA::GUIEventAdapter::KEY_Delete; break;
-	case zooCmd_Key_Home: key = osgGA::GUIEventAdapter::KEY_Home; break;
-	case zooCmd_Key_Enter: key = osgGA::GUIEventAdapter::KEY_KP_Enter; break;
-	case zooCmd_Key_End: key = osgGA::GUIEventAdapter::KEY_End; break;
-	case zooCmd_Key_Return: key = osgGA::GUIEventAdapter::KEY_Return; break;
-	case zooCmd_Key_PageUp: key = osgGA::GUIEventAdapter::KEY_Page_Up; break;
-	case zooCmd_Key_PageDown: key = osgGA::GUIEventAdapter::KEY_Page_Down; break;
-	case zooCmd_Key_Left: key = osgGA::GUIEventAdapter::KEY_Left; break;
-	case zooCmd_Key_Right: key = osgGA::GUIEventAdapter::KEY_Right; break;
-	case zooCmd_Key_Up: key = osgGA::GUIEventAdapter::KEY_Up; break;
-	case zooCmd_Key_Down: key = osgGA::GUIEventAdapter::KEY_Down; break;
-	case zooCmd_Key_Backspace: key = osgGA::GUIEventAdapter::KEY_BackSpace; break;
-	case zooCmd_Key_Tab: key = osgGA::GUIEventAdapter::KEY_Tab; break;
-	case zooCmd_Key_Space: key = osgGA::GUIEventAdapter::KEY_Space; break;
-	case zooCmd_Key_Alt: key = osgGA::GUIEventAdapter::KEY_Alt_L; break;
-	case zooCmd_Key_Shift: key = osgGA::GUIEventAdapter::KEY_Shift_L; break;
-	case zooCmd_Key_Control: key = osgGA::GUIEventAdapter::KEY_Control_L; break;
-	case zooCmd_Key_Meta: key = osgGA::GUIEventAdapter::KEY_Meta_L; break;
-	case zooCmd_Key_F1: key = osgGA::GUIEventAdapter::KEY_F1; break;
-	case zooCmd_Key_F2: key = osgGA::GUIEventAdapter::KEY_F2; break;
-	case zooCmd_Key_F3: key = osgGA::GUIEventAdapter::KEY_F3; break;
-	case zooCmd_Key_F4: key = osgGA::GUIEventAdapter::KEY_F4; break;
-	case zooCmd_Key_F5: key = osgGA::GUIEventAdapter::KEY_F5; break;
-	case zooCmd_Key_F6: key = osgGA::GUIEventAdapter::KEY_F6; break;
-	case zooCmd_Key_F7: key = osgGA::GUIEventAdapter::KEY_F7; break;
-	case zooCmd_Key_F8: key = osgGA::GUIEventAdapter::KEY_F8; break;
-	case zooCmd_Key_F9: key = osgGA::GUIEventAdapter::KEY_F9; break;
-	case zooCmd_Key_F10: key = osgGA::GUIEventAdapter::KEY_F10; break;
-	case zooCmd_Key_F11: key = osgGA::GUIEventAdapter::KEY_F11; break;
-	case zooCmd_Key_F12: key = osgGA::GUIEventAdapter::KEY_F12; break;
-	case zooCmd_Key_F13: key = osgGA::GUIEventAdapter::KEY_F13; break;
-	case zooCmd_Key_F14: key = osgGA::GUIEventAdapter::KEY_F14; break;
-	case zooCmd_Key_F15: key = osgGA::GUIEventAdapter::KEY_F15; break;
-	case zooCmd_Key_F16: key = osgGA::GUIEventAdapter::KEY_F16; break;
-	case zooCmd_Key_F17: key = osgGA::GUIEventAdapter::KEY_F17; break;
-	case zooCmd_Key_F18: key = osgGA::GUIEventAdapter::KEY_F18; break;
-	case zooCmd_Key_F19: key = osgGA::GUIEventAdapter::KEY_F19; break;
-	case zooCmd_Key_F20: key = osgGA::GUIEventAdapter::KEY_F20; break;
-	case zooCmd_Key_Hyphen: key = '-'; break;
-	case zooCmd_Key_Equal: key = '='; break;
-	case zooCmd_Key_Division: key = osgGA::GUIEventAdapter::KEY_KP_Divide; break;
-	case zooCmd_Key_Multiply: key = osgGA::GUIEventAdapter::KEY_KP_Multiply; break;
-	case zooCmd_Key_Minus: key = '-'; break;
-	case zooCmd_Key_Plus: key = '+'; break;
-	case zooCmd_Key_Insert: key = osgGA::GUIEventAdapter::KEY_KP_Insert; break;
-	default: break;
-	}
-
-	return key;
-}
-
 class Viewers : public osgViewer::CompositeViewer
 {
 	osg::Timer _frameTime;
@@ -96,9 +35,9 @@ public:
 		// record start frame time
 		_frameTime.setStartTick();
 
-		g_interlock.waitExchanged();
+		CmdManager::waitExchanged();
 		osgViewer::CompositeViewer::frame(simulationTime);
-		g_interlock.releaseWait();
+		CmdManager::releaseWait();
 	}
 };
 
@@ -273,13 +212,13 @@ void InputDevice::resize(int windowWidth, int windowHeight, float windowScale)
 void InputDevice::keyPress(int key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->keyPress(s_remapKey(key));
+	_osgWinEmb->getEventQueue()->keyPress(remap(key));
 }
 
 void InputDevice::keyRelease(int key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->keyRelease(s_remapKey(key));
+	_osgWinEmb->getEventQueue()->keyRelease(remap(key));
 }
 
 void InputDevice::mouseMove(int x, int y, unsigned int modkey)
@@ -333,6 +272,67 @@ void InputDevice::mouseDoubleClick(int x, int y, unsigned int modkey, unsigned i
 {
 	setKeyboardModifiers(modkey);
 	_osgWinEmb->getEventQueue()->mouseDoubleButtonPress(x * _windowScale, y * _windowScale, button);
+}
+
+int InputDevice::remap(int key)
+{
+	auto it = _keyboardMap.find(key);
+	if (it == _keyboardMap.end())
+		return key;
+
+	int k = _keyboardMap[key];
+	switch (k)
+	{
+	case zooCmd_Key_Escape: key = osgGA::GUIEventAdapter::KEY_Escape; break;
+	case zooCmd_Key_Delete: key = osgGA::GUIEventAdapter::KEY_Delete; break;
+	case zooCmd_Key_Home: key = osgGA::GUIEventAdapter::KEY_Home; break;
+	case zooCmd_Key_Enter: key = osgGA::GUIEventAdapter::KEY_KP_Enter; break;
+	case zooCmd_Key_End: key = osgGA::GUIEventAdapter::KEY_End; break;
+	case zooCmd_Key_Return: key = osgGA::GUIEventAdapter::KEY_Return; break;
+	case zooCmd_Key_PageUp: key = osgGA::GUIEventAdapter::KEY_Page_Up; break;
+	case zooCmd_Key_PageDown: key = osgGA::GUIEventAdapter::KEY_Page_Down; break;
+	case zooCmd_Key_Left: key = osgGA::GUIEventAdapter::KEY_Left; break;
+	case zooCmd_Key_Right: key = osgGA::GUIEventAdapter::KEY_Right; break;
+	case zooCmd_Key_Up: key = osgGA::GUIEventAdapter::KEY_Up; break;
+	case zooCmd_Key_Down: key = osgGA::GUIEventAdapter::KEY_Down; break;
+	case zooCmd_Key_Backspace: key = osgGA::GUIEventAdapter::KEY_BackSpace; break;
+	case zooCmd_Key_Tab: key = osgGA::GUIEventAdapter::KEY_Tab; break;
+	case zooCmd_Key_Space: key = osgGA::GUIEventAdapter::KEY_Space; break;
+	case zooCmd_Key_Alt: key = osgGA::GUIEventAdapter::KEY_Alt_L; break;
+	case zooCmd_Key_Shift: key = osgGA::GUIEventAdapter::KEY_Shift_L; break;
+	case zooCmd_Key_Control: key = osgGA::GUIEventAdapter::KEY_Control_L; break;
+	case zooCmd_Key_Meta: key = osgGA::GUIEventAdapter::KEY_Meta_L; break;
+	case zooCmd_Key_F1: key = osgGA::GUIEventAdapter::KEY_F1; break;
+	case zooCmd_Key_F2: key = osgGA::GUIEventAdapter::KEY_F2; break;
+	case zooCmd_Key_F3: key = osgGA::GUIEventAdapter::KEY_F3; break;
+	case zooCmd_Key_F4: key = osgGA::GUIEventAdapter::KEY_F4; break;
+	case zooCmd_Key_F5: key = osgGA::GUIEventAdapter::KEY_F5; break;
+	case zooCmd_Key_F6: key = osgGA::GUIEventAdapter::KEY_F6; break;
+	case zooCmd_Key_F7: key = osgGA::GUIEventAdapter::KEY_F7; break;
+	case zooCmd_Key_F8: key = osgGA::GUIEventAdapter::KEY_F8; break;
+	case zooCmd_Key_F9: key = osgGA::GUIEventAdapter::KEY_F9; break;
+	case zooCmd_Key_F10: key = osgGA::GUIEventAdapter::KEY_F10; break;
+	case zooCmd_Key_F11: key = osgGA::GUIEventAdapter::KEY_F11; break;
+	case zooCmd_Key_F12: key = osgGA::GUIEventAdapter::KEY_F12; break;
+	case zooCmd_Key_F13: key = osgGA::GUIEventAdapter::KEY_F13; break;
+	case zooCmd_Key_F14: key = osgGA::GUIEventAdapter::KEY_F14; break;
+	case zooCmd_Key_F15: key = osgGA::GUIEventAdapter::KEY_F15; break;
+	case zooCmd_Key_F16: key = osgGA::GUIEventAdapter::KEY_F16; break;
+	case zooCmd_Key_F17: key = osgGA::GUIEventAdapter::KEY_F17; break;
+	case zooCmd_Key_F18: key = osgGA::GUIEventAdapter::KEY_F18; break;
+	case zooCmd_Key_F19: key = osgGA::GUIEventAdapter::KEY_F19; break;
+	case zooCmd_Key_F20: key = osgGA::GUIEventAdapter::KEY_F20; break;
+	case zooCmd_Key_Hyphen: key = '-'; break;
+	case zooCmd_Key_Equal: key = '='; break;
+	case zooCmd_Key_Division: key = osgGA::GUIEventAdapter::KEY_KP_Divide; break;
+	case zooCmd_Key_Multiply: key = osgGA::GUIEventAdapter::KEY_KP_Multiply; break;
+	case zooCmd_Key_Minus: key = '-'; break;
+	case zooCmd_Key_Plus: key = '+'; break;
+	case zooCmd_Key_Insert: key = osgGA::GUIEventAdapter::KEY_KP_Insert; break;
+	default: break;
+	}
+
+	return key;
 }
 
 void InputDevice::setKeyboardModifiers(unsigned int modkey)

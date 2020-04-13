@@ -10,7 +10,6 @@
 
 namespace zooCmd {
 
-zoo::Interlock g_interlock;
 std::thread::id g_renderThreadID;
 InputAdapter* g_inputAdapter = nullptr;
 
@@ -18,13 +17,13 @@ static UserData s_retValue;
 static std::mutex s_mutex;
 static bool s_blockWhenWaitReturnValue = true;
 static map<string, std::pair<bool, shared_ptr<promise<Any>>>> s_promises;
-
 static BuiltinCmd* s_builtinCmd = nullptr;
+static Interlock s_interlock;
+
 CmdManager::CmdManager()
-	: _curCmd(nullptr)
-	, _thread(nullptr)
-	, _busying(false)
-	, _running(false)
+	: _running(false)
+	, _lastCmd(nullptr)
+	, _cmdThread(nullptr)
 {
 	s_blockWhenWaitReturnValue = true;
 }
@@ -34,19 +33,15 @@ CmdManager::~CmdManager()
 	if (g_inputAdapter)
 		g_inputAdapter->setDone(true);
 
-	g_interlock.canExchange = true;
+	s_interlock.canExchange = true;
 	_block[0].release();
-
-	if (!_busying)
-		_curCmd = nullptr;
-
 	_block[1].release();
 
-	if (_thread)
-		_thread->join();
+	if (_cmdThread)
+		_cmdThread->join();
 
-	delete _thread;
-	_thread = nullptr;
+	delete _cmdThread;
+	_cmdThread = nullptr;
 	_commands.clear();
 	delete g_inputAdapter;
 	g_inputAdapter = nullptr;
@@ -57,8 +52,18 @@ CmdManager::~CmdManager()
 
 void CmdManager::start()
 {
-	if (!_thread)
-		_thread = new thread(&CmdManager::run, this);
+	if (!_cmdThread)
+		_cmdThread = new thread(&CmdManager::runCmd, this);
+}
+
+void CmdManager::update()
+{
+	auto it = _commands.begin();
+	auto itEnd = _commands.end();
+	for (; it != itEnd; ++it)
+	{
+		it->second->update();
+	}
 }
 
 void CmdManager::initBuiltinCmd()
@@ -71,13 +76,13 @@ void CmdManager::block(bool isBlock)
 {
 	if (isBlock)
 	{
-		if (_thread->get_id() == std::this_thread::get_id())
+		if (_cmdThread->get_id() == std::this_thread::get_id())
 		{
-			g_interlock.endExchanging();
+			s_interlock.endExchanging();
 			cancelRetValueBlock();
 			_block[0].reset();
 			_block[0].block();
-			g_interlock.beginExchanging();
+			s_interlock.beginExchanging();
 		}
 	}
 	else
@@ -110,20 +115,14 @@ bool CmdManager::sendCmd(vector<string> arglist)
 {
 	if (!_running)
 	{
-		Log::print(ELL_ERROR, "Command manager not started!");
-		return false;
-	}
-
-	if (_busying)
-	{
-		Log::print(ELL_ERROR, "Last command not completed!");
+		zoo_warning("Command manager not started!");
 		return false;
 	}
 
 	int argc = arglist.size();
 	if (argc <= 0)
 	{
-		Log::print(ELL_ERROR, "Please enter a command!");
+		zoo_warning("Please enter a command!");
 		return false;
 	}
 
@@ -141,9 +140,9 @@ bool CmdManager::sendCmd(vector<string> arglist)
 		}
 
 		cmdname = strToUpper(arglist[0]);
-		if (cmdname == _cmdName)
+		if (cmdname == _lastCmdName)
 		{
-			pCmd = _curCmd;
+			pCmd = _lastCmd;
 			break;
 		}
 
@@ -154,14 +153,14 @@ bool CmdManager::sendCmd(vector<string> arglist)
 			break;
 		}
 
-		Log::print(ELL_ERROR, "Non-existent command!");
+		zoo_warning("Non-existent command!");
 		return false;
 
 	} while (0);
 
 	if (argc <= 1 || arglist[1][0] != '-')
 	{
-		Log::print(ELL_ERROR, "Please enter valid command parameters!");
+		zoo_warning("Please enter valid command parameters!");
 		return false;
 	}
 
@@ -170,7 +169,7 @@ bool CmdManager::sendCmd(vector<string> arglist)
 		argv[i] = const_cast<char*>(arglist[i].c_str());
 
 	CmdParser cmdArg(&argc, argv);
-	if (_curCmd != pCmd)
+	if (_lastCmd != pCmd)
 	{
 		cmdArg.getCmdUsage()->setCommandLineOptions(CmdUsage::UsageMap());
 		cmdArg.getCmdUsage()->setCommandLineOptionsDefaults(CmdUsage::UsageMap());
@@ -182,8 +181,8 @@ bool CmdManager::sendCmd(vector<string> arglist)
 	unsigned int helpType = 0;
 	if ((helpType = cmdArg.readHelpType()))
 	{
-		_curCmd = pCmd;
-		_cmdName = cmdname;
+		_lastCmd = pCmd;
+		_lastCmdName = cmdname;
 		cmdArg.getCmdUsage()->setCommandLineUsage(cmdArg.getCmdName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
 		pCmd->helpInformation(cmdArg.getCmdUsage());
 		cmdArg.getCmdUsage()->write(std::cout, helpType);
@@ -191,21 +190,21 @@ bool CmdManager::sendCmd(vector<string> arglist)
 		return true;
 	}
 
-	SignalTrigger::disconnect(pCmd->_subCommands);
 	s_promises.clear();
 	s_retValue.clear();
-	pCmd->parseCmdArg(cmdArg, s_retValue);
+	std::shared_ptr<Signal> _subCmd((new Signal));
+	pCmd->parseCmdArg(*_subCmd, cmdArg, s_retValue);
 	cmdArg.reportRemainingOptionsAsUnrecognized();
 	if (cmdArg.errors())
 	{
-		SignalTrigger::disconnect(pCmd->_subCommands);
 		cmdArg.writeErrorMessages(std::cout);
 		SAFE_DELETE_ARRAY(argv);
 		return false;
 	}
 
-	_curCmd = pCmd;
-	_cmdName = cmdname;
+	_lastCmd = pCmd;
+	_lastCmdName = cmdname;
+	_cmdQueue.push(_subCmd);
 	s_blockWhenWaitReturnValue = true;
 	SAFE_DELETE_ARRAY(argv);
 	_block[1].release();
@@ -224,6 +223,16 @@ Cmd* CmdManager::findCmd(const char* cmd)
 InputAdapter* CmdManager::getInputAdapter() const
 {
 	return g_inputAdapter;
+}
+
+void CmdManager::waitExchanged()
+{
+	s_interlock.waitExchanged();
+}
+
+void CmdManager::releaseWait()
+{
+	s_interlock.releaseWait();
 }
 
 bool CmdManager::setReturnValue(const string& key, const Any& retval)
@@ -254,7 +263,7 @@ Any CmdManager::getReturnValue(const string& key)
 
 			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
 			if (g_renderThreadID == std::this_thread::get_id())
-				g_interlock.canExchange = true;
+				s_interlock.canExchange = true;
 
 			Any temp = fut.get();
 			if (temp.has_value())
@@ -290,7 +299,7 @@ string CmdManager::getErrorMessage()
 
 		// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
 		if (g_renderThreadID == std::this_thread::get_id())
-			g_interlock.canExchange = true;
+			s_interlock.canExchange = true;
 
 		Any temp = fut.get();
 		if (temp.has_value())
@@ -317,6 +326,31 @@ void CmdManager::cancelRetValueBlock()
 		setReturnValue(it->first, s_retValue.getData(it->first));
 }
 
+void CmdManager::runCmd()
+{
+	_running = true;
+	do
+	{
+		while (!_cmdQueue.empty())
+		{
+			shared_ptr<Signal> subcmd = _cmdQueue.front();
+			_cmdQueue.pop();
+			s_interlock.beginExchanging();
+			SignalTrigger::trigger(*subcmd);
+			s_interlock.endExchanging();
+			cancelRetValueBlock();
+		}
+
+		_running = !g_inputAdapter->isDone();
+		if (_running)
+		{
+			_block[1].reset();
+			_block[1].block();
+		}
+
+	} while (_running);
+}
+
 void CmdManager::lazyInitPromise(const string& key)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
@@ -325,35 +359,6 @@ void CmdManager::lazyInitPromise(const string& key)
 		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
 		s_promises[key] = std::make_pair(false, ptr);
 	}
-}
-
-void CmdManager::run()
-{
-	_running = true;
-	do
-	{
-		if (!_busying && _curCmd)
-		{
-			_busying = true;
-			g_interlock.beginExchanging();
-			SignalTrigger::trigger(_curCmd->_subCommands);
-			g_interlock.endExchanging();
-			_curCmd->_subCommands.userData().clear();
-			cancelRetValueBlock();
-		}
-		else
-		{
-			_running = !g_inputAdapter->isDone();
-			if (_running)
-			{
-				_block[1].reset();
-				_busying = false;
-				_block[1].block();
-			}
-		}
-
-	} while (_running);
-	_busying = false;
 }
 
 }

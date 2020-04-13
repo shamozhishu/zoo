@@ -53,7 +53,7 @@ bool LuaScript::executeString(const string& codes)
 
 	if (status != LUA_OK)
 	{
-		Log::print(ELL_ERROR, "[LuaScriptModule]: %s", lua_tostring(_state, -1));
+		zoo_error("%s", lua_tostring(_state, -1));
 		lua_pop(_state, 1);
 		return false;
 	}
@@ -69,12 +69,12 @@ bool LuaScript::executeScriptFile(const string& filename)
 
 	if (filename == "")
 	{
-		Log::print(ELL_WARNING, "executeScriptFile filename is null");
+		zoo_warning("Script file name is null");
 		return false;
 	}
 
 	bool hasCache = false;
-	const char* contentCache = "";
+	string contentCache = "";
 	stringstream filestream;
 
 	std::map<string, string>::iterator it = s_scriptFileName2ContentCache.find(filename);
@@ -88,7 +88,7 @@ bool LuaScript::executeScriptFile(const string& filename)
 		std::ifstream fin(filename);
 		if (!fin)
 		{
-			Log::wprint(ELL_ERROR, L"打开[%s]文件失败", filename.c_str());
+			zoo_error("打开[%s]文件失败", filename.c_str());
 			return false;
 		}
 
@@ -97,19 +97,19 @@ bool LuaScript::executeScriptFile(const string& filename)
 		contentCache = filestream.str().c_str();
 	}
 
-	if (strcmp(contentCache, "") != 0)
+	if (contentCache == "")
 	{
-		Log::wprint(ELL_ERROR, L"not found ScriptFile: %s", filename.c_str());
+		zoo_error("Not found script file: %s", filename.c_str());
 		return false;
 	}
 
-	status = luaL_loadstring(_state, contentCache);
+	status = luaL_loadstring(_state, contentCache.c_str());
 	lua_gc(_state, LUA_GCCOLLECT, 0);
 
 	if (status != LUA_OK)
 	{
 		const char* errMsg = lua_tostring(_state, -1);
-		Log::print(ELL_ERROR, "[LuaScriptModule]:%s,%s\n", filename.c_str(), errMsg);
+		zoo_error("%s,%s", filename.c_str(), errMsg);
 		lua_pop(_state, 1);
 		return false;
 	}
@@ -118,7 +118,7 @@ bool LuaScript::executeScriptFile(const string& filename)
 	if (status != LUA_OK)
 	{
 		const char* errMsg = lua_tostring(_state, -1);
-		Log::print(ELL_ERROR, "[LuaScriptModule]:%s,%s\n", filename.c_str(), errMsg);
+		zoo_error("%s,%s", filename.c_str(), errMsg);
 		lua_pop(_state, 1);
 		return false;
 	}
@@ -135,7 +135,7 @@ int LuaScript::executeGlobalFunction(const string& functionName)
 
 	if (!lua_isfunction(_state, -1))
 	{
-		Log::print(ELL_WARNING, "[LUA ERROR] name '%s' does not represent a Lua function", functionName.c_str());
+		zoo_warning("\"%s\" does not represent a lua function", functionName.c_str());
 		lua_pop(_state, 1);
 		return 0;
 	}
@@ -224,7 +224,7 @@ void LuaScript::call_va(const string& func, const string& sig, ...)
 			endargs = true;
 			break;
 		default:
-			Log::print(ELL_ERROR, "invalid option (%c)", *(pszsig - 1));
+			zoo_error("invalid option (%c)", *(pszsig - 1));
 			lua_error(_state);
 			break;
 		}
@@ -236,7 +236,7 @@ void LuaScript::call_va(const string& func, const string& sig, ...)
 	nres = strlen(pszsig); // 期望的结果数量
 	if (lua_pcall(_state, narg, nres, 0) != 0) // 完成调用
 	{
-		Log::print(ELL_ERROR, "error calling '%s':%s", pszfunc, lua_tostring(_state, -1));
+		zoo_error("error calling '%s':%s", pszfunc, lua_tostring(_state, -1));
 		lua_error(_state);
 	}
 
@@ -249,7 +249,7 @@ void LuaScript::call_va(const string& func, const string& sig, ...)
 		case 'd': // double结果
 			if (!lua_isnumber(_state, nres))
 			{
-				Log::print(ELL_ERROR, "error result type");
+				zoo_error("error result type");
 				lua_error(_state);
 			}
 			*va_arg(vl, double*) = lua_tonumber(_state, nres);
@@ -257,7 +257,7 @@ void LuaScript::call_va(const string& func, const string& sig, ...)
 		case 'i': // int结果
 			if (!lua_isnumber(_state, nres))
 			{
-				Log::print(ELL_ERROR, "error result type");
+				zoo_error("error result type");
 				lua_error(_state);
 			}
 			*va_arg(vl, int*) = lua_tointeger(_state, nres);
@@ -265,13 +265,13 @@ void LuaScript::call_va(const string& func, const string& sig, ...)
 		case 's': // string结果
 			if (!lua_isstring(_state, nres))
 			{
-				Log::print(ELL_ERROR, "error result type");
+				zoo_error("error result type");
 				lua_error(_state);
 			}
 			*va_arg(vl, const char**) = lua_tostring(_state, nres);
 			break;
 		default:
-			Log::print(ELL_ERROR, "invalid option (%c)", *(pszsig - 1));
+			zoo_error("invalid option (%c)", *(pszsig - 1));
 			lua_error(_state);
 			break;
 		}
@@ -287,7 +287,7 @@ int LuaScript::executeFunction(int numArgs)
 	int functionIndex = -(numArgs + 1);
 	if (!lua_isfunction(_state, functionIndex))
 	{
-		Log::print(ELL_WARNING, "value at stack [%d] is not function", functionIndex);
+		zoo_warning("value at stack [%d] is not function", functionIndex);
 		lua_pop(_state, numArgs + 1); // remove function and arguments
 		return 0;
 	}
@@ -310,7 +310,7 @@ int LuaScript::executeFunction(int numArgs)
 	{
 		if (traceback == 0)
 		{
-			Log::print(ELL_ERROR, "[LUA ERROR] %s", lua_tostring(_state, -1)); /* stack: ... error */
+			zoo_error("%s", lua_tostring(_state, -1));                         /* stack: ... error */
 			lua_pop(_state, 1); // remove error message from stack
 		}
 		else                                                                   /* stack: ... G error */
@@ -386,7 +386,7 @@ bool LuaScript::pushFunctionByHandler(int nHandler)
 
 	if (!lua_isfunction(_state, -1))
 	{
-		Log::print(ELL_ERROR, "[LUA ERROR] function refid '%d' does not reference a Lua function", nHandler);
+		zoo_error("Function refid '%d' does not reference a Lua function", nHandler);
 		lua_pop(_state, 1);
 		return false;
 	}

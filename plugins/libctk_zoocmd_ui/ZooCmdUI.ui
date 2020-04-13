@@ -38,6 +38,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_open"/>
+   <addaction name="action_save"/>
    <addaction name="action_sim"/>
    <addaction name="action_setup"/>
   </widget>
@@ -68,6 +70,30 @@
    </property>
    <property name="toolTip">
     <string>仿真</string>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="icon">
+    <iconset resource="zooCmdUI.qrc">
+     <normaloff>:/images/Resources/images/open.png</normaloff>:/images/Resources/images/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>打开</string>
+   </property>
+   <property name="toolTip">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="action_save">
+   <property name="icon">
+    <iconset resource="zooCmdUI.qrc">
+     <normaloff>:/images/Resources/images/save.png</normaloff>:/images/Resources/images/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>保存</string>
+   </property>
+   <property name="toolTip">
+    <string>保存</string>
    </property>
   </action>
  </widget>

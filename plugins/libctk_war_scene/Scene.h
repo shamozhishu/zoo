@@ -12,8 +12,11 @@ class AllyArmy;
 class StaticObj;
 class Scene
 {
+	friend class WarManager;
+	PROPERTY_R(int, _id, ID)
+	PROPERTY_R(string, _desc, Desc)
 public:
-	Scene();
+	Scene(int id, string description);
 	~Scene();
 	void visit(float dt);
 
@@ -43,5 +46,11 @@ private:
 	Entity* findEntity(int id, int type);
 
 private:
+	std::list<Effect*> _effects;
+	std::list<Weapon*> _weapons;
+	std::list<RedArmy*> _redArmies;
+	std::list<BlueArmy*> _blueArmies;
+	std::list<AllyArmy*> _allyArmies;
+	std::list<StaticObj*> _staticObjs;
 	std::map<long long, Entity*> _entities;
 };

@@ -14,7 +14,7 @@ bool WarServiceImpl::openScene(int sceneId)
 	return WarManager::getSingleton().enterScene(sceneId);
 }
 
-void WarServiceImpl::closeScene(int sceneId)
+void WarServiceImpl:: saveScene()
 {
-	WarManager::getSingleton().exitScene(sceneId);
+	WarManager::getSingleton().saveCurScene();
 }

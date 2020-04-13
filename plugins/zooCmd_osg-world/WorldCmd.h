@@ -11,17 +11,17 @@ class WorldCmd : public zooCmd::Cmd, public zoo::Singleton<WorldCmd>
 public:
 	~WorldCmd();
 	bool init();
-	void parseCmdArg(CmdParser& cmdarg, zoo::UserData& retValue);
+	void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, zoo::UserData& retValue);
 	void helpInformation(CmdUsage* usage);
 	osgViewer::View* getView() const;
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;
 
-private zoo_slots:
-	void flyTo(const zoo::UserData& userdata);
-	void LonLatAltitude(const zoo::UserData& userdata);
-	void measureDistance(const zoo::UserData& userdata);
-	void locateModel(const zoo::UserData& userdata);
+private:
+	void onFlyTo(const zoo::UserData& userdata);
+	void onLonLatAltitude(const zoo::UserData& userdata);
+	void onMeasureDistance(const zoo::UserData& userdata);
+	void onLocateModel(const zoo::UserData& userdata);
 
 private:
 	osgViewer::View* _view;

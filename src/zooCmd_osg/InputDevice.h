@@ -34,6 +34,7 @@ public:
 	void mouseDoubleClick(int x, int y, unsigned int modkey, unsigned int button);
 
 protected:
+	int remap(int key);
 	void setKeyboardModifiers(unsigned int modkey);
 
 private:

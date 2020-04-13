@@ -11,10 +11,14 @@ public:
 	WarCmd();
 	~WarCmd();
 	bool init();
-	void parseCmdArg(CmdParser& cmdarg, UserData& retValue);
+	void update();
+	void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue);
 	void helpInformation(CmdUsage* usage);
 	osg::Group* getRootNode() const;
 	osg::Group* getMainNode() const;
+
+private:
+	void onSetTrackNode(const UserData& userdata);
 
 private:
 	osg::Geode* createPanel();

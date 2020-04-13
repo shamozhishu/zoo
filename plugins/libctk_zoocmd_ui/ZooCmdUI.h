@@ -17,6 +17,8 @@ protected:
 
 private Q_SLOTS:
 	void onCmd();
+	void onOpen();
+	void onSave();
 	void onSim(bool checked);
 	void onSetup();
 

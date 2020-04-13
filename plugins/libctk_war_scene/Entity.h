@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include "PublicEnum.h"
-#include <zoo/DoF.h>
+#include <SharedObject/DoF.h>
 #include <ctkPluginFramework_global.h>
 
 using namespace std;

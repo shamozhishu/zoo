@@ -22,17 +22,19 @@ void WarActivator::start(ctkPluginContext* context)
 	if (resPath.isEmpty())
 	{
 		const char* szTip = "Framework property \"ctk.war.scene.respath\" containing the resource path of the CTK War Scene not found!";
-		zoo::Log::print(zoo::ELL_ERROR, szTip);
+		zoo_error("%s", szTip);
 		throw ctkRuntimeException(szTip);
 	}
 
 	if (mainTable.isEmpty())
 	{
 		const char* szTip = "Framework property \"ctk.war.scene.maintable\" containing the main table name of the CTK War Scene not found!";
-		zoo::Log::print(zoo::ELL_ERROR, szTip);
+		zoo_error("%s", szTip);
 		throw ctkRuntimeException(szTip);
 	}
 
+	zoo_debug("ctk.war.scene.respath=%s", resPath.toStdString().c_str());
+	zoo_debug("ctk.war.scene.maintable=%s", mainTable.toStdString().c_str());
 	new WarManager(resPath.toStdString(), mainTable.toStdString());
 	ctkDictionary props;
 	_warService = new WarServiceImpl();

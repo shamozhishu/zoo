@@ -50,11 +50,11 @@
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;multimedia</QtModules>
+    <QtModules>core;multimedia;xml</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;multimedia</QtModules>
+    <QtModules>core;multimedia;xml</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
@@ -66,7 +66,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\src;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -86,7 +86,7 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\src;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,7 +114,6 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <ClInclude Include="StaticObj.h" />
     <QtMoc Include="WarActivator.h" />
     <QtMoc Include="WarManager.h" />
-    <ClInclude Include="WarService.h" />
     <QtMoc Include="WarServiceImpl.h" />
     <ClInclude Include="Weapon.h" />
   </ItemGroup>
@@ -141,6 +140,9 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <QtRcc Include="libctk_war_scene.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\dependency\SharedObject\SharedObject.vcxproj">
+      <Project>{a9a1f10e-1bad-4a01-96dc-62d7b2dd8351}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\zooCmd\zooCmd.vcxproj">
       <Project>{e2463d34-fde1-48a5-9345-10f28b9696eb}</Project>
     </ProjectReference>

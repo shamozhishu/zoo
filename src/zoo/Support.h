@@ -47,7 +47,6 @@ namespace zoo {
 
 template<typename ...Args> class ReflexFactory;
 class Log;
-class DoF;
 class Any;
 class AnyNumeric;
 class Block;

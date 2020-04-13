@@ -11,9 +11,11 @@ class Logger
 public:
 	ofstream _fout;
 	bool _hasConsole;
+	ELogLevel _level;
 public:
 	Logger(bool hasConsole, const string& logFileName)
 		: _hasConsole(hasConsole)
+		, _level(ELL_DEBUG)
 	{
 		if (NULL == s_pLogger)
 		{
@@ -54,28 +56,27 @@ public:
 	}
 };
 
-#ifdef _DEBUG
-static Logger s_logger(true, "log.txt");
+#if defined(_DEBUG) || defined(ZOO_ENABLE_LOG_PRINT)
+static Logger s_logger(true, "");
 #endif
 
 inline void Log::print(ELogLevel level, const char* szFormat, ...)
 {
-#if defined(_DEBUG)
-	char szArgMessage[2048] = { 0 };
-	va_list args;
-	va_start(args, szFormat);
-	vsprintf(szArgMessage, szFormat, args);
-	va_end(args);
-
-	if (s_pLogger)
+	if (s_pLogger && level >= s_pLogger->_level)
 	{
+		static char szArgMessage[2048];
+		va_list args;
+		va_start(args, szFormat);
+		vsprintf(szArgMessage, szFormat, args);
+		va_end(args);
+
 		if (s_pLogger->_hasConsole)
 		{
 			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 			switch (level)
 			{
 			case ELL_INFORMATION: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
-			case ELL_WARNING: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ELL_WARNING: wAttributes = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
 			}
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
@@ -86,38 +87,12 @@ inline void Log::print(ELogLevel level, const char* szFormat, ...)
 		if (s_pLogger->_fout)
 			s_pLogger->_fout << szArgMessage << std::endl;
 	}
-#endif
 }
 
-inline void Log::wprint(ELogLevel level, const wchar_t* szFormat, ...)
+void Log::setLevel(ELogLevel level)
 {
-#if defined(_DEBUG)
-	wchar_t szArgMessage[2048] = {0};
-	va_list args;
-	va_start(args, szFormat);
-	vswprintf(szArgMessage, 2048, szFormat, args);
-	va_end(args);
-
 	if (s_pLogger)
-	{
-		if (s_pLogger->_hasConsole)
-		{
-			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-			switch (level)
-			{
-			case ELL_INFORMATION: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
-			case ELL_WARNING: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE; break;
-			case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
-			}
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
-			wprintf(L"%s\n", szArgMessage);
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
-		}
-
-		if (s_pLogger->_fout)
-			s_pLogger->_fout << szArgMessage << std::endl;
-	}
-#endif
+		s_pLogger->_level = level;
 }
 
 }
