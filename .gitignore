@@ -259,9 +259,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/data/file_cache
-/data/srtm30plus_stripped.tif
-/data/world.qix
+/data/tmp
 /applications/zooCmdShell/log.txt
 /applications/zooCmdUI/log.txt
 /applications/zooCmdUI/config.ini
