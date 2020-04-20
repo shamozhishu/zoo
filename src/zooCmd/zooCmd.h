@@ -92,7 +92,7 @@ extern "C" {
 	_zooCmdExport bool zooCmd_InitA(int cmdcount, const char* cmdset[], const char* input_adapter, const char* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_zooCmdExport bool zooCmd_InitW(int cmdcount, const char* cmdset[], const char* input_adapter, const wchar_t* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_zooCmdExport bool zooCmd_IsInited();
-	_zooCmdExport bool zooCmd_Send(const char* cmdlineFormat, ...);
+	_zooCmdExport bool zooCmd_Send(const char* cmdline);
 	_zooCmdExport int  zooCmd_Run();
 	_zooCmdExport void zooCmd_Tick();
 	_zooCmdExport void zooCmd_Destroy();

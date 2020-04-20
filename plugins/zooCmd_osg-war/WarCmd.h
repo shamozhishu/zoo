@@ -12,12 +12,13 @@ public:
 	~WarCmd();
 	bool init();
 	void update();
-	void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue);
-	void helpInformation(CmdUsage* usage);
+	void help(CmdUsage* usage);
+	void parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue);
 	osg::Group* getRootNode() const;
 	osg::Group* getMainNode() const;
 
 private:
+	void onCreateView(const UserData& userdata);
 	void onSetTrackNode(const UserData& userdata);
 
 private:

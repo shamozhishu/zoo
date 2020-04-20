@@ -1,5 +1,5 @@
 #include "ZooCmdUI.h"
-#include <zooCmd/zooCmd.h>
+#include <zooCmdLoader/ZooCmdLoader.h>
 #include <QLabel>
 #include <QThread>
 #include <QLineEdit>
@@ -10,7 +10,7 @@
 #include "SetupDlg.h"
 #include "ZooCmdWidget.h"
 #include "UIActivator.h"
-#include <ctk_service/war_scene/WarService.h>
+#include <ctk_service/war/WarService.h>
 
 ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	: QMainWindow(parent)

@@ -11,8 +11,8 @@ class WorldCmd : public zooCmd::Cmd, public zoo::Singleton<WorldCmd>
 public:
 	~WorldCmd();
 	bool init();
-	void parseCmdArg(Signal& subCmd, CmdParser& cmdarg, zoo::UserData& retValue);
-	void helpInformation(CmdUsage* usage);
+	void help(CmdUsage* usage);
+	void parse(Signal& subcmd, CmdParser& cmdarg, zoo::UserData& returnValue);
 	osgViewer::View* getView() const;
 	osgEarth::MapNode* getMapNode() const;
 	osgEarth::Util::EarthManipulator* getEarthManipulator() const;

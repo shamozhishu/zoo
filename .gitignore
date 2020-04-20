@@ -264,3 +264,4 @@ __pycache__/
 /data/world.qix
 /applications/zooCmdShell/log.txt
 /applications/zooCmdUI/log.txt
+/applications/zooCmdUI/config.ini

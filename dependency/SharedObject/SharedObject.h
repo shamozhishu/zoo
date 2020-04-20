@@ -18,7 +18,7 @@ class SharedObject_Export SharedObject
 	PROPERTY_R(int, _group, Group)
 	DISALLOW_COPY_AND_ASSIGN(SharedObject)
 protected:
-	SharedObject(int id, int group);
+	SharedObject(int id, int group = 0);
 	virtual ~SharedObject();
 };
 
@@ -31,10 +31,10 @@ class SharedObject_Export SharedObjectPool
 
 public:
 	static std::vector<SharedObject*> getObjectList();
-	static std::map<int, SharedObject*> getObjectMap(int group);
-	static SharedObject* findObject(int id, int group);
+	static std::map<int, SharedObject*> getObjectMap(int group = 0);
+	static SharedObject* findObject(int id, int group = 0);
 	template<typename T>
-	static T* findObject(int id, int group)
+	static T* findObject(int id, int group = 0)
 	{
 		return dynamic_cast<T*>(findObject(id, group));
 	}

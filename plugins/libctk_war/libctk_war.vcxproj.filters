@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{3fb0c1ca-9313-4dcc-b54e-36fe76ab6109}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MANIFEST.MF">
+      <Filter>res</Filter>
+    </None>
+    <None Include="ToLuaWar.pkg">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="libctk_war.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AllyArmy.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Battlefield.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="BlueArmy.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitiesCache.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceReleaser.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScript.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="PublicEnum.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="RedArmy.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Stationary.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="WarReporter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonDef.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="WarActivator.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="WarCommander.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="WarServiceImpl.h">
+      <Filter>src</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AllyArmy.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Battlefield.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BlueArmy.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitiesCache.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="InstanceReleaser.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScript.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="RedArmy.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Stationary.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WarActivator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WarCommander.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WarReporter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WarServiceImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ToLuaWar.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

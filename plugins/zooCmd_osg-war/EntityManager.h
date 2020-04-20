@@ -5,12 +5,13 @@
 
 enum ENTITY_TYPE
 {
-	ENTITY_EFFECT = 0,
-	ENTITY_WEAPON,
+	ENTITY_WEAPON = 0,
+	ENTITY_EFFECT,
 	ENTITY_REDARMY,
 	ENTITY_BLUEARMY,
 	ENTITY_ALLYARMY,
-	ENTITY_STATICOBJ,
+	ENTITY_STATIONARY,
+	ENTITY_WARREPORTER,
 	ENTITY_COUNT
 };
 
@@ -32,20 +33,21 @@ public:
 	~EntityManager();
 	void updateEntitiesDoF();
 	ENTITY findEnt(int id, ENTITY_TYPE type);
+	bool isEmpty() const;
 
 public:
-	void onCreateEffect(const UserData& userdata);
 	void onCreateWeapon(const UserData& userdata);
+	void onCreateEffect(const UserData& userdata);
 	void onCreateRedArmy(const UserData& userdata);
 	void onCreateBlueArmy(const UserData& userdata);
 	void onCreateAllyArmy(const UserData& userdata);
-	void onCreateStaticObj(const UserData& userdata);
+	void onCreateStationary(const UserData& userdata);
 	void onChangeParentDoF(const UserData& userdata);
 
 private:
 	ENTITY addEntity(const UserData& userdata, ENTITY_TYPE entType);
 
 private:
-	string _entNames[ENTITY_COUNT];
+	const char* _entNames[ENTITY_COUNT];
 	std::map<long long, ENTITY> _entities;
 };

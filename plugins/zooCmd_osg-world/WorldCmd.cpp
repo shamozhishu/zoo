@@ -41,55 +41,55 @@ bool WorldCmd::init()
 	return true;
 }
 
-void WorldCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
-{
-	do
-	{
-		bool show;
-		if (cmdarg.read("--lla", show))
-		{
-			subCmd.userData().setData(show);
-			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onLonLatAltitude);
-			break;
-		}
-
-		float lon, lat, dist;
-		if (cmdarg.read("--fly", lon, lat, dist))
-		{
-			subCmd.userData().setData("lon", lon);
-			subCmd.userData().setData("lat", lat);
-			subCmd.userData().setData("dist", dist);
-			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onFlyTo);
-			break;
-		}
-
-		if (cmdarg.read("--dist"))
-		{
-			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onMeasureDistance);
-			break;
-		}
-
-		string model;  float height, scale; bool repeat;
-		if (cmdarg.read("--locate", model, height, scale, repeat))
-		{
-			subCmd.userData().setData("model", model);
-			subCmd.userData().setData("height", height);
-			subCmd.userData().setData("scale", scale);
-			subCmd.userData().setData("repeat", repeat);
-			SignalTrigger::connect<WorldCmd>(subCmd, this, &WorldCmd::onLocateModel);
-			break;
-		}
-
-	} while (0);
-}
-
-void WorldCmd::helpInformation(CmdUsage* usage)
+void WorldCmd::help(CmdUsage* usage)
 {
 	usage->setDescription("world command: encapsulation of osgEarth.");
 	usage->addCommandLineOption("--lla <show:bool>", "Display longitude, latitude and altitude information.");
 	usage->addCommandLineOption("--fly <longitude:float> <latitude:float> <distance:float>", "Set viewpoint to specified longitude, latitude and distance.");
 	usage->addCommandLineOption("--dist", "Ground measurement distance.");
 	usage->addCommandLineOption("--locate <model:string> <height:float> <scale:float> <repeat:bool>", "Ground placement model.");
+}
+
+void WorldCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
+{
+	do
+	{
+		bool show;
+		if (cmdarg.read("--lla", show))
+		{
+			subcmd.userData().setData(show);
+			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onLonLatAltitude);
+			break;
+		}
+
+		float lon, lat, dist;
+		if (cmdarg.read("--fly", lon, lat, dist))
+		{
+			subcmd.userData().setData("lon", lon);
+			subcmd.userData().setData("lat", lat);
+			subcmd.userData().setData("dist", dist);
+			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onFlyTo);
+			break;
+		}
+
+		if (cmdarg.read("--dist"))
+		{
+			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onMeasureDistance);
+			break;
+		}
+
+		string model;  float height, scale; bool repeat;
+		if (cmdarg.read("--locate", model, height, scale, repeat))
+		{
+			subcmd.userData().setData("model", model);
+			subcmd.userData().setData("height", height);
+			subcmd.userData().setData("scale", scale);
+			subcmd.userData().setData("repeat", repeat);
+			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onLocateModel);
+			break;
+		}
+
+	} while (0);
 }
 
 osgViewer::View* WorldCmd::getView() const

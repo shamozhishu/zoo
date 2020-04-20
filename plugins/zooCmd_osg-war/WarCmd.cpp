@@ -74,7 +74,23 @@ void WarCmd::update()
 	EntityManager::getSingleton().updateEntitiesDoF();
 }
 
-void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
+void WarCmd::help(CmdUsage* usage)
+{
+	usage->setDescription("war command: war scene visual simulation.");
+	usage->addCommandLineOption("--weapon <id:int> <model_file:string>", "Create weapon model.");
+	usage->addCommandLineOption("--effect <id:int> <model_file:string>", "Create effect model.");
+	usage->addCommandLineOption("--redarmy <id:int> <model_file:string>", "Create redarmy model.");
+	usage->addCommandLineOption("--bluearmy <id:int> <model_file:string>", "Create bluearmy model.");
+	usage->addCommandLineOption("--allyarmy <id:int> <model_file:string>", "Create allyarmy model.");
+	usage->addCommandLineOption("--stationary <id:int> <model_file:string>", "Create stationary model.");
+	usage->addCommandLineOption("--child-add <id:int> <group:int> <parent_id:int> <parent_group:int>", "Entity add child.");
+	usage->addCommandLineOption("--child-remove <id:int> <group:int> <parent_id:int> <parent_group:int>", "Entity remove child.");
+	usage->addCommandLineOption("--view0 <id:int> <group:int>", "View 0 set track node.");
+	usage->addCommandLineOption("--view1 <id:int> <group:int>", "View 1 set track node.");
+	usage->addCommandLineOption("--view2 <id:int> <group:int>", "View 2 set track node.");
+}
+
+void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 {
 	std::function<bool(string, SlotMethod<EntityManager>::SLOT_METHOD)> func0 = [&, this](string cmd, SlotMethod<EntityManager>::SLOT_METHOD para)
 	{
@@ -83,9 +99,9 @@ void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 
 		if (cmdarg.read(cmd, id, model_file))
 		{
-			subCmd.userData().setData("id", id);
-			subCmd.userData().setData("model_file", model_file);
-			SignalTrigger::connect(subCmd, EntityManager::getSingletonPtr(), para);
+			subcmd.userData().setData("id", id);
+			subcmd.userData().setData("model_file", model_file);
+			SignalTrigger::connect(subcmd, EntityManager::getSingletonPtr(), para);
 			return true;
 		}
 
@@ -98,12 +114,12 @@ void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 
 		if (cmdarg.read(cmd, id, group, parent_id, parent_group))
 		{
-			subCmd.userData().setData(mark);
-			subCmd.userData().setData("id", id);
-			subCmd.userData().setData("group", group);
-			subCmd.userData().setData("parent_id", parent_id);
-			subCmd.userData().setData("parent_group", parent_group);
-			SignalTrigger::connect(subCmd, EntityManager::getSingletonPtr(), &EntityManager::onChangeParentDoF);
+			subcmd.userData().setData(mark);
+			subcmd.userData().setData("id", id);
+			subcmd.userData().setData("group", group);
+			subcmd.userData().setData("parent_id", parent_id);
+			subcmd.userData().setData("parent_group", parent_group);
+			SignalTrigger::connect(subcmd, EntityManager::getSingletonPtr(), &EntityManager::onChangeParentDoF);
 			return true;
 		}
 
@@ -116,10 +132,10 @@ void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 
 		if (cmdarg.read(cmd, id, group))
 		{
-			subCmd.userData().setData(mark);
-			subCmd.userData().setData("id", id);
-			subCmd.userData().setData("group", group);
-			SignalTrigger::connect(subCmd, this, &WarCmd::onSetTrackNode);
+			subcmd.userData().setData(mark);
+			subcmd.userData().setData("id", id);
+			subcmd.userData().setData("group", group);
+			SignalTrigger::connect(subcmd, this, &WarCmd::onSetTrackNode);
 			return true;
 		}
 
@@ -128,10 +144,10 @@ void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 
 	do
 	{
-		if (func0("--effect", &EntityManager::onCreateEffect))
+		if (func0("--weapon", &EntityManager::onCreateWeapon))
 			break;
 
-		if (func0("--weapon", &EntityManager::onCreateWeapon))
+		if (func0("--effect", &EntityManager::onCreateEffect))
 			break;
 
 		if (func0("--redarmy", &EntityManager::onCreateRedArmy))
@@ -143,40 +159,30 @@ void WarCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
 		if (func0("--allyarmy", &EntityManager::onCreateAllyArmy))
 			break;
 
-		if (func0("--staticobj", &EntityManager::onCreateStaticObj))
+		if (func0("--stationary", &EntityManager::onCreateStationary))
 			break;
 
-		if (func1("--child-add", 0))
-			break;
+		if (EntityManager::getSingleton().isEmpty())
+			zoo_warning("No entity");
+		else
+		{
+			if (func1("--child-add", 0))
+				break;
 
-		if (func1("--child-remove", 1))
-			break;
+			if (func1("--child-remove", 1))
+				break;
 
-		if (func2("--view0", 0))
-			break;
+			if (func2("--view0", 0))
+				break;
 
-		if (func2("--view1", 1))
-			break;
+			if (func2("--view1", 1))
+				break;
 
-		if (func2("--view2", 2))
-			break;
+			if (func2("--view2", 2))
+				break;
+		}
+
 	} while (0);
-}
-
-void WarCmd::helpInformation(CmdUsage* usage)
-{
-	usage->setDescription("war command: war scene visual simulation.");
-	usage->addCommandLineOption("--effect <id:int> <model_file:string>", "Create effect model.");
-	usage->addCommandLineOption("--weapon <id:int> <model_file:string>", "Create weapon model.");
-	usage->addCommandLineOption("--redarmy <id:int> <model_file:string>", "Create redarmy model.");
-	usage->addCommandLineOption("--bluearmy <id:int> <model_file:string>", "Create bluearmy model.");
-	usage->addCommandLineOption("--allyarmy <id:int> <model_file:string>", "Create allyarmy model.");
-	usage->addCommandLineOption("--staticobj <id:int> <model_file:string>", "Create staticobj model.");
-	usage->addCommandLineOption("--child-add <id:int> <group:int> <parent_id:int> <parent_group:int>", "Entity add child.");
-	usage->addCommandLineOption("--child-remove <id:int> <group:int> <parent_id:int> <parent_group:int>", "Entity remove child.");
-	usage->addCommandLineOption("--view0 <id:int> <group:int>", "View 0 set track node.");
-	usage->addCommandLineOption("--view1 <id:int> <group:int>", "View 1 set track node.");
-	usage->addCommandLineOption("--view2 <id:int> <group:int>", "View 2 set track node.");
 }
 
 osg::Group* WarCmd::getRootNode() const
@@ -187,6 +193,11 @@ osg::Group* WarCmd::getRootNode() const
 osg::Group* WarCmd::getMainNode() const
 {
 	return m_main.get();
+}
+
+void WarCmd::onCreateView(const UserData& userdata)
+{
+
 }
 
 void WarCmd::onSetTrackNode(const UserData& userdata)

@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/ctk.war.scene/META-INF">
-        <file>MANIFEST.MF</file>
-    </qresource>
-    <qresource prefix="/ctk.war.scened/META-INF">
-        <file>MANIFEST.MF</file>
-    </qresource>
-</RCC>

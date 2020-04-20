@@ -1,5 +1,5 @@
 #include "ZooCmdWidget.h"
-#include <zooCmd/zooCmd.h>
+#include <zooCmdLoader/ZooCmdLoader.h>
 #include <vector>
 #include <string>
 #include <QThread>
@@ -68,7 +68,7 @@ ZooCmdWidget::ZooCmdWidget(QStringList cmdset, QString inputAdaName, QString dat
 	, _isInited(false)
 {
 	setFocusPolicy(Qt::ClickFocus);
-
+	zooCmdL_Load();
 	zooCmd_RemapKeyboard(zooCmd_Key_Escape, Qt::Key_Escape);
 	zooCmd_RemapKeyboard(zooCmd_Key_Delete, Qt::Key_Delete);
 	zooCmd_RemapKeyboard(zooCmd_Key_Home, Qt::Key_Home);

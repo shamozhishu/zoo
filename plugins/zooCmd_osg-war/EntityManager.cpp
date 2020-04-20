@@ -6,12 +6,13 @@
 
 EntityManager::EntityManager()
 {
-	_entNames[ENTITY_EFFECT] = "Effect";
 	_entNames[ENTITY_WEAPON] = "Weapon";
+	_entNames[ENTITY_EFFECT] = "Effect";
 	_entNames[ENTITY_REDARMY] = "RedArmy";
 	_entNames[ENTITY_BLUEARMY] = "BluArmy";
 	_entNames[ENTITY_ALLYARMY] = "AllyArmy";
-	_entNames[ENTITY_STATICOBJ] = "StaticObj";
+	_entNames[ENTITY_STATIONARY] = "Stationary";
+	_entNames[ENTITY_WARREPORTER] = "WarReporter";
 }
 
 EntityManager::~EntityManager()
@@ -47,18 +48,9 @@ ENTITY EntityManager::findEnt(int id, ENTITY_TYPE type)
 	return ent;
 }
 
-void EntityManager::onCreateEffect(const UserData& userdata)
+bool EntityManager::isEmpty() const
 {
-	ENTITY ent = addEntity(userdata, ENTITY_EFFECT);
-	if (ent._dof)
-	{
-		ent._switchNode = new osg::Switch;
-		ent._switchNode->addChild(ent._entNode);
-		ent._switchNode->setAllChildrenOff();
-		ent._entGroup->addChild(ent._switchNode);
-		ent._entTransform->addChild(ent._entGroup);
-		WarCmd::getSingleton().getMainNode()->addChild(ent._entTransform);
-	}
+	return _entities.size() == 0;
 }
 
 void EntityManager::onCreateWeapon(const UserData& userdata)
@@ -71,6 +63,20 @@ void EntityManager::onCreateWeapon(const UserData& userdata)
 		WarCmd::getSingleton().getMainNode()->addChild(ent._entTransform);
 		ent._entGroup->getOrCreateStateSet()->setRenderBinDetails(-1, "RenderBin");
 		ent.m_lineSeg = new osgUtil::LineSegmentIntersector(osg::Vec3(0.0, 0.0, 0.0), osg::Vec3(0.0, 0.0, 0.0));
+	}
+}
+
+void EntityManager::onCreateEffect(const UserData& userdata)
+{
+	ENTITY ent = addEntity(userdata, ENTITY_EFFECT);
+	if (ent._dof)
+	{
+		ent._switchNode = new osg::Switch;
+		ent._switchNode->addChild(ent._entNode);
+		ent._switchNode->setAllChildrenOff();
+		ent._entGroup->addChild(ent._switchNode);
+		ent._entTransform->addChild(ent._entGroup);
+		WarCmd::getSingleton().getMainNode()->addChild(ent._entTransform);
 	}
 }
 
@@ -110,9 +116,9 @@ void EntityManager::onCreateAllyArmy(const UserData& userdata)
 	}
 }
 
-void EntityManager::onCreateStaticObj(const UserData& userdata)
+void EntityManager::onCreateStationary(const UserData& userdata)
 {
-	ENTITY ent = addEntity(userdata, ENTITY_STATICOBJ);
+	ENTITY ent = addEntity(userdata, ENTITY_STATIONARY);
 	if (ent._dof)
 	{
 		const char* vertexShader =
@@ -173,9 +179,14 @@ void EntityManager::onChangeParentDoF(const UserData& userdata)
 		{
 		case 0:
 			if (parentEnt._dof)
+			{
+				WarCmd::getSingleton().getMainNode()->removeChild(ent._entTransform);
 				parentEnt._entTransform->addChild(ent._entTransform);
+			}
 			else
+			{
 				WarCmd::getSingleton().getMainNode()->addChild(ent._entTransform);
+			}
 			break;
 		case 1:
 			if (parentEnt._dof)
@@ -194,7 +205,7 @@ ENTITY EntityManager::addEntity(const UserData& userdata, ENTITY_TYPE entType)
 	ent._dof = SharedObjectPool::findObject<DoF>(id, entType);
 	if (!ent._dof)
 	{
-		zoo_error("Entity[id:%d][type:%s]: DoF does not exist.", id, _entNames[entType].c_str());
+		zoo_error("Entity[id:%d][type:%s]: DoF does not exist.", id, _entNames[entType]);
 		return ent;
 	}
 

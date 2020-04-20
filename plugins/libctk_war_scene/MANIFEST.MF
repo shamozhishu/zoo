@@ -1,7 +1,0 @@
-﻿Plugin-SymbolicName: ctk.war.scene
-Plugin-Category: plugins
-Plugin-ContactAddress: https://github.com/shamozhishu
-Plugin-Description: A plugin for war scene
-Plugin-Name: ctk_war_scene
-Plugin-Vendor: shamozhishu
-Plugin-Version: 1.0.0

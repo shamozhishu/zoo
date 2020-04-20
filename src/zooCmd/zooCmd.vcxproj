@@ -18,7 +18,7 @@
     <ClInclude Include="CmdParser.h" />
     <ClInclude Include="InputAdapter.h" />
     <ClInclude Include="Support.h" />
-    <ClInclude Include="zooCmd.h" />
+    <ClInclude Include="ZooCmd.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CmdUsage.cpp" />
@@ -26,7 +26,7 @@
     <ClCompile Include="CmdManager.cpp" />
     <ClCompile Include="CmdParser.cpp" />
     <ClCompile Include="InputAdapter.cpp" />
-    <ClCompile Include="zooCmd.cpp" />
+    <ClCompile Include="ZooCmd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\zoo\zoo.vcxproj">

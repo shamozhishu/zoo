@@ -184,7 +184,7 @@ bool CmdManager::sendCmd(vector<string> arglist)
 		_lastCmd = pCmd;
 		_lastCmdName = cmdname;
 		cmdArg.getCmdUsage()->setCommandLineUsage(cmdArg.getCmdName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
-		pCmd->helpInformation(cmdArg.getCmdUsage());
+		pCmd->help(cmdArg.getCmdUsage());
 		cmdArg.getCmdUsage()->write(std::cout, helpType);
 		SAFE_DELETE_ARRAY(argv);
 		return true;
@@ -192,8 +192,8 @@ bool CmdManager::sendCmd(vector<string> arglist)
 
 	s_promises.clear();
 	s_retValue.clear();
-	std::shared_ptr<Signal> _subCmd((new Signal));
-	pCmd->parseCmdArg(*_subCmd, cmdArg, s_retValue);
+	std::shared_ptr<Signal> subCmd((new Signal));
+	pCmd->parse(*subCmd, cmdArg, s_retValue);
 	cmdArg.reportRemainingOptionsAsUnrecognized();
 	if (cmdArg.errors())
 	{
@@ -204,7 +204,7 @@ bool CmdManager::sendCmd(vector<string> arglist)
 
 	_lastCmd = pCmd;
 	_lastCmdName = cmdname;
-	_cmdQueue.push(_subCmd);
+	_cmdQueue.push(subCmd);
 	s_blockWhenWaitReturnValue = true;
 	SAFE_DELETE_ARRAY(argv);
 	_block[1].release();

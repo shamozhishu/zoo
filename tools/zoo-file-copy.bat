@@ -19,8 +19,8 @@ echo ----------------------------------------plugins catalog
 
 xcopy /y %source_path%\plugins\zooCmd_osg-war\*.* %target_path%\plugins\zooCmd_osg-war\*.*
 xcopy /y %source_path%\plugins\zooCmd_osg-world\*.* %target_path%\plugins\zooCmd_osg-world\*.*
-xcopy /y %source_path%\plugins\libqt5_pluginfw_admin\*.* %target_path%\plugins\libqt5_pluginfw_admin\*.*
-xcopy /y %source_path%\plugins\libctk_war_scene\*.* %target_path%\plugins\libctk_war_scene\*.*
+xcopy /y %source_path%\plugins\libqt5_pluginfwadmin\*.* %target_path%\plugins\libqt5_pluginfwadmin\*.*
+xcopy /y %source_path%\plugins\libctk_war\*.* %target_path%\plugins\libctk_war\*.*
 xcopy /y %source_path%\plugins\libctk_zoocmd_ui\*.* %target_path%\plugins\libctk_zoocmd_ui\*.*
 xcopy /y /s /e %source_path%\plugins\libctk_zoocmd_ui\Resources\*.* %target_path%\plugins\libctk_zoocmd_ui\Resources\
 
@@ -37,6 +37,7 @@ xcopy /y /s /e %source_path%\tools\*.* %target_path%\tools\
 echo ----------------------------------------dependency catalog
 
 xcopy /y %source_path%\dependency\SharedObject\*.* %target_path%\dependency\SharedObject\*.*
+xcopy /y %source_path%\dependency\zooCmdLoader\*.* %target_path%\dependency\zooCmdLoader\*.*
 xcopy /y /s /e %source_path%\dependency\ctk_service\*.* %target_path%\dependency\ctk_service\
 
 echo ----------------------------------------

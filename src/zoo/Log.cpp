@@ -5,7 +5,7 @@
 
 namespace zoo {
 
-static class Logger* s_pLogger = nullptr;
+class Logger* g_pLogger = nullptr;
 class Logger
 {
 public:
@@ -17,9 +17,9 @@ public:
 		: _hasConsole(hasConsole)
 		, _level(ELL_DEBUG)
 	{
-		if (NULL == s_pLogger)
+		if (NULL == g_pLogger)
 		{
-			s_pLogger = this;
+			g_pLogger = this;
 
 			if (_hasConsole)
 			{
@@ -45,24 +45,41 @@ public:
 
 	~Logger()
 	{
-		if (NULL != s_pLogger)
+		if (NULL != g_pLogger)
 		{
-			if (s_pLogger->_fout)
+			if (g_pLogger->_fout)
 				_fout.close();
-			if (s_pLogger->_hasConsole)
+			if (g_pLogger->_hasConsole)
 				FreeConsole();
-			s_pLogger = NULL;
+			g_pLogger = NULL;
 		}
 	}
 };
 
-#if defined(_DEBUG) || defined(ZOO_ENABLE_LOG_PRINT)
-static Logger s_logger(true, "");
+class LogConfig
+{
+public:
+	LogConfig()
+	{
+		string retStr;
+		retStr.resize(128);
+		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "logfile", "", &retStr[0], 128, "./config.ini");
+		string logFileName = retStr.c_str();
+#ifdef _DEBUG
+		static Logger s_logger(true, logFileName);
+#else
+		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "console", "0", &retStr[0], 128, "./config.ini");
+		bool hasConsole = atoi(retStr.c_str()) == 1;
+		static Logger s_logger(hasConsole, logFileName);
 #endif
+	}
+};
+
+LogConfig g_logConfig;
 
 inline void Log::print(ELogLevel level, const char* szFormat, ...)
 {
-	if (s_pLogger && level >= s_pLogger->_level)
+	if (g_pLogger && level >= g_pLogger->_level)
 	{
 		static char szArgMessage[2048];
 		va_list args;
@@ -70,7 +87,7 @@ inline void Log::print(ELogLevel level, const char* szFormat, ...)
 		vsprintf(szArgMessage, szFormat, args);
 		va_end(args);
 
-		if (s_pLogger->_hasConsole)
+		if (g_pLogger->_hasConsole)
 		{
 			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 			switch (level)
@@ -81,18 +98,18 @@ inline void Log::print(ELogLevel level, const char* szFormat, ...)
 			}
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
 			printf("%s\n", szArgMessage);
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		}
 
-		if (s_pLogger->_fout)
-			s_pLogger->_fout << szArgMessage << std::endl;
+		if (g_pLogger->_fout)
+			g_pLogger->_fout << szArgMessage << std::endl;
 	}
 }
 
 void Log::setLevel(ELogLevel level)
 {
-	if (s_pLogger)
-		s_pLogger->_level = level;
+	if (g_pLogger)
+		g_pLogger->_level = level;
 }
 
 }

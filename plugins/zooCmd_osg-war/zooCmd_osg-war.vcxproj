@@ -74,6 +74,7 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\zooCmd_osg"</Command>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\OpenSceneGraph\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ZOO_ENABLE_LOG_PRINT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

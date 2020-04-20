@@ -1,7 +1,7 @@
 #include <zooCmd_osg/InputDevice.h>
 #include <zoo/BitState.h>
 #include <zoo/Interlock.h>
-#include <zooCmd/zooCmd.h>
+#include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
 
 ZOO_REGISTER(zooCmd_osg::InputDevice)

@@ -1,4 +1,4 @@
-#include <zooCmd/zooCmd.h>
+#include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
 #include <zooCmd/InputAdapter.h>
 #include <zooCmd/Cmd.h>
@@ -137,19 +137,13 @@ bool zooCmd_IsInited()
 	return s_isInited;
 }
 
-bool zooCmd_Send(const char* cmdlineFormat, ...)
+bool zooCmd_Send(const char* cmdline)
 {
 	if (!s_isInited)
 		return false;
 
-	static char szbuf[2048] = { 0 };
-	va_list args;
-	va_start(args, cmdlineFormat);
-	vsprintf_s(szbuf, sizeof(szbuf), cmdlineFormat, args);
-	va_end(args);
-
 	vector<string> arglist;
-	stringtok(arglist, szbuf);
+	stringtok(arglist, cmdline);
 	return CmdManager::getSingleton().sendCmd(arglist);
 }
 

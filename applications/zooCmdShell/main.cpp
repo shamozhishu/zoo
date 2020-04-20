@@ -1,6 +1,6 @@
-#include "../../src/zooCmd/zooCmd.h"
 #include <stdio.h>
 #include <thread>
+#include <zooCmdLoader/ZooCmdLoader.h>
 
 static char* strtrim(char* s)
 {
@@ -74,6 +74,9 @@ static void parsecmdline()
 
 int main(int argc, char* args[])
 {
+	if (!zooCmdL_Open())
+		return -1;
+
 	const char* datadir = nullptr;
 	if (argc > 1)
 		datadir = args[1];
@@ -87,7 +90,8 @@ int main(int argc, char* args[])
 			cmdset[i] = args[i + 2];
 	}
 
-	if (!zooCmd_InitA(cmdcount, (const char**)cmdset, "zooCmd_osg", datadir))
+	zooCmdL_Load();
+	if (!zooCmd_InitA(cmdcount, (const char**)cmdset, "zooCmd_osg", datadir, 0, 0, 1))
 	{
 		if (cmdset)
 			delete[] cmdset;
@@ -101,6 +105,7 @@ int main(int argc, char* args[])
 	zooCmd_Run();
 	cmdline.join();
 	zooCmd_Destroy();
+	zooCmdL_Close();
 
 	return 0;
 }

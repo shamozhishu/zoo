@@ -11,77 +11,7 @@ bool BuiltinCmd::init()
 	return CmdManager::getSingleton().getInputAdapter()->init();
 }
 
-void BuiltinCmd::parseCmdArg(Signal& subCmd, CmdParser& cmdarg, UserData& retValue)
-{
-	do
-	{
-		if (cmdarg.argc() == 2 && cmdarg.read("-exit"))
-		{
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onEndMainLoop);
-			break;
-		}
-
-		bool b;
-		if (cmdarg.read("--test-bool", b))
-		{
-			retValue.setData("test_bool", false);
-			subCmd.userData().setData("test_bool", b);
-			subCmd.userData().setData("test_mark", 0);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-		int i;
-		if (cmdarg.read("--test-int", i))
-		{
-			retValue.setData("test_int", 0);
-			subCmd.userData().setData("test_int", i);
-			subCmd.userData().setData("test_mark", 1);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-		float f;
-		if (cmdarg.read("--test-float", f))
-		{
-			retValue.setData("test_float", 0.0f);
-			subCmd.userData().setData("test_float", f);
-			subCmd.userData().setData("test_mark", 2);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-		double d;
-		if (cmdarg.read("--test-double", d))
-		{
-			retValue.setData("test_double", 0.0);
-			subCmd.userData().setData("test_double", d);
-			subCmd.userData().setData("test_mark", 3);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-		if (cmdarg.read("--test-str"))
-		{
-			retValue.setData("test_str", string(""));
-			subCmd.userData().setData("test_str", string("zooCmd is generated for module decoupling!"));
-			subCmd.userData().setData("test_mark", 4);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-		if (cmdarg.read("--test-err"))
-		{
-			subCmd.userData().setData(string("Tip: you are using zooCmd for modularity!"));
-			subCmd.userData().setData("test_mark", 5);
-			SignalTrigger::connect<BuiltinCmd>(subCmd, this, &BuiltinCmd::onTestReturnValue);
-			break;
-		}
-
-	} while (0);
-}
-
-void BuiltinCmd::helpInformation(CmdUsage* usage)
+void BuiltinCmd::help(CmdUsage* usage)
 {
 	usage->setDescription("Built-in commands: encapsulation of many basic functions.");
 	usage->addCommandLineOption("-exit", "End main loop.");
@@ -91,6 +21,76 @@ void BuiltinCmd::helpInformation(CmdUsage* usage)
 	usage->addCommandLineOption("--test-double <value:double> (test_double:double)", "Test double return value.");
 	usage->addCommandLineOption("--test-str (test_str:string)", "Test string return value.");
 	usage->addCommandLineOption("--test-err (error_message:string)", "Test error tip message.");
+}
+
+void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
+{
+	do
+	{
+		if (cmdarg.argc() == 2 && cmdarg.read("-exit"))
+		{
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onEndMainLoop);
+			break;
+		}
+
+		bool b;
+		if (cmdarg.read("--test-bool", b))
+		{
+			returnValue.setData("test_bool", false);
+			subcmd.userData().setData("test_bool", b);
+			subcmd.userData().setData("test_mark", 0);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+		int i;
+		if (cmdarg.read("--test-int", i))
+		{
+			returnValue.setData("test_int", 0);
+			subcmd.userData().setData("test_int", i);
+			subcmd.userData().setData("test_mark", 1);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+		float f;
+		if (cmdarg.read("--test-float", f))
+		{
+			returnValue.setData("test_float", 0.0f);
+			subcmd.userData().setData("test_float", f);
+			subcmd.userData().setData("test_mark", 2);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+		double d;
+		if (cmdarg.read("--test-double", d))
+		{
+			returnValue.setData("test_double", 0.0);
+			subcmd.userData().setData("test_double", d);
+			subcmd.userData().setData("test_mark", 3);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+		if (cmdarg.read("--test-str"))
+		{
+			returnValue.setData("test_str", string(""));
+			subcmd.userData().setData("test_str", string("zooCmd is generated for module decoupling!"));
+			subcmd.userData().setData("test_mark", 4);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+		if (cmdarg.read("--test-err"))
+		{
+			subcmd.userData().setData(string("Tip: you are using zooCmd for modularity!"));
+			subcmd.userData().setData("test_mark", 5);
+			SignalTrigger::connect<BuiltinCmd>(subcmd, this, &BuiltinCmd::onTestReturnValue);
+			break;
+		}
+
+	} while (0);
 }
 
 void BuiltinCmd::onEndMainLoop(const UserData& userdata)

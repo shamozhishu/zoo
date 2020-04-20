@@ -3,7 +3,7 @@
 std::vector<SharedObject*> SharedObjectPool::_objectList;
 std::map<int, SharedObject*> SharedObjectPool::_objectMap[SharedObjectPool::GroupCount];
 
-SharedObject::SharedObject(int id, int group)
+SharedObject::SharedObject(int id, int group /*= 0*/)
 	: _id(id)
 {
 	if (group < 0 || group >= SharedObjectPool::GroupCount)
@@ -29,14 +29,14 @@ std::vector<SharedObject*> SharedObjectPool::getObjectList()
 	return _objectList;
 }
 
-std::map<int, SharedObject*> SharedObjectPool::getObjectMap(int group)
+std::map<int, SharedObject*> SharedObjectPool::getObjectMap(int group /*= 0*/)
 {
 	if (group < 0 || group >= GroupCount)
 		group = 0;
 	return _objectMap[group];
 }
 
-SharedObject* SharedObjectPool::findObject(int id, int group)
+SharedObject* SharedObjectPool::findObject(int id, int group /*= 0*/)
 {
 	if (group < 0 || group >= GroupCount)
 		return nullptr;
