@@ -7,7 +7,7 @@ extern "C" {
 extern bool zooCmdL_Open();
 extern void zooCmdL_Close();
 extern bool zooCmdL_Load(void);
-extern bool zooCmdL_Send(const char* cmdlineFormat, ...);
+extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 
 #define zooCmd_InitA zooCmd_InitA_Loader
 #define zooCmd_InitW zooCmd_InitW_Loader

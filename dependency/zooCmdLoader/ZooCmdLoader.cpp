@@ -102,12 +102,21 @@ bool zooCmdL_Load(void)
 	return true;
 }
 
-bool zooCmdL_Send(const char* cmdlineFormat, ...)
+bool zooCmdL_Send(const char* cmd, const char* format, ...)
 {
 	static char szbuf[2048] = { 0 };
+	size_t offset = 0;
+	if (cmd != nullptr && strcmp(cmd, "") != 0)
+	{
+		offset = strlen(cmd);
+		sprintf_s(szbuf, sizeof(szbuf), cmd);
+		sprintf_s(szbuf + offset, sizeof(szbuf) - offset, " ");
+		offset += 1;
+	}
+
 	va_list args;
-	va_start(args, cmdlineFormat);
-	vsprintf_s(szbuf, sizeof(szbuf), cmdlineFormat, args);
+	va_start(args, format);
+	vsprintf_s(szbuf + offset, sizeof(szbuf) - offset, format, args);
 	va_end(args);
 	return zooCmd_Send_Loader(szbuf);
 }

@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	if (!zooCmdL_Open())
 	{
-		qCritical() << "[Error] Open zooCmd failed!";
+		qCritical() << "[Error] Open zooCmd module failed!";
 		return -1;
 	}
 

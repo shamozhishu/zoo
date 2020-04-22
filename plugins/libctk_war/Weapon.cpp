@@ -3,6 +3,7 @@
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <zoo/Utils.h>
 #include "CommonDef.h"
+#include "WarCommander.h"
 
 Weapon::Weapon()
 {
@@ -16,7 +17,7 @@ void Weapon::init()
 {
 	Entity::init();
 	string model_file = _props.value(Weapon_TableField[MODEL_FILE]).toString().toStdString();
-	zooCmdL_Send("war --weapon %d %s", _id, model_file.c_str());
+	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--weapon %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE Weapon::getType() const

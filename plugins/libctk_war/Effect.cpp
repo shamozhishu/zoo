@@ -3,6 +3,7 @@
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <zoo/Utils.h>
 #include "CommonDef.h"
+#include "WarCommander.h"
 
 Effect::Effect()
 {
@@ -16,7 +17,7 @@ void Effect::init()
 {
 	Entity::init();
 	string model_file = _props.value(Effect_TableField[MODEL_FILE]).toString().toStdString();
-	zooCmdL_Send("war --effect %d %s", _id, model_file.c_str());
+	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--effect %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE Effect::getType() const

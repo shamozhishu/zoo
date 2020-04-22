@@ -3,6 +3,7 @@
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <zoo/Utils.h>
 #include "CommonDef.h"
+#include "WarCommander.h"
 
 BlueArmy::BlueArmy()
 {
@@ -16,7 +17,7 @@ void BlueArmy::init()
 {
 	Entity::init();
 	string model_file = _props.value(BlueArmy_TableField[MODEL_FILE]).toString().toStdString();
-	zooCmdL_Send("war --bluearmy %d %s", _id, model_file.c_str());
+	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--bluearmy %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE BlueArmy::getType() const

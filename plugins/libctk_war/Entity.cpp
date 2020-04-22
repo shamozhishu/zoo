@@ -12,7 +12,7 @@ public:
 	{
 		if (DoF::addChild(child))
 		{
-			zooCmdL_Send("war --child-add %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
+			zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--child-add %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
 			return true;
 		}
 
@@ -23,7 +23,7 @@ public:
 	{
 		if (DoF::removeChild(child))
 		{
-			zooCmdL_Send("war --child-remove %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
+			zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--child-remove %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
 			return true;
 		}
 

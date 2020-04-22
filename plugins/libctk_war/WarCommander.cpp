@@ -17,8 +17,9 @@
 #include "CommonDef.h"
 
 using namespace zoo;
-WarCommander::WarCommander(string resPath, string mainTable)
-	: _resPath(resPath)
+WarCommander::WarCommander(string relatedCmd, string resPath, string mainTable)
+	: _relatedCmd(relatedCmd)
+	, _resPath(resPath)
 	, _mainTable(mainTable)
 	, _currentBattlefield(nullptr)
 {
@@ -241,7 +242,12 @@ void WarCommander::saveCurBattlefield()
 	writeFile(ENTITY_WARREPORTER, ss, pTable);
 }
 
-const char* WarCommander::getEntTypeName(ENTITY_TYPE entType)
+const char* WarCommander::getRelatedCmd() const
+{
+	return _relatedCmd.c_str();
+}
+
+const char* WarCommander::getEntTypeName(ENTITY_TYPE entType) const
 {
 	return _entNames[entType];
 }

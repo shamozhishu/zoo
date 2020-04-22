@@ -3,6 +3,7 @@
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <zoo/Utils.h>
 #include "CommonDef.h"
+#include "WarCommander.h"
 
 Stationary::Stationary()
 {
@@ -16,7 +17,7 @@ void Stationary::init()
 {
 	Entity::init();
 	string model_file = _props.value(Stationary_TableField[MODEL_FILE]).toString().toStdString();
-	zooCmdL_Send("war --stationary %d %s", _id, model_file.c_str());
+	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--stationary %d %s", _id, model_file.c_str());
 }
 
 ENTITY_TYPE Stationary::getType() const

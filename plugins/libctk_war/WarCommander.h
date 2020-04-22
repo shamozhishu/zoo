@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-#include <string>
 #include <QTimer>
 #include <zoo/Support.h>
 #include <zoo/Singleton.h>
@@ -14,13 +12,14 @@ class WarCommander : public QObject, public zoo::Singleton<WarCommander>
 {
 	Q_OBJECT
 public:
-	WarCommander(string resPath, string mainTable);
+	WarCommander(string relatedCmd, string resPath, string mainTable);
 	~WarCommander();
 	const string& getResPath() const;
 	bool enterBattlefield(int id);
 	void exitCurBattlefield();
 	void saveCurBattlefield();
-	const char* getEntTypeName(ENTITY_TYPE entType);
+	const char* getRelatedCmd() const;
+	const char* getEntTypeName(ENTITY_TYPE entType) const;
 
 protected:
 	void loadDoF(QDomElement& elem, DoF* parent);
@@ -31,6 +30,7 @@ protected slots:
 	void tick();
 
 private:
+	string _relatedCmd;
 	string _resPath;
 	string _mainTable;
 	QTimer _tickTimer;

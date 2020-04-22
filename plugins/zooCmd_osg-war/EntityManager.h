@@ -49,5 +49,5 @@ private:
 
 private:
 	const char* _entNames[ENTITY_COUNT];
-	std::map<long long, ENTITY> _entities;
+	std::unordered_map<long long, ENTITY> _entities;
 };
