@@ -23,16 +23,13 @@ public:
 
 			if (_hasConsole)
 			{
-				_hasConsole = (AllocConsole() == TRUE);
-				if (_hasConsole)
-				{
-					_tfreopen(_TEXT("CONOUT$"), _TEXT("w+t"), stdout);
-					TCHAR szProgramName[MAX_PATH];
-					HMODULE hModule(NULL);
-					GetModuleFileName(hModule, szProgramName, MAX_PATH);
-					SetConsoleTitle(szProgramName);
-					setlocale(LC_ALL, "chs");
-				}
+				AllocConsole();
+				_tfreopen(_TEXT("CONOUT$"), _TEXT("w+t"), stdout);
+				TCHAR szProgramName[MAX_PATH];
+				HMODULE hModule(NULL);
+				GetModuleFileName(hModule, szProgramName, MAX_PATH);
+				SetConsoleTitle(szProgramName);
+				setlocale(LC_ALL, "chs");
 			}
 
 			if (!logFileName.empty())

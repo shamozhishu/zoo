@@ -86,44 +86,44 @@ void Entity::update(float dt)
 
 void Entity::setPos(double x, double y, double z)
 {
-	_dof->setX(x);
-	_dof->setY(y);
-	_dof->setZ(z);
+	_dof->setPosX(x);
+	_dof->setPosY(y);
+	_dof->setPosZ(z);
 }
 
 void Entity::setRot(float h, float p, float r)
 {
-	_dof->setH(h);
-	_dof->setP(p);
-	_dof->setR(r);
+	_dof->setHeading(h);
+	_dof->setPitch(p);
+	_dof->setRoll(r);
 }
 
 double Entity::getX() const
 {
-	return _dof->getX();
+	return _dof->getPosX();
 }
 
 double Entity::getY() const
 {
-	return _dof->getY();
+	return _dof->getPosY();
 }
 
 double Entity::getZ() const
 {
-	return _dof->getZ();
+	return _dof->getPosZ();
 }
 
 float Entity::getH() const
 {
-	return _dof->getH();
+	return _dof->getHeading();
 }
 
 float Entity::getP() const
 {
-	return _dof->getP();
+	return _dof->getPitch();
 }
 
 float Entity::getR() const
 {
-	return _dof->getR();
+	return _dof->getRoll();
 }

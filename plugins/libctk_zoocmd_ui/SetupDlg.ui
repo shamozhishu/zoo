@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>330</width>
-    <height>200</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
+     <y>260</y>
      <width>311</width>
      <height>33</height>
     </rect>
@@ -81,7 +81,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>130</y>
+     <y>230</y>
      <width>311</width>
      <height>31</height>
     </rect>
@@ -109,11 +109,14 @@
      <x>10</x>
      <y>10</y>
      <width>311</width>
-     <height>111</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

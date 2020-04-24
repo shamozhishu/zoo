@@ -4,13 +4,15 @@
 
 class SharedObject_Export DoF : public SharedObject
 {
-	PROPERTY_RW(double, _x, X)
-	PROPERTY_RW(double, _y, Y)
-	PROPERTY_RW(double, _z, Z)
-	PROPERTY_RW(float, _h, H)
-	PROPERTY_RW(float, _p, P)
-	PROPERTY_RW(float, _r, R)
-	PROPERTY_RW(float, _scale, Scale)
+	PROPERTY_RW(double, _x, PosX)
+	PROPERTY_RW(double, _y, PosY)
+	PROPERTY_RW(double, _z, PosZ)
+	PROPERTY_RW(float, _heading, Heading)
+	PROPERTY_RW(float, _pitch, Pitch)
+	PROPERTY_RW(float, _roll, Roll)
+	PROPERTY_RW(float, _sx, ScaleX)
+	PROPERTY_RW(float, _sy, ScaleY)
+	PROPERTY_RW(float, _sz, ScaleZ)
 	PROPERTY_R(DoF*, _parent, Parent)
 public:
 	DoF(int id, int group);

@@ -16,6 +16,11 @@
   <ItemGroup>
     <ClCompile Include="PluginFrameworkAdmin.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
+      <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C041DAAF-A070-4B33-830C-7B3AFE40A98B}</ProjectGuid>
     <Keyword>QtVS_v302</Keyword>
@@ -73,7 +78,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -83,7 +88,9 @@
       <AdditionalDependencies>CTKCored.lib;CTKPluginFrameworkd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\bin\plugins"
+      <Command>mkdir "D:\Program Files\zoo\include\ctk_service"
+xcopy /y /s /e "..\..\dependency\ctk_service" "D:\Program Files\zoo\include\ctk_service"
+mkdir "D:\Program Files\zoo\bin\plugins"
 xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -93,7 +100,8 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ZOO_ENABLE_LOG_PRINT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,7 +111,9 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\bin\plugins"
+      <Command>mkdir "D:\Program Files\zoo\include\ctk_service"
+xcopy /y /s /e "..\..\dependency\ctk_service" "D:\Program Files\zoo\include\ctk_service"
+mkdir "D:\Program Files\zoo\bin\plugins"
 xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

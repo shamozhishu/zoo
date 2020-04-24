@@ -55,7 +55,10 @@
       <PreprocessorDefinitions>SHAREDOBJECT_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"</Command>
+      <Command>mkdir "D:\Program Files\zoo\include\SharedObject"
+xcopy /DY "*.h" "D:\Program Files\zoo\include\SharedObject"
+xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -74,7 +77,10 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"</Command>
+      <Command>mkdir "D:\Program Files\zoo\include\SharedObject"
+xcopy /DY "*.h" "D:\Program Files\zoo\include\SharedObject"
+xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

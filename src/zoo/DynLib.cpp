@@ -29,7 +29,7 @@ bool DynLib::load()
 	_hInst = (DYNLIB_HANDLE)DYNLIB_LOAD(_name.c_str());
 	if (!_hInst)
 	{
-		zoo_error("Could not load dynamic library %s.dll. System Error:%s(DynLib::load)", _name.c_str(), dynlibError().c_str());
+		zoo_error("Could not load dynamic library %s.dll. System Error:%s", _name.c_str(), dynlibError().c_str());
 		return false;
 	}
 	return true;
@@ -43,7 +43,7 @@ bool DynLib::unload()
 	if (DYNLIB_UNLOAD(_hInst))
 	{
 		_hInst = NULL;
-		zoo_error("Could not unload dynamic library %s.dll. System Error:%s(DynLib::unload)", _name.c_str(), dynlibError().c_str());
+		zoo_error("Could not unload dynamic library %s.dll. System Error:%s", _name.c_str(), dynlibError().c_str());
 		return false;
 	}
 	_hInst = NULL;

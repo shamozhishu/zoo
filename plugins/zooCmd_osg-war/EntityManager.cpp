@@ -27,11 +27,11 @@ void EntityManager::updateEntitiesDoF()
 	for (; it != itEnd; ++it)
 	{
 		ent = it->second;
-		ent._entTransform->setMatrix(osg::Matrix::scale(ent._dof->getScale(), ent._dof->getScale(), ent._dof->getScale())
-			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getR()), osg::Y_AXIS)
-			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getP()), osg::X_AXIS)
-			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getH()), osg::Z_AXIS)
-			* osg::Matrix::translate(ent._dof->getX(), ent._dof->getY(), ent._dof->getZ()));
+		ent._entTransform->setMatrix(osg::Matrix::scale(ent._dof->getScaleX(), ent._dof->getScaleY(), ent._dof->getScaleZ())
+			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getRoll()), osg::Y_AXIS)
+			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getPitch()), osg::X_AXIS)
+			* osg::Matrix::rotate(osg::DegreesToRadians(ent._dof->getHeading()), osg::Z_AXIS)
+			* osg::Matrix::translate(ent._dof->getPosX(), ent._dof->getPosY(), ent._dof->getPosZ()));
 	}
 }
 

@@ -1,4 +1,5 @@
 #include "PluginFrameworkAdmin.h"
+#include <zoo/Log.h>
 #include <QPair>
 #include <QDebug>
 #include <QSettings>
@@ -27,44 +28,106 @@ public:
 
 	void installPlugins(const QString& pluginPath)
 	{
+		QHash<QString, QString> pluginList;
+		QString pluginName, pluginName_r, pluginName_d;
 		QDirIterator dirIter(pluginPath, _pluginLibFilter, QDir::Files);
+
 		while (dirIter.hasNext())
 		{
 			dirIter.next();
-			QString pluginName = dirIter.fileName().mid(3);   // strip the "lib" prefix.
+			pluginName = dirIter.fileName().mid(3);   // strip the "lib" prefix.
 			pluginName.truncate(pluginName.lastIndexOf('.')); // remove the suffix.
-#ifdef _DEBUG
-			pluginName.truncate(pluginName.lastIndexOf('d'));
-#endif
 
+			bool existed = false;
+			bool needReplace = false;
+			auto it = pluginList.begin();
+			auto itEnd = pluginList.end();
+			for (; it != itEnd; ++it)
+			{
+				if (it.key().length() > pluginName)
+				{
+					pluginName_d = it.key();
+					pluginName_r = pluginName;
+#ifdef _DEBUG
+					needReplace = false;
+#else
+					needReplace = true;
+#endif
+				}
+				else
+				{
+					pluginName_d = pluginName;
+					pluginName_r = it.key();
+#ifdef _DEBUG
+					needReplace = true;
+#else
+					needReplace = false;
+#endif
+				}
+
+				if (pluginName_d.compare(pluginName_r + "d", Qt::CaseInsensitive) == 0)
+				{
+					existed = true;
+					if (needReplace)
+					{
+						pluginList.erase(it);
+						pluginList.insert(pluginName, dirIter.filePath());
+					}
+
+					break;
+				}
+			}
+
+			if (!existed)
+				pluginList.insert(pluginName, dirIter.filePath());
+		}
+
+		auto it = pluginList.begin();
+		auto itEnd = pluginList.end();
+		for (; it != itEnd; ++it)
+		{
+			pluginName = it.key();
+			QString pluginFile = it.value();
+			if (pluginName.contains("qt5_pluginfwadmin", Qt::CaseInsensitive))
+				continue;
+
+			zoo_debug("%s: %s", pluginName.toStdString().c_str(), pluginFile.toStdString().c_str());
 			if (_installedPluginNames.find(pluginName) == _installedPluginNames.end())
 			{
 				try
 				{
-					QSharedPointer<ctkPlugin> plugin = _context->installPlugin(QUrl::fromLocalFile(dirIter.filePath()));
+					QSharedPointer<ctkPlugin> plugin = _context->installPlugin(QUrl::fromLocalFile(pluginFile));
 					plugin->start(ctkPlugin::START_TRANSIENT);
 					_installedPluginNames.insert(pluginName, plugin->getPluginId());
 				}
 				catch (const ctkPluginException& e)
 				{
-					qCritical() << e.what();
+					zoo_error("%s", e.what());
+					throw e.what();
+					exit(-1);
 				}
 				catch (const ctkRuntimeException& e)
 				{
-					qCritical() << e.what();
+					zoo_error("%s", e.what());
+					throw e.what();
+					exit(-1);
 				}
 				catch (const ctkException& e)
 				{
-					qCritical() << e.what();
+					zoo_error("%s", e.what());
+					throw e.what();
+					exit(-1);
 				}
 				catch (const std::exception& e)
 				{
-					qCritical() << e.what();
+					zoo_error("%s", e.what());
+					throw e.what();
+					exit(-1);
 				}
 			}
 			else
 			{
-				qDebug() << pluginName << " plug-in is already installed!";
+				zoo_debug("%s plug-in is already installed!", pluginName.toStdString().c_str());
 			}
 		}
 	}
@@ -88,24 +151,24 @@ public:
 			}
 			catch (const ctkPluginException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const ctkRuntimeException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const ctkException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const std::exception& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 		}
 		else
 		{
-			qDebug() << pluginName << " plug-in is cannot be installed!";
+			zoo_debug("%s plug-in is cannot be installed!", pluginName.toStdString().c_str());
 		}
 	}
 
@@ -122,24 +185,24 @@ public:
 			}
 			catch (const ctkPluginException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const ctkRuntimeException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const ctkException& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 			catch (const std::exception& e)
 			{
-				qCritical() << e.what();
+				zoo_error("%s", e.what());
 			}
 		}
 		else
 		{
-			qDebug() << pluginName << " plug-in is cannot be uninstalled!";
+			zoo_debug("%s plug-in is cannot be uninstalled!", pluginName.toStdString().c_str());
 		}
 	}
 };

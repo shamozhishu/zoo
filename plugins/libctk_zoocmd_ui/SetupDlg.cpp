@@ -9,24 +9,51 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-	setFixedSize(330, 200);
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
 	connect(ui.pushButton_datadir, SIGNAL(clicked()), this, SLOT(onSetDataDir()));
 	connect(ui.okButton, SIGNAL(clicked()), this, SLOT(onOk()));
 
 	QStringList cmdlist;
 	QStringList pluginLibFilter;
+	QString cmdName, cmdName_r, cmdName_d;
 	pluginLibFilter << "*.dll" << "*.so" << "*.dylib";
 	QDirIterator dirIter(QCoreApplication::applicationDirPath() + "/" + inputAdaName, pluginLibFilter, QDir::Files);
 	while (dirIter.hasNext())
 	{
 		dirIter.next();
-		QString cmdName = dirIter.fileName().mid(inputAdaName.size() + 1);
+		cmdName = dirIter.fileName().mid(inputAdaName.size() + 1);
 		cmdName.truncate(cmdName.lastIndexOf('.'));
-#ifdef _DEBUG
-		cmdName.truncate(cmdName.lastIndexOf('d'));
-#endif
-		cmdlist.push_back(cmdName);
+
+		bool existed = false;
+		bool needReplace = false;
+		auto it = cmdlist.begin();
+		auto itEnd = cmdlist.end();
+		for (; it != itEnd; ++it)
+		{
+			if (it->length() > cmdName)
+			{
+				cmdName_d = *it;
+				cmdName_r = cmdName;
+				needReplace = true;
+			}
+			else
+			{
+				cmdName_d = cmdName;
+				cmdName_r = *it;
+				needReplace = false;
+			}
+
+			if (cmdName_d.compare(cmdName_r + "d", Qt::CaseInsensitive) == 0)
+			{
+				existed = true;
+				if (needReplace)
+					*it = cmdName;
+				break;
+			}
+		}
+
+		if (!existed)
+			cmdlist.push_back(cmdName);
 	}
 
 	int rowCount = cmdlist.size();
@@ -75,6 +102,7 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	}
 
 	settings.endGroup();
+	setFixedSize(width(), height());
 }
 
 QString SetupDlg::getDataDir() const

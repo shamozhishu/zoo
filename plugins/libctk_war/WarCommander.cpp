@@ -291,13 +291,15 @@ void WarCommander::loadDoF(QDomElement& elem, DoF* parent)
 		return;
 	}
 
-	dof->setX(elem.attribute("x").toDouble());
-	dof->setY(elem.attribute("y").toDouble());
-	dof->setZ(elem.attribute("z").toDouble());
-	dof->setH(elem.attribute("h").toFloat());
-	dof->setP(elem.attribute("p").toFloat());
-	dof->setR(elem.attribute("r").toFloat());
-	dof->setScale(elem.attribute("scale").toFloat());
+	dof->setPosX(elem.attribute("x").toDouble());
+	dof->setPosY(elem.attribute("y").toDouble());
+	dof->setPosZ(elem.attribute("z").toDouble());
+	dof->setHeading(elem.attribute("h").toFloat());
+	dof->setPitch(elem.attribute("p").toFloat());
+	dof->setRoll(elem.attribute("r").toFloat());
+	dof->setScaleX(elem.attribute("sx").toFloat());
+	dof->setScaleY(elem.attribute("sy").toFloat());
+	dof->setScaleZ(elem.attribute("sz").toFloat());
 	if (parent)
 		parent->addChild(dof);
 
