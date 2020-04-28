@@ -1,4 +1,5 @@
 #include "Battlefield.h"
+#include "EntDoF.h"
 #include "Effect.h"
 #include "Weapon.h"
 #include "RedArmy.h"
@@ -97,6 +98,8 @@ Weapon* Battlefield::createWeapon(int id, TableCSV* pTable)
 		_weapons.push_back(pWeapon);
 	}
 
+	SAFE_DELETE(pWeapon->_dof);
+	pWeapon->_dof = new EntDoF(id, ENTITY_WEAPON);
 	if (pTable)
 		pWeapon->deserialize(pTable);
 
@@ -128,6 +131,8 @@ Effect* Battlefield::createEffect(int id, TableCSV* pTable)
 		_effects.push_back(pEffect);
 	}
 
+	SAFE_DELETE(pEffect->_dof);
+	pEffect->_dof = new EntDoF(id, ENTITY_EFFECT);
 	if (pTable)
 		pEffect->deserialize(pTable);
 
@@ -159,6 +164,8 @@ RedArmy* Battlefield::createRedArmy(int id, TableCSV* pTable)
 		_redArmies.push_back(pRedArmy);
 	}
 
+	SAFE_DELETE(pRedArmy->_dof);
+	pRedArmy->_dof = new EntDoF(id, ENTITY_REDARMY);
 	if (pTable)
 		pRedArmy->deserialize(pTable);
 
@@ -190,6 +197,8 @@ BlueArmy* Battlefield::createBlueArmy(int id, TableCSV* pTable)
 		_blueArmies.push_back(pBlueArmy);
 	}
 
+	SAFE_DELETE(pBlueArmy->_dof);
+	pBlueArmy->_dof = new EntDoF(id, ENTITY_BLUEARMY);
 	if (pTable)
 		pBlueArmy->deserialize(pTable);
 
@@ -221,6 +230,8 @@ AllyArmy* Battlefield::createAllyArmy(int id, TableCSV* pTable)
 		_allyArmies.push_back(pAllyArmy);
 	}
 
+	SAFE_DELETE(pAllyArmy->_dof);
+	pAllyArmy->_dof = new EntDoF(id, ENTITY_ALLYARMY);
 	if (pTable)
 		pAllyArmy->deserialize(pTable);
 
@@ -252,6 +263,8 @@ Stationary* Battlefield::createStationary(int id, TableCSV* pTable)
 		_stationaries.push_back(pStationary);
 	}
 
+	SAFE_DELETE(pStationary->_dof);
+	pStationary->_dof = new EntDoF(id, ENTITY_STATIONARY);
 	if (pTable)
 		pStationary->deserialize(pTable);
 
@@ -283,6 +296,8 @@ WarReporter* Battlefield::createWarReporter(int id, zoo::TableCSV* pTable)
 		_warReporters.push_back(pWarReporter);
 	}
 
+	SAFE_DELETE(pWarReporter->_dof);
+	pWarReporter->_dof = new EntDoF(id, ENTITY_WARREPORTER);
 	if (pTable)
 		pWarReporter->deserialize(pTable);
 

@@ -10,11 +10,11 @@
 #include "InstanceReleaser.h"
 #include <zoo/DatabaseCSV.h>
 #include <QCoreApplication>
-#include <QtXml/QDomDocument>
 #include <QFile>
 #include <zoo/Log.h>
 #include <zoo/Utils.h>
 #include "CommonDef.h"
+#include <zooCmdLoader/ZooCmdLoader.h>
 
 using namespace zoo;
 WarCommander::WarCommander(string relatedCmd, string resPath, string mainTable)
@@ -70,115 +70,70 @@ bool WarCommander::enterBattlefield(int id)
 		return false;
 	}
 
+	Battlefield* pBattlefield = new Battlefield(id, pTable->item2str(id, Default_TableField[DESCRIPTION]));
+
 	TableCSV* weaponTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_WEAPON]));
-	if (!weaponTable)
+	if (weaponTable)
 	{
-		zoo_error("武器CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& weaponKeys = weaponTable->getMajorKeys();
+		auto it = weaponKeys.begin();
+		for (; it != weaponKeys.end(); ++it)
+			pBattlefield->createWeapon(atoi((*it).c_str()), weaponTable);
 	}
 
 	TableCSV* effectTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_EFFECT]));
-	if (!effectTable)
+	if (effectTable)
 	{
-		zoo_error("特效CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& effectKeys = effectTable->getMajorKeys();
+		auto it = effectKeys.begin();
+		for (; it != effectKeys.end(); ++it)
+			pBattlefield->createEffect(atoi((*it).c_str()), effectTable);
 	}
 
 	TableCSV* redarmyTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_REDARMY]));
-	if (!redarmyTable)
+	if (redarmyTable)
 	{
-		zoo_error("红军CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& redarmyKeys = redarmyTable->getMajorKeys();
+		auto it = redarmyKeys.begin();
+		for (; it != redarmyKeys.end(); ++it)
+			pBattlefield->createRedArmy(atoi((*it).c_str()), redarmyTable);
 	}
 
 	TableCSV* bluearmyTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_BLUEARMY]));
-	if (!bluearmyTable)
+	if (bluearmyTable)
 	{
-		zoo_error("蓝军CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& bluearmyKeys = bluearmyTable->getMajorKeys();
+		auto it = bluearmyKeys.begin();
+		for (; it != bluearmyKeys.end(); ++it)
+			pBattlefield->createBlueArmy(atoi((*it).c_str()), bluearmyTable);
 	}
 
 	TableCSV* allyarmyTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_ALLYARMY]));
-	if (!allyarmyTable)
+	if (allyarmyTable)
 	{
-		zoo_error("盟军CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& allyarmyKeys = allyarmyTable->getMajorKeys();
+		auto it = allyarmyKeys.begin();
+		for (; it != allyarmyKeys.end(); ++it)
+			pBattlefield->createAllyArmy(atoi((*it).c_str()), allyarmyTable);
 	}
 
 	TableCSV* stationaryTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_STATIONARY]));
-	if (!stationaryTable)
+	if (stationaryTable)
 	{
-		zoo_error("静物CSV表不存在[战场编号:%d]", id);
-		return false;
+		const set<string>& stationaryKeys = stationaryTable->getMajorKeys();
+		auto it = stationaryKeys.begin();
+		for (; it != stationaryKeys.end(); ++it)
+			pBattlefield->createStationary(atoi((*it).c_str()), stationaryTable);
 	}
 
 	TableCSV* warReporterTable = DatabaseCSV::getSingleton().getTable(_resPath + pTable->item2str(id, _entNames[ENTITY_WARREPORTER]));
-	if (!warReporterTable)
+	if (warReporterTable)
 	{
-		zoo_error("战地记者CSV表不存在[战场编号:%d]", id);
-		return false;
 	}
-
-	string dofFile = _resPath + pTable->item2str(id, "DoF");
-	QFile xmlFile(QString::fromLocal8Bit(dofFile.c_str()));
-	if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		zoo_error("打开[%s]文件失败", dofFile.c_str());
-		return false;
-	}
-
-	QDomDocument xml;
-	QString errorMsg;
-	int errorLine, errorColumn;
-	if (!xml.setContent(&xmlFile, &errorMsg, &errorLine, &errorColumn))
-	{
-		zoo_error("解析[%s]文件失败(%s, %d %d)", dofFile.c_str(), errorMsg.toStdString().c_str(), errorLine, errorColumn);
-		return false;
-	}
-
-	Battlefield* pBattlefield = new Battlefield(id, pTable->item2str(id, Default_TableField[DESCRIPTION]));
-
-	const set<string>& weaponKeys = weaponTable->getMajorKeys();
-	auto it = weaponKeys.begin();
-	for (; it != weaponKeys.end(); ++it)
-		pBattlefield->createWeapon(atoi((*it).c_str()), weaponTable);
-
-	const set<string>& effectKeys = effectTable->getMajorKeys();
-	it = effectKeys.begin();
-	for (; it != effectKeys.end(); ++it)
-		pBattlefield->createEffect(atoi((*it).c_str()), effectTable);
-
-	const set<string>& redarmyKeys = redarmyTable->getMajorKeys();
-	it = redarmyKeys.begin();
-	for (; it != redarmyKeys.end(); ++it)
-		pBattlefield->createRedArmy(atoi((*it).c_str()), redarmyTable);
-
-	const set<string>& bluearmyKeys = bluearmyTable->getMajorKeys();
-	it = bluearmyKeys.begin();
-	for (; it != bluearmyKeys.end(); ++it)
-		pBattlefield->createBlueArmy(atoi((*it).c_str()), bluearmyTable);
-
-	const set<string>& allyarmyKeys = allyarmyTable->getMajorKeys();
-	it = allyarmyKeys.begin();
-	for (; it != allyarmyKeys.end(); ++it)
-		pBattlefield->createAllyArmy(atoi((*it).c_str()), allyarmyTable);
-
-	const set<string>& stationaryKeys = stationaryTable->getMajorKeys();
-	it = stationaryKeys.begin();
-	for (; it != stationaryKeys.end(); ++it)
-		pBattlefield->createStationary(atoi((*it).c_str()), stationaryTable);
 
 	_currentBattlefield = pBattlefield;
 	_battlefields.insert(make_pair(id, _currentBattlefield));
-
-	QDomElement rootElem = xml.documentElement();
-	QDomElement dofElem = rootElem.firstChildElement();
-	while (!dofElem.isNull())
-	{
-		loadDoF(dofElem, nullptr);
-		dofElem = dofElem.nextSiblingElement();
-	}
-
+	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "enter_battlefield()");
 	return true;
 }
 
@@ -212,33 +167,98 @@ void WarCommander::saveCurBattlefield()
 	}
 
 	stringstream ss;
-	ss << "武器编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << "," << "轨迹文件" << std::endl;
-	ss << Weapon_TableField[ID] << "," << Weapon_TableField[DESCRIPTION] << "," << Weapon_TableField[SCRIPT] << "," << Weapon_TableField[MODEL_FILE] << "," << Weapon_TableField[TRAJ_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << Chs_TableField[TRAJ_FILE] << std::endl;
+	ss << Weapon_TableField[ID] << "," << Weapon_TableField[DESCRIPTION] << "," << Weapon_TableField[SCRIPT]
+		<< "," << Weapon_TableField[POSX] << "," << Weapon_TableField[POSY] << Weapon_TableField[POSZ]
+		<< "," << Weapon_TableField[HEADING] << "," << Weapon_TableField[PITCH] << Weapon_TableField[ROLL]
+		<< "," << Weapon_TableField[SCALEX] << "," << Weapon_TableField[SCALEY] << Weapon_TableField[SCALEZ]
+		<< "," << Weapon_TableField[VISIBLE] << "," << Weapon_TableField[PARENT] << Weapon_TableField[BRANCH_TAG]
+		<< "," << Weapon_TableField[MODEL_FILE] << "," << Weapon_TableField[SOUND_FILE] << Weapon_TableField[TRAJ_FILE] << std::endl;
 	writeFile(ENTITY_WEAPON, ss, pTable);
 
-	ss << "特效编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << std::endl;
-	ss << Effect_TableField[ID] << "," << Effect_TableField[DESCRIPTION] << "," << Effect_TableField[SCRIPT] << "," << Effect_TableField[MODEL_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << std::endl;
+	ss << Effect_TableField[ID] << "," << Effect_TableField[DESCRIPTION] << "," << Effect_TableField[SCRIPT]
+		<< "," << Effect_TableField[POSX] << "," << Effect_TableField[POSY] << Effect_TableField[POSZ]
+		<< "," << Effect_TableField[HEADING] << "," << Effect_TableField[PITCH] << Effect_TableField[ROLL]
+		<< "," << Effect_TableField[SCALEX] << "," << Effect_TableField[SCALEY] << Effect_TableField[SCALEZ]
+		<< "," << Effect_TableField[VISIBLE] << "," << Effect_TableField[PARENT] << Effect_TableField[BRANCH_TAG]
+		<< "," << Effect_TableField[MODEL_FILE] << "," << Effect_TableField[SOUND_FILE] << std::endl;
 	writeFile(ENTITY_EFFECT, ss, pTable);
 
-	ss << "红军编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << "," << "轨迹文件" << std::endl;
-	ss << RedArmy_TableField[ID] << "," << RedArmy_TableField[DESCRIPTION] << "," << RedArmy_TableField[SCRIPT] << "," << RedArmy_TableField[MODEL_FILE] << "," << RedArmy_TableField[TRAJ_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << Chs_TableField[TRAJ_FILE] << std::endl;
+	ss << RedArmy_TableField[ID] << "," << RedArmy_TableField[DESCRIPTION] << "," << RedArmy_TableField[SCRIPT]
+		<< "," << RedArmy_TableField[POSX] << "," << RedArmy_TableField[POSY] << RedArmy_TableField[POSZ]
+		<< "," << RedArmy_TableField[HEADING] << "," << RedArmy_TableField[PITCH] << RedArmy_TableField[ROLL]
+		<< "," << RedArmy_TableField[SCALEX] << "," << RedArmy_TableField[SCALEY] << RedArmy_TableField[SCALEZ]
+		<< "," << RedArmy_TableField[VISIBLE] << "," << RedArmy_TableField[PARENT] << RedArmy_TableField[BRANCH_TAG]
+		<< "," << RedArmy_TableField[MODEL_FILE] << "," << RedArmy_TableField[SOUND_FILE] << RedArmy_TableField[TRAJ_FILE] << std::endl;
 	writeFile(ENTITY_REDARMY, ss, pTable);
 
-	ss << "蓝军编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << "," << "轨迹文件" << std::endl;
-	ss << BlueArmy_TableField[ID] << "," << BlueArmy_TableField[DESCRIPTION] << "," << BlueArmy_TableField[SCRIPT] << "," << BlueArmy_TableField[MODEL_FILE] << "," << BlueArmy_TableField[TRAJ_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << Chs_TableField[TRAJ_FILE] << std::endl;
+	ss << BlueArmy_TableField[ID] << "," << BlueArmy_TableField[DESCRIPTION] << "," << BlueArmy_TableField[SCRIPT]
+		<< "," << BlueArmy_TableField[POSX] << "," << BlueArmy_TableField[POSY] << BlueArmy_TableField[POSZ]
+		<< "," << BlueArmy_TableField[HEADING] << "," << BlueArmy_TableField[PITCH] << BlueArmy_TableField[ROLL]
+		<< "," << BlueArmy_TableField[SCALEX] << "," << BlueArmy_TableField[SCALEY] << BlueArmy_TableField[SCALEZ]
+		<< "," << BlueArmy_TableField[VISIBLE] << "," << BlueArmy_TableField[PARENT] << BlueArmy_TableField[BRANCH_TAG]
+		<< "," << BlueArmy_TableField[MODEL_FILE] << "," << BlueArmy_TableField[SOUND_FILE] << BlueArmy_TableField[TRAJ_FILE] << std::endl;
 	writeFile(ENTITY_BLUEARMY, ss, pTable);
 
-	ss << "盟军编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << "," << "轨迹文件" << std::endl;
-	ss << AllyArmy_TableField[ID] << "," << AllyArmy_TableField[DESCRIPTION] << "," << AllyArmy_TableField[SCRIPT] << "," << AllyArmy_TableField[MODEL_FILE] << "," << AllyArmy_TableField[TRAJ_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << Chs_TableField[TRAJ_FILE] << std::endl;
+	ss << AllyArmy_TableField[ID] << "," << AllyArmy_TableField[DESCRIPTION] << "," << AllyArmy_TableField[SCRIPT]
+		<< "," << AllyArmy_TableField[POSX] << "," << AllyArmy_TableField[POSY] << AllyArmy_TableField[POSZ]
+		<< "," << AllyArmy_TableField[HEADING] << "," << AllyArmy_TableField[PITCH] << AllyArmy_TableField[ROLL]
+		<< "," << AllyArmy_TableField[SCALEX] << "," << AllyArmy_TableField[SCALEY] << AllyArmy_TableField[SCALEZ]
+		<< "," << AllyArmy_TableField[VISIBLE] << "," << AllyArmy_TableField[PARENT] << AllyArmy_TableField[BRANCH_TAG]
+		<< "," << AllyArmy_TableField[MODEL_FILE] << "," << AllyArmy_TableField[SOUND_FILE] << AllyArmy_TableField[TRAJ_FILE] << std::endl;
 	writeFile(ENTITY_ALLYARMY, ss, pTable);
 
-	ss << "静物编号" << "," << "描述" << "," << "脚本" << "," << "模型文件" << std::endl;
-	ss << Stationary_TableField[ID] << "," << Stationary_TableField[DESCRIPTION] << "," << Stationary_TableField[SCRIPT] << "," << Stationary_TableField[MODEL_FILE] << std::endl;
+	ss << Chs_TableField[ID] << "," << Chs_TableField[DESCRIPTION] << "," << Chs_TableField[SCRIPT]
+		<< "," << Chs_TableField[POSX] << "," << Chs_TableField[POSY] << Chs_TableField[POSZ]
+		<< "," << Chs_TableField[HEADING] << "," << Chs_TableField[PITCH] << Chs_TableField[ROLL]
+		<< "," << Chs_TableField[SCALEX] << "," << Chs_TableField[SCALEY] << Chs_TableField[SCALEZ]
+		<< "," << Chs_TableField[VISIBLE] << "," << Chs_TableField[PARENT] << Chs_TableField[BRANCH_TAG]
+		<< "," << Chs_TableField[MODEL_FILE] << "," << Chs_TableField[SOUND_FILE] << std::endl;
+	ss << Stationary_TableField[ID] << "," << Stationary_TableField[DESCRIPTION] << "," << Stationary_TableField[SCRIPT]
+		<< "," << Stationary_TableField[POSX] << "," << Stationary_TableField[POSY] << Stationary_TableField[POSZ]
+		<< "," << Stationary_TableField[HEADING] << "," << Stationary_TableField[PITCH] << Stationary_TableField[ROLL]
+		<< "," << Stationary_TableField[SCALEX] << "," << Stationary_TableField[SCALEY] << Stationary_TableField[SCALEZ]
+		<< "," << Stationary_TableField[VISIBLE] << "," << Stationary_TableField[PARENT] << Stationary_TableField[BRANCH_TAG]
+		<< "," << Stationary_TableField[MODEL_FILE] << "," << Stationary_TableField[SOUND_FILE] << std::endl;
 	writeFile(ENTITY_STATIONARY, ss, pTable);
 
-	ss << "战地记者编号" << "," << "描述" << "," << "脚本" << "," << "视口左侧比例" << "," << "视口右侧比例" << "," << "视口底部比例" << "," << "视口顶部比例" << "," << "跟踪实体编号" << "," << "跟踪实体类型" << std::endl;
-	ss << WarReporter_TableField[ID] << "," << WarReporter_TableField[DESCRIPTION] << "," << WarReporter_TableField[SCRIPT] << "," << WarReporter_TableField[RATIO_LEFT] << "," << WarReporter_TableField[RATIO_RIGHT]
-		<< "," << WarReporter_TableField[RATIO_BOTTOM] << "," << WarReporter_TableField[RATIO_TOP] << "," << WarReporter_TableField[TRACK_ENTITY_ID] << "," << WarReporter_TableField[TRACK_ENTITY_TYPE] << std::endl;
+	ss << Chs_WarReporter_TableField[ID] << "," << Chs_WarReporter_TableField[DESCRIPTION] << "," << Chs_WarReporter_TableField[SCRIPT]
+		<< "," << Chs_WarReporter_TableField[RATIO_LEFT] << "," << Chs_WarReporter_TableField[RATIO_RIGHT]
+		<< "," << Chs_WarReporter_TableField[RATIO_BOTTOM] << "," << Chs_WarReporter_TableField[RATIO_TOP]
+		<< "," << Chs_WarReporter_TableField[TRACK_ENTITY] << std::endl;
+	ss << WarReporter_TableField[ID] << "," << WarReporter_TableField[DESCRIPTION] << "," << WarReporter_TableField[SCRIPT]
+		<< "," << WarReporter_TableField[RATIO_LEFT] << "," << WarReporter_TableField[RATIO_RIGHT]
+		<< "," << WarReporter_TableField[RATIO_BOTTOM] << "," << WarReporter_TableField[RATIO_TOP]
+		<< "," << WarReporter_TableField[TRACK_ENTITY] << std::endl;
 	writeFile(ENTITY_WARREPORTER, ss, pTable);
 }
 
@@ -250,70 +270,6 @@ const char* WarCommander::getRelatedCmd() const
 const char* WarCommander::getEntTypeName(ENTITY_TYPE entType) const
 {
 	return _entNames[entType];
-}
-
-void WarCommander::loadDoF(QDomElement& elem, DoF* parent)
-{
-	int id = elem.attribute("id").toInt();
-	ENTITY_TYPE entType = (ENTITY_TYPE)-1;
-	string typeStr = elem.attribute("type").toStdString();
-	if (typeStr == _entNames[ENTITY_WEAPON])
-		entType = ENTITY_WEAPON;
-	else if (typeStr == _entNames[ENTITY_EFFECT])
-		entType = ENTITY_EFFECT;
-	else if (typeStr == _entNames[ENTITY_REDARMY])
-		entType = ENTITY_REDARMY;
-	else if (typeStr == _entNames[ENTITY_BLUEARMY])
-		entType = ENTITY_BLUEARMY;
-	else if (typeStr == _entNames[ENTITY_ALLYARMY])
-		entType = ENTITY_ALLYARMY;
-	else if (typeStr == _entNames[ENTITY_STATIONARY])
-		entType = ENTITY_STATIONARY;
-	else if (typeStr == _entNames[ENTITY_WARREPORTER])
-		entType = ENTITY_WARREPORTER;
-	else
-	{
-		zoo_warning("Entity type does not exist(id:%d,type:%s)", id, typeStr.c_str());
-		return;
-	}
-
-	Entity* ent = _currentBattlefield->findEntity(id, entType);
-	if (!ent)
-	{
-		zoo_warning("Entity does not exist(id:%d,type:%s)", id, _entNames[entType]);
-		return;
-	}
-
-	DoF* dof = ent->getDoF();
-	if (!dof)
-	{
-		zoo_warning("DoF does not exist(id:%d,type:%s)", id, _entNames[entType]);
-		return;
-	}
-
-	dof->setPosX(elem.attribute("x").toDouble());
-	dof->setPosY(elem.attribute("y").toDouble());
-	dof->setPosZ(elem.attribute("z").toDouble());
-	dof->setHeading(elem.attribute("h").toFloat());
-	dof->setPitch(elem.attribute("p").toFloat());
-	dof->setRoll(elem.attribute("r").toFloat());
-	dof->setScaleX(elem.attribute("sx").toFloat());
-	dof->setScaleY(elem.attribute("sy").toFloat());
-	dof->setScaleZ(elem.attribute("sz").toFloat());
-	if (parent)
-		parent->addChild(dof);
-
-	QDomElement child = elem.firstChildElement();
-	while (!child.isNull())
-	{
-		loadDoF(child, dof);
-		child = child.nextSiblingElement();
-	}
-}
-
-void WarCommander::saveDoF(QDomElement& elem, DoF* parent, QDomDocument& doc)
-{
-
 }
 
 void WarCommander::writeFile(ENTITY_TYPE entType, stringstream& ss, TableCSV* pTable)

@@ -118,6 +118,12 @@ static bool putOutUserDataType(stringstream& ss, string& tag, Any& data)
 	return isPutout;
 }
 
+UserData::UserData(const UserData* pdata /*= nullptr*/)
+{
+	if (pdata && pdata->_attributes)
+		_attributes.reset(new Attributes(*pdata->_attributes));
+}
+
 UserData::UserData(const UserData& other)
 {
 	if (other._attributes)

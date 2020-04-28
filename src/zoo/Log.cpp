@@ -1,6 +1,7 @@
-#include "Log.h"
+#include <zoo/Log.h>
 #include <tchar.h>
 #include <Windows.h>
+#include <zoo/Utils.h>
 #pragma warning(disable:4996)
 
 namespace zoo {
@@ -58,14 +59,15 @@ class LogConfig
 public:
 	LogConfig()
 	{
-		string retStr;
+		string retStr, configfile;
+		configfile = getExeDir() + "config.ini";
 		retStr.resize(128);
-		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "logfile", "", &retStr[0], 128, "./config.ini");
+		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "logfile", "", &retStr[0], 128, configfile.c_str());
 		string logFileName = retStr.c_str();
 #ifdef _DEBUG
 		static Logger s_logger(true, logFileName);
 #else
-		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "console", "0", &retStr[0], 128, "./config.ini");
+		GetPrivateProfileString("ZOO_ENABLE_LOG_PRINT", "console", "0", &retStr[0], 128, configfile.c_str());
 		bool hasConsole = atoi(retStr.c_str()) == 1;
 		static Logger s_logger(hasConsole, logFileName);
 #endif

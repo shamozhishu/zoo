@@ -141,10 +141,7 @@ bool zooCmd_Send(const char* cmdline)
 {
 	if (!s_isInited)
 		return false;
-
-	vector<string> arglist;
-	stringtok(arglist, cmdline);
-	return CmdManager::getSingleton().sendCmd(arglist);
+	return CmdManager::getSingleton().sendCmd(cmdline);
 }
 
 int zooCmd_Run()

@@ -44,10 +44,10 @@ bool WorldCmd::init()
 void WorldCmd::help(CmdUsage* usage)
 {
 	usage->setDescription("world command: encapsulation of osgEarth.");
-	usage->addCommandLineOption("--lla <show:bool>", "Display longitude, latitude and altitude information.");
-	usage->addCommandLineOption("--fly <longitude:float> <latitude:float> <distance:float>", "Set viewpoint to specified longitude, latitude and distance.");
-	usage->addCommandLineOption("--dist", "Ground measurement distance.");
-	usage->addCommandLineOption("--locate <model:string> <height:float> <scale:float> <repeat:bool>", "Ground placement model.");
+	usage->addCommandProcedureCall("lla(bool show)", "Display longitude, latitude and altitude information.");
+	usage->addCommandProcedureCall("fly(float longitude, float latitude, float distance)", "Set viewpoint to specified longitude, latitude and distance.");
+	usage->addCommandProcedureCall("dist()", "Ground measurement distance.");
+	usage->addCommandProcedureCall("locate(string model, float height, float scale, bool repeat)", "Ground placement model.");
 }
 
 void WorldCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
@@ -55,7 +55,7 @@ void WorldCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 	do
 	{
 		bool show;
-		if (cmdarg.read("--lla", show))
+		if (cmdarg.read("lla", show))
 		{
 			subcmd.userData().setData(show);
 			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onLonLatAltitude);
@@ -63,7 +63,7 @@ void WorldCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		}
 
 		float lon, lat, dist;
-		if (cmdarg.read("--fly", lon, lat, dist))
+		if (cmdarg.read("fly", lon, lat, dist))
 		{
 			subcmd.userData().setData("lon", lon);
 			subcmd.userData().setData("lat", lat);
@@ -72,14 +72,14 @@ void WorldCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 			break;
 		}
 
-		if (cmdarg.read("--dist"))
+		if (cmdarg.read("dist"))
 		{
 			SignalTrigger::connect<WorldCmd>(subcmd, this, &WorldCmd::onMeasureDistance);
 			break;
 		}
 
 		string model;  float height, scale; bool repeat;
-		if (cmdarg.read("--locate", model, height, scale, repeat))
+		if (cmdarg.read("locate", model, height, scale, repeat))
 		{
 			subcmd.userData().setData("model", model);
 			subcmd.userData().setData("height", height);

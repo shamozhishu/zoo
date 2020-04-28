@@ -51,11 +51,11 @@
   </ImportGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;multimedia;xml</QtModules>
+    <QtModules>core;multimedia</QtModules>
   </PropertyGroup>
   <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;multimedia;xml</QtModules>
+    <QtModules>core;multimedia</QtModules>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
@@ -132,6 +132,7 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <ClInclude Include="BlueArmy.h" />
     <ClInclude Include="CommonDef.h" />
     <ClInclude Include="Effect.h" />
+    <ClInclude Include="EntDoF.h" />
     <ClInclude Include="EntitiesCache.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="InstanceReleaser.h" />

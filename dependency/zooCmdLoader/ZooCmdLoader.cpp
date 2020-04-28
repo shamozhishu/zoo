@@ -110,7 +110,7 @@ bool zooCmdL_Send(const char* cmd, const char* format, ...)
 	{
 		offset = strlen(cmd);
 		sprintf_s(szbuf, sizeof(szbuf), cmd);
-		sprintf_s(szbuf + offset, sizeof(szbuf) - offset, " ");
+		sprintf_s(szbuf + offset, sizeof(szbuf) - offset, ".");
 		offset += 1;
 	}
 

@@ -7,6 +7,7 @@ class WarService
 public:
 	virtual ~WarService() {}
 	virtual bool openScene(int id) = 0;
+	virtual void closeScene() = 0;
 	virtual void saveScene() = 0;
 };
 

@@ -1,12 +1,31 @@
 #pragma once
 
-enum {ID = 0, DESCRIPTION, SCRIPT, MODEL_FILE, TRAJ_FILE};
-enum {RATIO_LEFT = 3, RATIO_RIGHT, RATIO_BOTTOM, RATIO_TOP, TRACK_ENTITY_ID, TRACK_ENTITY_TYPE};
+enum {ID = 0, DESCRIPTION, SCRIPT, POSX, POSY, POSZ, HEADING, PITCH, ROLL, SCALEX, SCALEY, SCALEZ, VISIBLE, PARENT, BRANCH_TAG, MODEL_FILE, SOUND_FILE, TRAJ_FILE};
+enum {RATIO_LEFT = 3, RATIO_RIGHT, RATIO_BOTTOM, RATIO_TOP, TRACK_ENTITY};
+
 static const char* Default_TableField[] = { "id", "description", "script" };
-static const char* Weapon_TableField[] = { "id", "description", "script", "model_file", "traj_file" };
-static const char* Effect_TableField[] = { "id", "description", "script", "model_file" };
-static const char* RedArmy_TableField[] = { "id", "description", "script", "model_file", "traj_file" };
-static const char* BlueArmy_TableField[] = { "id", "description", "script", "model_file", "traj_file" };
-static const char* AllyArmy_TableField[] = { "id", "description", "script", "model_file", "traj_file" };
-static const char* Stationary_TableField[] = { "id", "description", "script", "model_file" };
-static const char* WarReporter_TableField[] = { "id", "description", "script", "ratio_left", "ratio_right", "ratio_bottom", "ratio_top", "track_entity_id", "track_entity_type" };
+
+static const char* Weapon_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file", "traj_file" };
+
+static const char* Effect_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file" };
+
+static const char* RedArmy_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file", "traj_file" };
+
+static const char* BlueArmy_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file", "traj_file" };
+
+static const char* AllyArmy_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file", "traj_file" };
+
+static const char* Stationary_TableField[] = { "id", "description", "script", "x", "y", "z", "heading", "pitch", "roll", "sx", "sy", "sz",
+"visible", "parent", "branch_tag", "model_file", "sound_file" };
+
+static const char* WarReporter_TableField[] = { "id", "description", "script", "ratio_left", "ratio_right", "ratio_bottom", "ratio_top", "track_entity" };
+
+static const char* Chs_TableField[] = { "编号", "描述", "脚本", "位置X", "位置Y", "位置Z", "旋转H", "旋转P", "旋转R", "缩放X", "缩放Y", "缩放Z",
+"可见性", "挂载实体", "分支标记", "模型文件", "音效文件", "轨迹文件" };
+
+static const char* Chs_WarReporter_TableField[] = { "编号", "描述", "脚本", "视口左侧比例", "视口右侧比例", "视口底部比例", "视口顶部比例", "跟踪实体" };

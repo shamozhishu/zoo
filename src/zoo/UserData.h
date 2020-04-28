@@ -7,7 +7,7 @@ namespace zoo {
 class _zooExport UserData
 {
 public:
-	UserData() {}
+	UserData(const UserData* pdata = nullptr);
 	UserData(const UserData& other);
 	UserData& swap(UserData& rhs)
 	{

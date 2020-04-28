@@ -3,7 +3,6 @@
 #include <QTimer>
 #include <zoo/Support.h>
 #include <zoo/Singleton.h>
-#include <QtXml/QDomElement>
 #include "PublicEnum.h"
 
 class DoF;
@@ -22,8 +21,6 @@ public:
 	const char* getEntTypeName(ENTITY_TYPE entType) const;
 
 protected:
-	void loadDoF(QDomElement& elem, DoF* parent);
-	void saveDoF(QDomElement& elem, DoF* parent, QDomDocument& doc);
 	void writeFile(ENTITY_TYPE entType, stringstream& ss, zoo::TableCSV* pTable);
 
 protected slots:

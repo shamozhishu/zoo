@@ -17,7 +17,6 @@ xcopy /y %source_path%\src\zooCmd_osg\*.* %target_path%\src\zooCmd_osg\*.*
 
 echo ----------------------------------------plugins catalog
 
-xcopy /y %source_path%\plugins\zooCmd_osg-war\*.* %target_path%\plugins\zooCmd_osg-war\*.*
 xcopy /y %source_path%\plugins\zooCmd_osg-world\*.* %target_path%\plugins\zooCmd_osg-world\*.*
 xcopy /y %source_path%\plugins\libqt5_pluginfwadmin\*.* %target_path%\plugins\libqt5_pluginfwadmin\*.*
 xcopy /y %source_path%\plugins\libctk_war\*.* %target_path%\plugins\libctk_war\*.*

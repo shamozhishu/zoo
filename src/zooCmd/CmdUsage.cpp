@@ -8,80 +8,26 @@ CmdUsage* CmdUsage::instance()
 	return s_appUsage.get();
 }
 
-void CmdUsage::addUsageExplanation(Type type, const std::string& option, const std::string& explanation)
+void CmdUsage::addCommandProcedureCall(const std::string& procedure, const std::string& explanation, const std::string& defaultValue)
 {
-	switch (type)
-	{
-	case(COMMAND_LINE_OPTION):
-		addCommandLineOption(option, explanation);
-		break;
-	case(ENVIRONMENTAL_VARIABLE):
-		addEnvironmentalVariable(option, explanation);
-		break;
-	case(KEYBOARD_MOUSE_BINDING):
-		addKeyboardMouseBinding(option, explanation);
-		break;
-	default:
-		break;
-	}
-}
-
-void CmdUsage::addCommandLineOption(const std::string& option, const std::string& explanation, const std::string& defaultValue)
-{
-	_commandLineOptions[option] = explanation;
-	_commandLineOptionsDefaults[option] = defaultValue;
-}
-
-void CmdUsage::addEnvironmentalVariable(const std::string& option, const std::string& explanation, const std::string& defaultValue)
-{
-	_environmentalVariables[option] = explanation;
-	_environmentalVariablesDefaults[option] = defaultValue;
-}
-
-void CmdUsage::addKeyboardMouseBinding(const std::string& prefix, int key, const std::string& explanation)
-{
-	if (key != 0)
-	{
-		std::ostringstream ostr;
-		ostr << prefix;
-
-		if (key == ' ')
-		{
-			ostr << "Space";
-		}
-		else if (key != 0)
-		{
-			ostr << char(key);
-		}
-
-		_keyboardMouse[ostr.str()] = explanation;
-	}
-}
-
-void CmdUsage::addKeyboardMouseBinding(int key, const std::string& explanation)
-{
-	addKeyboardMouseBinding("", key, explanation);
-}
-
-void CmdUsage::addKeyboardMouseBinding(const std::string& option, const std::string& explanation)
-{
-	_keyboardMouse[option] = explanation;
+	_commandProcedureCalls[procedure] = explanation;
+	_commandProcedureCallsDefaults[procedure] = defaultValue;
 }
 
 void CmdUsage::getFormattedString(std::string& str, const UsageMap& um, unsigned int widthOfOutput, bool showDefaults, const UsageMap& ud)
 {
-	unsigned int maxNumCharsInOptions = 0;
+	unsigned int maxNumCharsInCalls = 0;
 	CmdUsage::UsageMap::const_iterator citr;
 	for (citr = um.begin();
 		citr != um.end();
 		++citr)
 	{
-		maxNumCharsInOptions = max(maxNumCharsInOptions, (unsigned int)citr->first.length());
+		maxNumCharsInCalls = max(maxNumCharsInCalls, (unsigned int)citr->first.length());
 	}
 
 	unsigned int fullWidth = widthOfOutput;
-	unsigned int optionPos = 2;
-	unsigned int explanationPos = optionPos + maxNumCharsInOptions + 2;
+	unsigned int callPos = 2;
+	unsigned int explanationPos = callPos + maxNumCharsInCalls + 2;
 
 	double ratioOfExplanationToOutputWidth = float(explanationPos) / float(widthOfOutput);
 	double maxRatioOfExplanationToOutputWidth = 0.25f;
@@ -95,7 +41,7 @@ void CmdUsage::getFormattedString(std::string& str, const UsageMap& um, unsigned
 	if (showDefaults)
 	{
 		defaultPos = explanationPos;
-		explanationPos = optionPos + 8;
+		explanationPos = callPos + 8;
 	}
 	unsigned int explanationWidth = fullWidth - explanationPos;
 
@@ -106,8 +52,8 @@ void CmdUsage::getFormattedString(std::string& str, const UsageMap& um, unsigned
 		++citr)
 	{
 		line.assign(fullWidth, ' ');
-		line.replace(optionPos, citr->first.length(), citr->first);
-		unsigned int currentEndPos = optionPos + citr->first.length();
+		line.replace(callPos, citr->first.length(), citr->first);
+		unsigned int currentEndPos = callPos + citr->first.length();
 
 		if (showDefaults)
 		{
@@ -225,80 +171,16 @@ void CmdUsage::write(std::ostream& output, const CmdUsage::UsageMap& um, unsigne
 	output << str << std::endl;
 }
 
-void CmdUsage::write(std::ostream& output, unsigned int type, unsigned int widthOfOutput, bool showDefaults)
+void CmdUsage::write(std::ostream& output, unsigned int widthOfOutput, bool showDefaults)
 {
-
-	output << "Usage: " << getCommandLineUsage() << std::endl;
-	bool needspace = false;
-	if ((type&COMMAND_LINE_OPTION) && !getCommandLineOptions().empty())
+	output << "Usage: " << getCommandProcedureUsage() << std::endl;
+	if (!getCommandProcedureCalls().empty())
 	{
-		output << "Options";
+		output << "Procedures";
 		if (showDefaults) output << " [and default value]";
 		output << ":" << std::endl;
-		write(output, getCommandLineOptions(), widthOfOutput, showDefaults, getCommandLineOptionsDefaults());
-		needspace = true;
+		write(output, getCommandProcedureCalls(), widthOfOutput, showDefaults, getCommandProcedureCallsDefaults());
 	}
-
-	if ((type&ENVIRONMENTAL_VARIABLE) && !getEnvironmentalVariables().empty())
-	{
-		if (needspace) output << std::endl;
-		output << "Environmental Variables";
-		if (showDefaults) output << " [and default value]";
-		output << ":" << std::endl;
-		write(output, getEnvironmentalVariables(), widthOfOutput, showDefaults, getEnvironmentalVariablesDefaults());
-		needspace = true;
-	}
-
-	if ((type&KEYBOARD_MOUSE_BINDING) && !getKeyboardMouseBindings().empty())
-	{
-		if (needspace) output << std::endl;
-		output << "Keyboard and Mouse Bindings:" << std::endl;
-		write(output, getKeyboardMouseBindings(), widthOfOutput);
-		needspace = true;
-	}
-}
-
-void CmdUsage::writeEnvironmentSettings(std::ostream& output)
-{
-	output << "Current Environment Settings:" << std::endl;
-
-	unsigned int maxNumCharsInOptions = 0;
-	CmdUsage::UsageMap::const_iterator citr;
-	for (citr = getEnvironmentalVariables().begin();
-		citr != getEnvironmentalVariables().end();
-		++citr)
-	{
-		std::string::size_type len = citr->first.find_first_of("\n\r\t ");
-		if (len == std::string::npos) len = citr->first.size();
-		maxNumCharsInOptions = max(maxNumCharsInOptions, static_cast<unsigned int>(len));
-	}
-
-	unsigned int optionPos = 2;
-	std::string line;
-
-	for (citr = getEnvironmentalVariables().begin();
-		citr != getEnvironmentalVariables().end();
-		++citr)
-	{
-		line.assign(optionPos + maxNumCharsInOptions + 2, ' ');
-		std::string::size_type len = citr->first.find_first_of("\n\r\t ");
-		if (len == std::string::npos) len = citr->first.size();
-		line.replace(optionPos, len, citr->first.substr(0, len));
-		size_t sz;
-		char* buf = nullptr;
-		if (_dupenv_s(&buf, &sz, citr->first.substr(0, len).c_str()) == 0 && buf != nullptr)
-		{
-			line += "[set]\n";
-			free(buf);
-		}
-		else
-		{
-			line += "[not set]\n";
-		}
-
-		output << line;
-	}
-	output << std::endl;
 }
 
 }

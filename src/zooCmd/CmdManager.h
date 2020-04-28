@@ -20,8 +20,8 @@ public:
 	void block(bool isBlock);
 	bool addCmd(const string& cmd, Cmd* pCmd);
 	void removeCmd(const string& cmd);
-	bool sendCmd(vector<string> arglist);
-	Cmd* findCmd(const char* cmd);
+	bool sendCmd(const string& cmdline);
+	Cmd* findCmd(const string& cmdname);
 	InputAdapter* getInputAdapter() const;
 
 public:

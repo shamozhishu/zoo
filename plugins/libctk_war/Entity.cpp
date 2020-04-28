@@ -4,33 +4,6 @@
 #include "WarCommander.h"
 #include <zooCmdLoader/ZooCmdLoader.h>
 
-class EntDoF : public DoF
-{
-public:
-	EntDoF(int id, int group) : DoF(id, group) {}
-	bool addChild(DoF* child)
-	{
-		if (DoF::addChild(child))
-		{
-			zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--child-add %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
-			return true;
-		}
-
-		return false;
-	}
-
-	bool removeChild(DoF* child)
-	{
-		if (DoF::removeChild(child))
-		{
-			zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "--child-remove %d %d %d %d", child->getID(), child->getGroup(), _id, _group);
-			return true;
-		}
-
-		return false;
-	}
-};
-
 Entity::Entity()
 	: _id(-1)
 	, _dof(nullptr)
@@ -60,10 +33,6 @@ void Entity::init()
 {
 	_hasScript = false;
 	_scriptInited = false;
-
-	SAFE_DELETE(_dof);
-	_dof = new EntDoF(_id, getType());
-
 	string filename = _props.value(Default_TableField[SCRIPT]).toString().toStdString();
 	if (filename != "")
 		_hasScript = _script->executeScriptFile(WarCommander::getSingleton().getResPath() + filename);

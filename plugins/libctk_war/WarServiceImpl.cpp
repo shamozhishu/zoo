@@ -14,6 +14,11 @@ bool WarServiceImpl::openScene(int id)
 	return WarCommander::getSingleton().enterBattlefield(id);
 }
 
+void WarServiceImpl::closeScene()
+{
+	WarCommander::getSingleton().exitCurBattlefield();
+}
+
 void WarServiceImpl:: saveScene()
 {
 	WarCommander::getSingleton().saveCurBattlefield();

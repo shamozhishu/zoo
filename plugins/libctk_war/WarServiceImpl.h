@@ -11,5 +11,6 @@ public:
 	WarServiceImpl();
 	~WarServiceImpl();
 	bool openScene(int id) Q_DECL_OVERRIDE;
+	void closeScene() Q_DECL_OVERRIDE;
 	void saveScene() Q_DECL_OVERRIDE;
 };

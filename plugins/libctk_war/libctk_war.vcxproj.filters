@@ -65,6 +65,9 @@
     <ClInclude Include="CommonDef.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="EntDoF.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="WarActivator.h">

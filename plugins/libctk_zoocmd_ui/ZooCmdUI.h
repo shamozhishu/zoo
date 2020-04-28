@@ -27,7 +27,7 @@ private:
 
 private:
 	int _idx;
-	Ui::ZooCmdUIClass ui;
+	Ui::ZooCmdUIClass _ui;
 	QString _inputAdaName;
 	QLineEdit* _cmdlineEdit;
 	QProgressBar* _progressBar;

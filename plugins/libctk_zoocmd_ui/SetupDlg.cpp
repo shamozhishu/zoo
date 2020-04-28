@@ -34,13 +34,21 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 			{
 				cmdName_d = *it;
 				cmdName_r = cmdName;
+#ifdef _DEBUG
+				needReplace = false;
+#else
 				needReplace = true;
+#endif
 			}
 			else
 			{
 				cmdName_d = cmdName;
 				cmdName_r = *it;
+#ifdef _DEBUG
+				needReplace = true;
+#else
 				needReplace = false;
+#endif
 			}
 
 			if (cmdName_d.compare(cmdName_r + "d", Qt::CaseInsensitive) == 0)
@@ -55,6 +63,14 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 		if (!existed)
 			cmdlist.push_back(cmdName);
 	}
+
+#ifdef _DEBUG
+	int len = cmdlist.size();
+	for (int i = 0; i < len; ++i)
+	{
+		cmdlist[i] = cmdlist[i].mid(0, cmdlist[i].length() - 1);
+	}
+#endif
 
 	int rowCount = cmdlist.size();
 	_model = new QStandardItemModel(this);

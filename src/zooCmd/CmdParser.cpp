@@ -1,32 +1,32 @@
 #include <zooCmd/CmdParser.h>
+#include <zoo/Utils.h>
 
 namespace zooCmd {
-
-bool CmdParser::isOption(const char* str)
-{
-	return str && str[0] == '-';
-}
-
-bool CmdParser::isString(const char* str)
-{
-	if (!str || isOption(str))
-		return false;
-	return true;
-}
 
 bool CmdParser::isBool(const char* str)
 {
 	if (!str)
 		return false;
-	return (strcmp(str, "True") == 0 || strcmp(str, "true") == 0 || strcmp(str, "TRUE") == 0 ||
-		strcmp(str, "False") == 0 || strcmp(str, "false") == 0 || strcmp(str, "FALSE") == 0 ||
-		strcmp(str, "0") == 0 || strcmp(str, "1") == 0);
+
+	str = strtrim(str);
+	return (_stricmp(str, "true") == 0 || _stricmp(str, "false") == 0 || strcmp(str, "0") == 0 || strcmp(str, "1") == 0);
+}
+
+bool CmdParser::isString(const char* str)
+{
+	if (!str)
+		return false;
+
+	str = strtrim(str);
+	return true;
 }
 
 bool CmdParser::isNumber(const char* str)
 {
-	if (!str) return false;
+	if (!str)
+		return false;
 
+	str = strtrim(str);
 	bool hadPlusMinus = false;
 	bool hadDecimalPlace = false;
 	bool hadExponent = false;
@@ -112,16 +112,28 @@ bool CmdParser::isNumber(const char* str)
 	return false;
 }
 
+const char* CmdParser::strtrim(const char* str)
+{
+	char* p = const_cast<char*>(str);
+	char* q = const_cast<char*>(str);
+	while (*p == ' ' || *p == '\t' || *p == '\n') ++p;
+	while (*q++ = *p++);
+	q -= 2;
+	while (*q == ' ' || *q == '\t' || *q == '\n') --q;
+	*(q + 1) = '\0';
+	return str;
+}
+
 bool CmdParser::Parameter::valid(const char* str) const
 {
 	switch (_type)
 	{
-	case Parameter::BOOL_PARAMETER:         return isBool(str); break;
-	case Parameter::FLOAT_PARAMETER:        return isNumber(str); break;
-	case Parameter::DOUBLE_PARAMETER:       return isNumber(str); break;
-	case Parameter::INT_PARAMETER:          return isNumber(str); break;
-	case Parameter::UNSIGNED_INT_PARAMETER: return isNumber(str); break;
-	case Parameter::STRING_PARAMETER:       return isString(str); break;
+	case Parameter::BOOL_PARAMETER:         return isBool(str);
+	case Parameter::FLOAT_PARAMETER:        return isNumber(str);
+	case Parameter::DOUBLE_PARAMETER:       return isNumber(str);
+	case Parameter::INT_PARAMETER:          return isNumber(str);
+	case Parameter::UNSIGNED_INT_PARAMETER: return isNumber(str);
+	case Parameter::STRING_PARAMETER:       return isString(str);
 	}
 	return false;
 }
@@ -134,7 +146,7 @@ bool CmdParser::Parameter::assign(const char* str)
 		{
 		case Parameter::BOOL_PARAMETER:
 		{
-			*_value._bool = (strcmp(str, "True") == 0 || strcmp(str, "true") == 0 || strcmp(str, "TRUE") == 0);
+			*_value._bool = (_stricmp(str, "true") == 0 || strcmp(str, "1") == 0);
 			break;
 		}
 		case Parameter::FLOAT_PARAMETER:        *_value._float = atof(str); break;
@@ -149,388 +161,235 @@ bool CmdParser::Parameter::assign(const char* str)
 	return false;
 }
 
-CmdParser::CmdParser(int* argc, char **argv)
-	: _argc(argc)
-	, _argv(argv)
-	, _usage(CmdUsage::instance())
+CmdParser::CmdParser()
+	: _usage(CmdUsage::instance())
 {
-#ifdef __APPLE__
-	// On OSX, any -psn arguments need to be removed because they will
-	// confuse the application. -psn plus a concatenated argument are
-	// passed by the finder to application bundles
-	for (int pos = 1; pos < this->argc(); ++pos)
-	{
-		if (std::string(_argv[pos]).compare(0, 4, std::string("-psn")) == 0)
-		{
-			remove(pos, 1);
-		}
-	}
-#endif
-#ifdef _WIN32
-	// Remove linefeed from last argument if it exist
-	char* lastline = argc == 0 ? 0 : _argv[*argc - 1];
-	if (lastline)
-	{
-		int len = strlen(lastline);
-		if (len > 0 && lastline[len - 1] == '\n')
-			lastline[len - 1] = '\0';
-	}
-#endif
 }
 
-int CmdParser::find(const std::string& str) const
+bool CmdParser::parseToken(const string& cmdline)
 {
-	for (int pos = 1; pos < *_argc; ++pos)
+	bool hasL = false;
+	size_t i = 0, dotIdx = 0, lIdx = 0, rIdx = 0;
+	const char* ch = cmdline.c_str();
+	size_t len = cmdline.size();
+	while (i < len)
 	{
-		if (str == _argv[pos])
-			return pos;
+		switch (ch[i++])
+		{
+		case '.':
+			if (!hasL)
+				dotIdx = i - 1;
+			break;
+		case '(':
+			if (!hasL)
+			{
+				hasL = true;
+				lIdx = i - 1;
+			}
+			break;
+		case ')':
+			rIdx = i - 1;
+			break;
+		default:
+			break;
+		}
 	}
-	return -1;
+
+	_arglist.clear();
+	if (hasL)
+	{
+		if (lIdx >= rIdx)
+			return false;
+
+		_cmdproc = cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1, dotIdx == 0 ? lIdx - dotIdx : lIdx - dotIdx - 1);
+		lIdx += 1;
+		rIdx -= 1;
+		if (lIdx <= rIdx)
+		{
+			string cmdpara = cmdline.substr(lIdx, rIdx - lIdx + 1);
+			stringtok(_arglist, cmdpara, ",");
+		}
+	}
+	else
+	{
+		_cmdproc = cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1);
+	}
+
+	if (dotIdx == 0)
+		_cmdname = "__BUILTIN__";
+	else
+		_cmdname = strToUpper(cmdline.substr(0, dotIdx));
+
+	return true;
 }
 
 std::string CmdParser::getCmdName() const
 {
-	if (_argc && *_argc > 0)
-		return std::string(_argv[0]);
-	return "";
-}
-
-bool CmdParser::isOption(int pos) const
-{
-	return pos < *_argc && isOption(_argv[pos]);
-}
-
-bool CmdParser::isString(int pos) const
-{
-	return pos < *_argc && isString(_argv[pos]);
-}
-
-bool CmdParser::isNumber(int pos) const
-{
-	return pos < *_argc && isNumber(_argv[pos]);
-}
-
-bool CmdParser::containsOptions() const
-{
-	for (int pos = 1; pos < *_argc; ++pos)
-	{
-		if (isOption(pos))
-			return true;
-	}
-	return false;
-}
-
-void CmdParser::remove(int pos, int num)
-{
-	if (num == 0)
-		return;
-	for (; pos + num < *_argc; ++pos)
-	{
-		_argv[pos] = _argv[pos + num];
-	}
-	for (; pos < *_argc; ++pos)
-	{
-		_argv[pos] = 0;
-	}
-	*_argc -= num;
-}
-
-bool CmdParser::match(int pos, const std::string& str) const
-{
-	return pos < *_argc && str == _argv[pos];
+	return _cmdname;
 }
 
 bool CmdParser::read(const std::string& str)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	remove(pos);
-	return true;
+	if (zoo::compareNoCase(str, _cmdproc))
+		return true;
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 1)
+		{
+			if (value1.assign(_arglist[0].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 2)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 3)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3, value4);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 4)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()) &&
+				value4.assign(_arglist[3].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3, value4, value5);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 5)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()) &&
+				value4.assign(_arglist[3].c_str()) &&
+				value5.assign(_arglist[4].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3, value4, value5, value6);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 6)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()) &&
+				value4.assign(_arglist[3].c_str()) &&
+				value5.assign(_arglist[4].c_str()) &&
+				value6.assign(_arglist[5].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6, Parameter value7)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3, value4, value5, value6, value7);
+	if (zoo::compareNoCase(str, _cmdproc))
+	{
+		if (_arglist.size() >= 7)
+		{
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()) &&
+				value4.assign(_arglist[3].c_str()) &&
+				value5.assign(_arglist[4].c_str()) &&
+				value6.assign(_arglist[5].c_str()) &&
+				value7.assign(_arglist[6].c_str()))
+				return true;
+			reportError("argument to `" + str + "` is not valid");
+			return false;
+		}
+		reportError("argument to `" + str + "` is missing");
+		return false;
+	}
+	return false;
 }
 
 bool CmdParser::read(const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6, Parameter value7, Parameter value8)
 {
-	int pos = find(str);
-	if (pos <= 0) return false;
-	return read(pos, str, value1, value2, value3, value4, value5, value6, value7, value8);
-}
-
-// if the argument value at the position pos matches specified string,
-// and subsequent parameters are also matched then set the parameter values and remove it from the list of arguments.
-bool CmdParser::read(int pos, const std::string& str)
-{
-	if (match(pos, str))
+	if (zoo::compareNoCase(str, _cmdproc))
 	{
-		remove(pos, 1);
-		return true;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 1) < *_argc)
+		if (_arglist.size() >= 8)
 		{
-			if (value1.valid(_argv[pos + 1]))
-			{
-				value1.assign(_argv[pos + 1]);
-				remove(pos, 2);
+			if (value1.assign(_arglist[0].c_str()) &&
+				value2.assign(_arglist[1].c_str()) &&
+				value3.assign(_arglist[2].c_str()) &&
+				value4.assign(_arglist[3].c_str()) &&
+				value5.assign(_arglist[4].c_str()) &&
+				value6.assign(_arglist[5].c_str()) &&
+				value7.assign(_arglist[6].c_str()) &&
+				value8.assign(_arglist[7].c_str()))
 				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 2) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				remove(pos, 3);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 3) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				remove(pos, 4);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 4) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]) &&
-				value4.valid(_argv[pos + 4]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				value4.assign(_argv[pos + 4]);
-				remove(pos, 5);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 5) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]) &&
-				value4.valid(_argv[pos + 4]) &&
-				value5.valid(_argv[pos + 5]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				value4.assign(_argv[pos + 4]);
-				value5.assign(_argv[pos + 5]);
-				remove(pos, 6);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 6) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]) &&
-				value4.valid(_argv[pos + 4]) &&
-				value5.valid(_argv[pos + 5]) &&
-				value6.valid(_argv[pos + 6]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				value4.assign(_argv[pos + 4]);
-				value5.assign(_argv[pos + 5]);
-				value6.assign(_argv[pos + 6]);
-				remove(pos, 7);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6, Parameter value7)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 7) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]) &&
-				value4.valid(_argv[pos + 4]) &&
-				value5.valid(_argv[pos + 5]) &&
-				value6.valid(_argv[pos + 6]) &&
-				value7.valid(_argv[pos + 7]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				value4.assign(_argv[pos + 4]);
-				value5.assign(_argv[pos + 5]);
-				value6.assign(_argv[pos + 6]);
-				value7.assign(_argv[pos + 7]);
-				remove(pos, 8);
-				return true;
-			}
-			reportError("argument to `" + str + "` is not valid");
-			return false;
-		}
-		reportError("argument to `" + str + "` is missing");
-		return false;
-	}
-	return false;
-}
-
-bool CmdParser::read(int pos, const std::string& str, Parameter value1, Parameter value2, Parameter value3, Parameter value4, Parameter value5, Parameter value6, Parameter value7, Parameter value8)
-{
-	if (match(pos, str))
-	{
-		if ((pos + 8) < *_argc)
-		{
-			if (value1.valid(_argv[pos + 1]) &&
-				value2.valid(_argv[pos + 2]) &&
-				value3.valid(_argv[pos + 3]) &&
-				value4.valid(_argv[pos + 4]) &&
-				value5.valid(_argv[pos + 5]) &&
-				value6.valid(_argv[pos + 6]) &&
-				value7.valid(_argv[pos + 7]) &&
-				value8.valid(_argv[pos + 8]))
-			{
-				value1.assign(_argv[pos + 1]);
-				value2.assign(_argv[pos + 2]);
-				value3.assign(_argv[pos + 3]);
-				value4.assign(_argv[pos + 4]);
-				value5.assign(_argv[pos + 5]);
-				value6.assign(_argv[pos + 6]);
-				value7.assign(_argv[pos + 7]);
-				value8.assign(_argv[pos + 8]);
-				remove(pos, 9);
-				return true;
-			}
 			reportError("argument to `" + str + "` is not valid");
 			return false;
 		}
@@ -555,43 +414,25 @@ void CmdParser::reportError(const std::string& message, ErrorSeverity severity)
 	_errorMessageMap[message] = severity;
 }
 
-void CmdParser::reportRemainingOptionsAsUnrecognized(ErrorSeverity severity)
+void CmdParser::reportRemainingCallsAsUnrecognized(ErrorSeverity severity)
 {
-	std::set<std::string> options;
+	std::set<std::string> procedures;
 	if (_usage)
 	{
-		// parse the usage options to get all the option that the application can potential handle.
-		for (CmdUsage::UsageMap::const_iterator itr = _usage->getCommandLineOptions().begin();
-			itr != _usage->getCommandLineOptions().end();
-			++itr)
+		// parse the usage procedures to get all the procedure that the command parser can potential handle.
+		CmdUsage::UsageMap::const_iterator it = _usage->getCommandProcedureCalls().begin();
+		for (; it != _usage->getCommandProcedureCalls().end(); ++it)
 		{
-			const std::string& option = itr->first;
+			const std::string& procedure = it->first;
 			std::string::size_type prevpos = 0, pos = 0;
-			while ((pos = option.find(' ', prevpos)) != std::string::npos)
-			{
-				if (option[prevpos] == '-')
-				{
-					options.insert(std::string(option, prevpos, pos - prevpos));
-				}
-				prevpos = pos + 1;
-			}
-			if (option[prevpos] == '-')
-			{
-
-				options.insert(std::string(option, prevpos, std::string::npos));
-			}
-		}
-
-	}
-
-	for (int pos = 1; pos < argc(); ++pos)
-	{
-		// if an option and haven't been previous querried for report as unrecognized.
-		if (isOption(pos) && options.find(_argv[pos]) == options.end())
-		{
-			reportError(std::string("unrecognized option ") + std::string(_argv[pos]), severity);
+			if ((pos = procedure.find('(', prevpos)) != std::string::npos)
+				procedures.insert(strToUpper(std::string(procedure, prevpos, pos - prevpos)));
 		}
 	}
+
+	// if have an procedure and haven't been previous querried for report as unrecognized.
+	if (procedures.find(strToUpper(_cmdproc)) == procedures.end())
+		reportError(std::string("unrecognized command procedure ") + std::string(_cmdproc) + "()", severity);
 }
 
 void CmdParser::writeErrorMessages(std::ostream& output, ErrorSeverity severity)
@@ -603,20 +444,13 @@ void CmdParser::writeErrorMessages(std::ostream& output, ErrorSeverity severity)
 	}
 }
 
-CmdUsage::Type CmdParser::readHelpType()
+bool CmdParser::readHelpType()
 {
-	getCmdUsage()->addCommandLineOption("-h or --help", "Display command line parameters");
-	getCmdUsage()->addCommandLineOption("--help-env", "Display environmental variables available");
-	getCmdUsage()->addCommandLineOption("--help-keys", "Display keyboard & mouse bindings available");
-	getCmdUsage()->addCommandLineOption("--help-all", "Display all command line, env vars and keyboard & mouse bindings.");
-
+	getCmdUsage()->addCommandProcedureCall("h()", "Display all command procedure calls");
 	// if user request help write it out to cout.
-	if (read("--help-all"))             return CmdUsage::HELP_ALL;
-	if (read("-h") || read("--help"))   return CmdUsage::COMMAND_LINE_OPTION;
-	if (read("--help-env"))             return CmdUsage::ENVIRONMENTAL_VARIABLE;
-	if (read("--help-keys"))            return CmdUsage::KEYBOARD_MOUSE_BINDING;
-
-	return CmdUsage::NO_HELP;
+	if (read("h"))
+		return true;
+	return false;
 }
 
 }

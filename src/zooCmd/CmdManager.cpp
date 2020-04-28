@@ -111,7 +111,7 @@ void CmdManager::removeCmd(const string& cmd)
 		_commands.erase(it);
 }
 
-bool CmdManager::sendCmd(vector<string> arglist)
+bool CmdManager::sendCmd(const string& cmdline)
 {
 	if (!_running)
 	{
@@ -119,27 +119,23 @@ bool CmdManager::sendCmd(vector<string> arglist)
 		return false;
 	}
 
-	int argc = arglist.size();
-	if (argc <= 0)
+	CmdParser cmdArg;
+	if (!cmdArg.parseToken(cmdline))
 	{
-		zoo_warning("Please enter a command!");
+		zoo_warning("Please enter valid command parameters!");
 		return false;
 	}
 
 	Cmd* pCmd = nullptr;
-	string cmdname = "";
-	do
+	string cmdname = cmdArg.getCmdName();
+	do 
 	{
-		if (arglist[0][0] == '-')
+		if (cmdname == "__BUILTIN__")
 		{
-			argc += 1;
-			arglist.insert(arglist.begin(), "__BUILTIN__");
 			pCmd = s_builtinCmd;
-			cmdname = "__BUILTIN__";
 			break;
 		}
 
-		cmdname = strToUpper(arglist[0]);
 		if (cmdname == _lastCmdName)
 		{
 			pCmd = _lastCmd;
@@ -153,40 +149,27 @@ bool CmdManager::sendCmd(vector<string> arglist)
 			break;
 		}
 
-		zoo_warning("Non-existent command!");
-		return false;
-
 	} while (0);
 
-	if (argc <= 1 || arglist[1][0] != '-')
+	if (!pCmd)
 	{
-		zoo_warning("Please enter valid command parameters!");
+		zoo_warning("Non-existent command!");
 		return false;
 	}
 
-	char** argv = new char*[argc];
-	for (int i = 0; i < argc; ++i)
-		argv[i] = const_cast<char*>(arglist[i].c_str());
-
-	CmdParser cmdArg(&argc, argv);
 	if (_lastCmd != pCmd)
 	{
-		cmdArg.getCmdUsage()->setCommandLineOptions(CmdUsage::UsageMap());
-		cmdArg.getCmdUsage()->setCommandLineOptionsDefaults(CmdUsage::UsageMap());
-		cmdArg.getCmdUsage()->setEnvironmentalVariables(CmdUsage::UsageMap());
-		cmdArg.getCmdUsage()->setEnvironmentalVariablesDefaults(CmdUsage::UsageMap());
-		cmdArg.getCmdUsage()->setKeyboardMouseBindings(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setCommandProcedureCalls(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setCommandProcedureCallsDefaults(CmdUsage::UsageMap());
+		cmdArg.getCmdUsage()->setCmdProcedureUsage(cmdArg.getCmdName() + ".Procedure(type1 arg1, type2 arg2, ...); // return_value_type& return_value_variable_name, ...");
+		pCmd->help(cmdArg.getCmdUsage());
 	}
 
-	unsigned int helpType = 0;
-	if ((helpType = cmdArg.readHelpType()))
+	if ((cmdArg.readHelpType()))
 	{
 		_lastCmd = pCmd;
 		_lastCmdName = cmdname;
-		cmdArg.getCmdUsage()->setCommandLineUsage(cmdArg.getCmdName() + " --options [<input-args...>] [(retrun-value...)], [] means default.");
-		pCmd->help(cmdArg.getCmdUsage());
-		cmdArg.getCmdUsage()->write(std::cout, helpType);
-		SAFE_DELETE_ARRAY(argv);
+		cmdArg.getCmdUsage()->write(std::cout);
 		return true;
 	}
 
@@ -194,11 +177,10 @@ bool CmdManager::sendCmd(vector<string> arglist)
 	s_retValue.clear();
 	std::shared_ptr<Signal> subCmd((new Signal));
 	pCmd->parse(*subCmd, cmdArg, s_retValue);
-	cmdArg.reportRemainingOptionsAsUnrecognized();
+	cmdArg.reportRemainingCallsAsUnrecognized();
 	if (cmdArg.errors())
 	{
 		cmdArg.writeErrorMessages(std::cout);
-		SAFE_DELETE_ARRAY(argv);
 		return false;
 	}
 
@@ -206,15 +188,13 @@ bool CmdManager::sendCmd(vector<string> arglist)
 	_lastCmdName = cmdname;
 	_cmdQueue.push(subCmd);
 	s_blockWhenWaitReturnValue = true;
-	SAFE_DELETE_ARRAY(argv);
 	_block[1].release();
 	return true;
 }
 
-Cmd* CmdManager::findCmd(const char* cmd)
+Cmd* CmdManager::findCmd(const string& cmdname)
 {
-	string strcmd = strToUpper(cmd);
-	auto it = _commands.find(strcmd);
+	auto it = _commands.find(strToUpper(cmdname));
 	if (it == _commands.end())
 		return nullptr;
 	return it->second.get();

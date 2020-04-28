@@ -1,5 +1,6 @@
 #include "ZooCmdUI.h"
 #include <zooCmdLoader/ZooCmdLoader.h>
+#include <ctk_service/war/WarService.h>
 #include <QLabel>
 #include <QThread>
 #include <QLineEdit>
@@ -10,7 +11,6 @@
 #include "SetupDlg.h"
 #include "ZooCmdWidget.h"
 #include "UIActivator.h"
-#include <ctk_service/war/WarService.h>
 
 ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	: QMainWindow(parent)
@@ -18,14 +18,14 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	, _mainWidget(nullptr)
 	, _inputAdaName("zooCmd_osg")
 {
-	ui.setupUi(this);
+	_ui.setupUi(this);
 	QLabel* label = new QLabel(QString::fromLocal8Bit(" «Î ‰»Î√¸¡Ó£∫"));
-	ui.statusBar->addWidget(label);
+	_ui.statusBar->addWidget(label);
 	_cmdlineEdit = new QLineEdit;
-	ui.statusBar->addWidget(_cmdlineEdit);
+	_ui.statusBar->addWidget(_cmdlineEdit);
 	_cmdlineEdit->setFixedWidth(500);
 	_progressBar = new QProgressBar;
-	ui.statusBar->addWidget(_progressBar);
+	_ui.statusBar->addWidget(_progressBar);
 	_progressBar->setMinimum(0);
 	_progressBar->setMaximum(100);
 	_progressBar->setFixedWidth(100);
@@ -33,10 +33,10 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	_progressBar->setTextVisible(false);
 
 	connect(_cmdlineEdit, SIGNAL(returnPressed()), this, SLOT(onCmd()));
-	connect(ui.action_open, SIGNAL(triggered()), this, SLOT(onOpen()));
-	connect(ui.action_save, SIGNAL(triggered()), this, SLOT(onSave()));
-	connect(ui.action_sim, SIGNAL(triggered(bool)), this, SLOT(onSim(bool)));
-	connect(ui.action_setup, SIGNAL(triggered()), this, SLOT(onSetup()));
+	connect(_ui.action_open, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(_ui.action_save, SIGNAL(triggered()), this, SLOT(onSave()));
+	connect(_ui.action_sim, SIGNAL(triggered(bool)), this, SLOT(onSim(bool)));
+	connect(_ui.action_setup, SIGNAL(triggered()), this, SLOT(onSetup()));
 
 	showMaximized();
 
@@ -83,7 +83,7 @@ void ZooCmdUI::keyPressEvent(QKeyEvent *event)
 void ZooCmdUI::onCmd()
 {
 	std::string cmdline = _cmdlineEdit->text().toStdString();
-	if (cmdline.find("-exit") != -1 || !zooCmd_Send(cmdline.c_str()))
+	if (cmdline.find("exit") != -1 || !zooCmd_Send(cmdline.c_str()))
 	{
 		QMessageBox::information(this, QString::fromLocal8Bit("Ã· æ"), QString::fromLocal8Bit("∑¢ÀÕ√¸¡Ó ß∞‹£°"));
 		return;
@@ -117,7 +117,10 @@ void ZooCmdUI::onOpen()
 	{
 		WarService* service = qobject_cast<WarService*>(UIActivator::getPluginContext()->getService(ref));
 		if (service != Q_NULLPTR)
+		{
+			service->closeScene();
 			service->openScene(1);
+		}
 	}
 }
 

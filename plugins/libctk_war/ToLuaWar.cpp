@@ -32,13 +32,13 @@ LUALIB_API int luaopen_ToLuaWar (lua_State* tolua_S);
 /* function to register type */
 static void tolua_reg_types (lua_State* tolua_S)
 {
- tolua_usertype(tolua_S,"RedArmy");
- tolua_usertype(tolua_S,"BlueArmy");
  tolua_usertype(tolua_S,"WarReporter");
- tolua_usertype(tolua_S,"Effect");
+ tolua_usertype(tolua_S,"Stationary");
  tolua_usertype(tolua_S,"Entity");
  tolua_usertype(tolua_S,"Weapon");
- tolua_usertype(tolua_S,"Stationary");
+ tolua_usertype(tolua_S,"Effect");
+ tolua_usertype(tolua_S,"RedArmy");
+ tolua_usertype(tolua_S,"BlueArmy");
  tolua_usertype(tolua_S,"AllyArmy");
 }
 

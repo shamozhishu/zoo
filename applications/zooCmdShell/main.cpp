@@ -14,6 +14,24 @@ static char* strtrim(char* s)
 	return s;
 }
 
+static char* strtolower(char* str)
+{
+	if (!str)
+		return str;
+	char* ret = str;
+	while (*str != '\0')
+	{
+		if ((*str >= 'A') && (*str <= 'Z'))
+		{
+			*str = *str + 32;
+			str++;
+		}
+		else
+			str++;
+	}
+	return ret;
+}
+
 static void parsecmdline()
 {
 	char szCmdline[128];
@@ -24,7 +42,7 @@ static void parsecmdline()
 		if (feof(stdin))
 			break;
 
-		const char* pszCmdline = strtrim(szCmdline);
+		char* pszCmdline = strtrim(szCmdline);
 		if (0 == _stricmp(pszCmdline, "cls"))
 		{
 			system("cls");
@@ -33,7 +51,7 @@ static void parsecmdline()
 
 		if (zooCmd_Send(pszCmdline))
 		{
-			if (0 == strcmp(pszCmdline, "-exit"))
+			if (0 == _strnicmp(pszCmdline, "exit", 4))
 				break;
 
 			bool bRet;
@@ -41,7 +59,7 @@ static void parsecmdline()
 			float fRet;
 			double dRet;
 
-			if (nullptr != strstr(pszCmdline, "--test-bool") && zooCmd_BoolValue("test_bool", &bRet))
+			if (nullptr != strstr(strtolower(pszCmdline), "bool") && zooCmd_BoolValue("b", &bRet))
 			{
 				char szbuf[32];
 				if (bRet)
@@ -50,19 +68,19 @@ static void parsecmdline()
 					sprintf_s(szbuf, sizeof(szbuf), "false");
 				printf("bool return value: %s\n", szbuf);
 			}
-			else if (nullptr != strstr(pszCmdline, "--test-int") && zooCmd_IntValue("test_int", &iRet))
+			else if (nullptr != strstr(strtolower(pszCmdline), "int") && zooCmd_IntValue("i", &iRet))
 				printf("int return value: %d\n", iRet);
-			else if (nullptr != strstr(pszCmdline, "--test-float") && zooCmd_FloatValue("test_float", &fRet))
+			else if (nullptr != strstr(strtolower(pszCmdline), "float") && zooCmd_FloatValue("f", &fRet))
 				printf("float return value: %.3f\n", fRet);
-			else if (nullptr != strstr(pszCmdline, "--test-double") && zooCmd_DoubleValue("test_double", &dRet))
+			else if (nullptr != strstr(strtolower(pszCmdline), "double") && zooCmd_DoubleValue("d", &dRet))
 				printf("double return value: %.6f\n", dRet);
-			else if (nullptr != strstr(pszCmdline, "--test-str"))
+			else if (nullptr != strstr(strtolower(pszCmdline), "str"))
 			{
-				const char* szRet = zooCmd_StringValue("test_str");
+				const char* szRet = zooCmd_StringValue("str");
 				if (szRet && strcmp(szRet, "") != 0)
 					printf("string return value: %s\n", szRet);
 			}
-			else if (nullptr != strstr(pszCmdline, "--test-err"))
+			else if (nullptr != strstr(strtolower(pszCmdline), "err"))
 			{
 				const char* szErrMessage = zooCmd_ErrorMessage();
 				if (szErrMessage && strcmp(szErrMessage, "") != 0)
