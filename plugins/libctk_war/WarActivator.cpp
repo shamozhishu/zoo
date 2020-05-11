@@ -19,15 +19,8 @@ WarActivator::~WarActivator()
 
 void WarActivator::start(ctkPluginContext* context)
 {
-	QString relatedCmd = context->getProperty("ctk.war.command").toString();
-	QString resPath = context->getProperty("ctk.war.respath").toString();
+	QString relatedCmd = context->getProperty("ctk.war.relatedcmd").toString();
 	QString mainTable = context->getProperty("ctk.war.maintable").toString();
-	if (resPath.isEmpty())
-	{
-		const char* szTip = "Framework property \"ctk.war.respath\" containing the resource path of the CTK War not found!";
-		zoo_error("%s", szTip);
-		throw ctkRuntimeException(szTip);
-	}
 
 	if (mainTable.isEmpty())
 	{
@@ -36,10 +29,9 @@ void WarActivator::start(ctkPluginContext* context)
 		throw ctkRuntimeException(szTip);
 	}
 
-	zoo_debug("ctk.war.command=%s", relatedCmd.toStdString().c_str());
-	zoo_debug("ctk.war.respath=%s", resPath.toStdString().c_str());
+	zoo_debug("ctk.war.relatedcmd=%s", relatedCmd.toStdString().c_str());
 	zoo_debug("ctk.war.maintable=%s", mainTable.toStdString().c_str());
-	new WarCommander(relatedCmd.toStdString(), resPath.toStdString(), mainTable.toStdString());
+	new WarCommander(relatedCmd.toStdString(), mainTable.toStdString());
 	ctkDictionary props;
 	_warService = new WarServiceImpl();
 	props.insert(ctkPluginConstants::SERVICE_RANKING, 1);

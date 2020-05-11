@@ -41,7 +41,7 @@ public:
 	}
 };
 
-REFLEX_IMPLEMENT(InputDevice);
+ZOO_REFLEX_IMPLEMENT(InputDevice);
 InputDevice::InputDevice()
 	: _osgInited(false)
 	, _windowScale(1.0f)

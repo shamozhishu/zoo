@@ -1,19 +1,25 @@
 #pragma once
 
-#include "Entity.h"
+#include "WarComponents.h"
+#include <component/war/SharedComponents.h>
 
-class WarReporter : public Entity { // tolua_export
-	friend class Battlefield;
-	WarReporter();
-	~WarReporter();
+class WarReporter : public zoo::Entity, public Serializer { // tolua_export
+	ZOO_REFLEX_DECLARE(WarReporter)
 public:
+	WarReporter();
 	void init();
-	ENTITY_TYPE getType() const;
+	void update();
 	void serialize(stringstream& ss);
-	void deserialize(TableCSV* pTable);
+	void deserialize(zoo::TableCSV* pTable);
+
+protected:
+	string _desc;
+	Behavior* _behavior;
 
 public:
 	// tolua_begin
+	int ID() const;
+	int Kind() const;
 };
 
 // tolua_end

@@ -12,7 +12,7 @@ using namespace osgEarth;
 using namespace zooCmd_osg;
 
 ZOO_REGISTER(WorldCmd)
-REFLEX_IMPLEMENT(WorldCmd);
+ZOO_REFLEX_IMPLEMENT(WorldCmd);
 
 WorldCmd::~WorldCmd()
 {
@@ -21,7 +21,7 @@ WorldCmd::~WorldCmd()
 
 bool WorldCmd::init()
 {
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOOCMD_DATA_DIR + "world.earth");
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + "world.earth");
 	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
 	if (!_mapNode)
 		return false;
@@ -155,7 +155,7 @@ void WorldCmd::onLocateModel(const UserData& userdata)
 	float scale = any_cast<float>(userdata.getData("scale"));
 	bool repeat = any_cast<bool>(userdata.getData("repeat"));
 
-	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOOCMD_DATA_DIR + model);
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + model);
 	if (node)
 	{
 		osg::ref_ptr<LocateModelEventHandler> locateModelHandler = new LocateModelEventHandler(node, height, scale, repeat);

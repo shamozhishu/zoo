@@ -5,6 +5,9 @@
 
 namespace zoo {
 
+string DATA_ROOT_DIR_ANSI;
+string DATA_ROOT_DIR_UTF8;
+
 string w2a_(const wstring& wideStr)
 {
 	if (wideStr == L"")

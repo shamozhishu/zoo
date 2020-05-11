@@ -67,7 +67,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\include;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,7 +90,7 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <AdditionalIncludeDirectories>..\..\src;..\..\dependency;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src;..\..\include;D:\Program Files\CTK\include\ctk-0.1;D:\Program Files\3rdParty\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ZOO_ENABLE_LOG_PRINT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -116,10 +116,7 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <QtRcc Include="libctk_war.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\dependency\SharedObject\SharedObject.vcxproj">
-      <Project>{a9a1f10e-1bad-4a01-96dc-62d7b2dd8351}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\dependency\zooCmdLoader\zooCmdLoader.vcxproj">
+    <ProjectReference Include="..\..\src\zooCmdLoader\zooCmdLoader.vcxproj">
       <Project>{c275c9f3-26c5-4949-a93c-58815f2000cf}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
@@ -132,14 +129,12 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <ClInclude Include="BlueArmy.h" />
     <ClInclude Include="CommonDef.h" />
     <ClInclude Include="Effect.h" />
-    <ClInclude Include="EntDoF.h" />
-    <ClInclude Include="EntitiesCache.h" />
-    <ClInclude Include="Entity.h" />
     <ClInclude Include="InstanceReleaser.h" />
     <ClInclude Include="LuaScript.h" />
     <ClInclude Include="PublicEnum.h" />
     <ClInclude Include="RedArmy.h" />
     <ClInclude Include="Stationary.h" />
+    <ClInclude Include="WarComponents.h" />
     <ClInclude Include="WarReporter.h" />
     <ClInclude Include="Weapon.h" />
     <QtMoc Include="WarServiceImpl.h" />
@@ -151,11 +146,10 @@ xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin\plugins"</Command>
     <ClCompile Include="Battlefield.cpp" />
     <ClCompile Include="BlueArmy.cpp" />
     <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="EntitiesCache.cpp" />
-    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="InstanceReleaser.cpp" />
     <ClCompile Include="LuaScript.cpp" />
     <ClCompile Include="RedArmy.cpp" />
+    <ClCompile Include="WarComponents.cpp" />
     <ClCompile Include="Stationary.cpp" />
     <ClCompile Include="ToLuaWar.cpp" />
     <ClCompile Include="WarActivator.cpp" />

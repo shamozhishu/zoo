@@ -11,8 +11,6 @@
 using namespace zooCmd;
 namespace zooCmd
 {
-	std::string ansi_data_dir;
-	std::string utf8_data_dir;
 	extern InputAdapter* g_inputAdapter;
 	extern std::thread::id g_renderThreadID;
 }
@@ -83,14 +81,14 @@ bool zooCmd_InitA(int cmdcount, const char* cmdset[], const char* input_adapter,
 
 	if (datadir != nullptr && 0 != strcmp(datadir, ""))
 	{
-		ansi_data_dir = datadir;
-		unsigned int lastIdx = ansi_data_dir.size() - 1;
-		if (ansi_data_dir[lastIdx] != '/' && ansi_data_dir[lastIdx] != '\\')
-			ansi_data_dir += "/";
+		DATA_ROOT_DIR_ANSI = datadir;
+		unsigned int lastIdx = DATA_ROOT_DIR_ANSI.size() - 1;
+		if (DATA_ROOT_DIR_ANSI[lastIdx] != '/' && DATA_ROOT_DIR_ANSI[lastIdx] != '\\')
+			DATA_ROOT_DIR_ANSI += "/";
 	}
 
-	if (ansi_data_dir != "")
-		utf8_data_dir = ansiToUtf8(ansi_data_dir);
+	if (DATA_ROOT_DIR_ANSI != "")
+		DATA_ROOT_DIR_UTF8 = ansiToUtf8(DATA_ROOT_DIR_ANSI);
 
 	CmdManager* pCmdMgr = new CmdManager();
 

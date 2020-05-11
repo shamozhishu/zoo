@@ -32,13 +32,10 @@
     <ClInclude Include="BlueArmy.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="CommonDef.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="Effect.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="EntitiesCache.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="InstanceReleaser.h">
@@ -62,10 +59,7 @@
     <ClInclude Include="Weapon.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="CommonDef.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="EntDoF.h">
+    <ClInclude Include="WarComponents.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -93,12 +87,6 @@
     <ClCompile Include="Effect.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="EntitiesCache.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="InstanceReleaser.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -109,6 +97,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Stationary.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ToLuaWar.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="WarActivator.cpp">
@@ -126,7 +117,7 @@
     <ClCompile Include="Weapon.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="ToLuaWar.cpp">
+    <ClCompile Include="WarComponents.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

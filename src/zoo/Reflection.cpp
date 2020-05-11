@@ -2,7 +2,7 @@
 
 namespace zoo {
 
-std::string Type::getType() const
+std::string Type::typeName() const
 {
 	return ReflexFactory<>::getTypeName(typeid(*this).name());
 }

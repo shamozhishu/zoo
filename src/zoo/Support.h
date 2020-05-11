@@ -45,12 +45,25 @@ using namespace std;
 
 namespace zoo {
 
+class _zooExport Type
+{
+public:
+	virtual ~Type() {}
+	virtual string typeName() const;
+protected:
+	Type() {}
+};
+
 template<typename ...Args> class ReflexFactory;
 class Log;
 class Any;
 class AnyNumeric;
 class Block;
 class Timer;
+class Entity;
+class EntityImpl;
+class Component;
+class ComponentImpl;
 class Signal;
 class SignalTrigger;
 class Interlock;

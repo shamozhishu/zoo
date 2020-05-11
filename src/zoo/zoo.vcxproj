@@ -15,6 +15,7 @@
     <ClInclude Include="BitState.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="DatabaseCSV.h" />
     <ClInclude Include="DynLib.h" />
     <ClInclude Include="DynLibManager.h" />
@@ -29,6 +30,7 @@
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="DatabaseCSV.cpp" />
     <ClCompile Include="DynLib.cpp" />
     <ClCompile Include="DynLibManager.cpp" />
@@ -85,6 +87,7 @@
     <PostBuildEvent>
       <Command>mkdir "D:\Program Files\zoo\include\zoo"
 xcopy /DY "*.h" "D:\Program Files\zoo\include\zoo"
+xcopy /y /s /e "..\..\include" "D:\Program Files\zoo\include"
 mkdir "D:\Program Files\zoo\bin"
 xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
 mkdir "D:\Program Files\zoo\lib"
@@ -109,6 +112,7 @@ xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
     <PostBuildEvent>
       <Command>mkdir "D:\Program Files\zoo\include\zoo"
 xcopy /DY "*.h" "D:\Program Files\zoo\include\zoo"
+xcopy /y /s /e "..\..\include" "D:\Program Files\zoo\include"
 mkdir "D:\Program Files\zoo\bin"
 xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
 mkdir "D:\Program Files\zoo\lib"

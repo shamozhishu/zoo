@@ -11,24 +11,19 @@ class WarCommander : public QObject, public zoo::Singleton<WarCommander>
 {
 	Q_OBJECT
 public:
-	WarCommander(string relatedCmd, string resPath, string mainTable);
+	WarCommander(string relatedCmd, string mainTable);
 	~WarCommander();
-	const string& getResPath() const;
 	bool enterBattlefield(int id);
 	void exitCurBattlefield();
 	void saveCurBattlefield();
 	const char* getRelatedCmd() const;
 	const char* getEntTypeName(ENTITY_TYPE entType) const;
 
-protected:
-	void writeFile(ENTITY_TYPE entType, stringstream& ss, zoo::TableCSV* pTable);
-
 protected slots:
 	void tick();
 
 private:
 	string _relatedCmd;
-	string _resPath;
 	string _mainTable;
 	QTimer _tickTimer;
 	Battlefield* _currentBattlefield;

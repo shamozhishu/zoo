@@ -114,6 +114,10 @@ static inline wstring& trim(wstring& str)
 	return str;
 }
 
+/* 数据根目录 */
+_zooExport extern string DATA_ROOT_DIR_ANSI;
+_zooExport extern string DATA_ROOT_DIR_UTF8;
+
 /* 宽字符与多字节字符串之间的转换 */
 _zooExport string  w2a_(const wstring& wideStr);
 _zooExport wstring a2w_(const string& ansiStr);

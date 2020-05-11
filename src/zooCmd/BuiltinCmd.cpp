@@ -4,7 +4,7 @@
 
 namespace zooCmd {
 
-REFLEX_IMPLEMENT(BuiltinCmd);
+ZOO_REFLEX_IMPLEMENT(BuiltinCmd);
 
 bool BuiltinCmd::init()
 {

@@ -4,16 +4,6 @@
 
 namespace zoo {
 
-class _zooExport Type
-{
-public:
-	virtual ~Type() {}
-	virtual string getType() const;
-
-protected:
-	Type() {}
-};
-
 template<typename ...Args>
 class ReflexFactory
 {

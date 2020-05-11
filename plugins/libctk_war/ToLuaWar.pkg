@@ -1,6 +1,5 @@
 $cfile "PublicEnum.h"
 $cfile "Battlefield.h"
-$cfile "Entity.h"
 $cfile "Weapon.h"
 $cfile "Effect.h"
 $cfile "RedArmy.h"

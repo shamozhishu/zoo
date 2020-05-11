@@ -14,9 +14,9 @@
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 // Enable run-time memory check for debug builds.
-#define EnableMemLeakCheck() _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF)
+#define ZooEnableMemLeakCheck() _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF)
 #else
-#define EnableMemLeakCheck()
+#define ZooEnableMemLeakCheck()
 #endif
 
 #if defined(ZOO_NONCLIENT_BUILD)
@@ -27,6 +27,12 @@
 #	else
 #		define _zooExport __declspec(dllimport)
 #	endif
+#endif
+
+#ifdef ZOO_USE_UTF8_FILENAME
+#define ZOO_DATA_ROOT_DIR zoo::DATA_ROOT_DIR_UTF8
+#else
+#define ZOO_DATA_ROOT_DIR zoo::DATA_ROOT_DIR_ANSI
 #endif
 
 #if defined(_DEBUG) || defined(ZOO_ENABLE_LOG_PRINT)
@@ -41,8 +47,10 @@
 #define zoo_error(format, ...)
 #endif
 
-#define REFLEX_DECLARE(CLASS_TYPE) private: static zoo::Reflex<CLASS_TYPE> _dynReflex;
-#define REFLEX_IMPLEMENT(CLASS_TYPE) zoo::Reflex<CLASS_TYPE> CLASS_TYPE::_dynReflex
+#define ZOO_COMPONENT_IMPL(Class) friend class Class##Impl;
+
+#define ZOO_REFLEX_DECLARE(CLASS_TYPE) private: static zoo::Reflex<CLASS_TYPE> _dynReflex;
+#define ZOO_REFLEX_IMPLEMENT(CLASS_TYPE) zoo::Reflex<CLASS_TYPE> CLASS_TYPE::_dynReflex
 
 #define SAFE_DELETE(p)       do { if (p) { delete (p); (p) = 0; } } while (0)
 #define SAFE_DELETE_ARRAY(p) do { if (p) { delete [] (p); (p) = 0; } } while (0)

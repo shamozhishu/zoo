@@ -23,7 +23,5 @@ class CmdManager;
 class BuiltinCmd;
 class InputAdapter;
 template class _zooCmdExport ReflexFactory<>;
-_zooCmdExport extern std::string ansi_data_dir;
-_zooCmdExport extern std::string utf8_data_dir;
 
 }

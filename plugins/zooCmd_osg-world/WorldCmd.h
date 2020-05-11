@@ -7,7 +7,7 @@
 class LongitudeLatitudeEventHandler;
 class WorldCmd : public zooCmd::Cmd, public zoo::Singleton<WorldCmd>
 {
-	REFLEX_DECLARE(WorldCmd)
+	ZOO_REFLEX_DECLARE(WorldCmd)
 public:
 	~WorldCmd();
 	bool init();

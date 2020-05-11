@@ -8,7 +8,7 @@ namespace zooCmd_osg {
 
 class _zooCmd_OSG_Export InputDevice : public InputAdapter, public zoo::Type
 {
-	REFLEX_DECLARE(InputDevice)
+	ZOO_REFLEX_DECLARE(InputDevice)
 public:
 	InputDevice();
 	~InputDevice();

@@ -13,7 +13,16 @@
     <ClInclude Include="BitState.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="Block.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="Common.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabaseCSV.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="DynLib.h">
@@ -40,23 +49,23 @@
     <ClInclude Include="Support.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="UserData.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Block.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="DatabaseCSV.h">
-      <Filter>src</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Component.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabaseCSV.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="DynLib.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -76,9 +85,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="DatabaseCSV.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

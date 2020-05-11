@@ -110,9 +110,7 @@
 #endif
 
 #ifdef OSG_USE_UTF8_FILENAME
-#define ZOOCMD_DATA_DIR zooCmd::utf8_data_dir
-#else
-#define ZOOCMD_DATA_DIR zooCmd::ansi_data_dir
+#define ZOO_USE_UTF8_FILENAME 1
 #endif
 
 #include <zooCmd/Support.h>

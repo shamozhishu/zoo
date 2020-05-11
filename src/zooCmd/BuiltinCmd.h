@@ -6,7 +6,7 @@ namespace zooCmd {
 
 class _zooCmdExport BuiltinCmd : public Cmd
 {
-	REFLEX_DECLARE(BuiltinCmd)
+	ZOO_REFLEX_DECLARE(BuiltinCmd)
 public:
 	bool init();
 	void help(CmdUsage* usage);
