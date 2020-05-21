@@ -10,10 +10,40 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\zoo\Any.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\BitState.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Block.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Common.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Component.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\DatabaseCSV.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\DynLib.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\DynLibManager.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Interlock.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Log.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Reflection.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Sigslot.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Singleton.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Support.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Timer.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\UserData.h" />
+    <ClInclude Include="..\..\..\..\src\zoo\Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\zoo\Component.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\DatabaseCSV.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\DynLib.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\DynLibManager.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\Log.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\Reflection.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\Sigslot.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\UserData.cpp" />
+    <ClCompile Include="..\..\..\..\src\zoo\Utils.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{E4EE5D59-6734-41D2-8497-8DEC6CF7AE25}</ProjectGuid>
-    <RootNamespace>zooCmdosg</RootNamespace>
+    <ProjectGuid>{9A74B9E2-53CA-46E0-A7F6-F5C5B938827D}</ProjectGuid>
+    <RootNamespace>zoo</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -51,19 +81,17 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;D:\Program Files\OpenSceneGraph\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ZOOCMD_OSG_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ZOO_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>D:\Program Files\OpenSceneGraph\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zooCmd_osg"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zooCmd_osg"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\include\zoo"
+xcopy /DY "..\..\..\..\src\zoo\*.h" "D:\SDK\vs2017_x64\zoo\include\zoo"
+xcopy /y /s /e "..\..\..\..\include" "D:\SDK\vs2017_x64\zoo\include"
+mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+mkdir "D:\SDK\vs2017_x64\zoo\lib"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\SDK\vs2017_x64\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -74,38 +102,23 @@ xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;D:\Program Files\OpenSceneGraph\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ZOOCMD_OSG_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ZOO_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\Program Files\OpenSceneGraph\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zooCmd_osg"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zooCmd_osg"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\include\zoo"
+xcopy /DY "..\..\..\..\src\zoo\*.h" "D:\SDK\vs2017_x64\zoo\include\zoo"
+xcopy /y /s /e "..\..\..\..\include" "D:\SDK\vs2017_x64\zoo\include"
+mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+mkdir "D:\SDK\vs2017_x64\zoo\lib"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\SDK\vs2017_x64\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Support.h" />
-    <ClInclude Include="InputDevice.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="InputDevice.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zooCmd\zooCmd.vcxproj">
-      <Project>{e2463d34-fde1-48a5-9345-10f28b9696eb}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\zoo\zoo.vcxproj">
-      <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

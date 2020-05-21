@@ -9,6 +9,8 @@ public:
 	virtual bool openScene(int id) = 0;
 	virtual void closeScene() = 0;
 	virtual void saveScene() = 0;
+	virtual void startSimulation() = 0;
+	virtual void stopSimulation() = 0;
 };
 
 #define WarService_iid "ckt.war.service"

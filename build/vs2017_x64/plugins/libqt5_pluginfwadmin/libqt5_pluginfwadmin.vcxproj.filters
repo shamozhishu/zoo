@@ -7,8 +7,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="PluginFrameworkAdmin.cpp">
       <Filter>src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="PluginFrameworkAdmin.h">
+      <Filter>src</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

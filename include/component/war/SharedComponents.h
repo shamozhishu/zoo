@@ -30,6 +30,12 @@ public:
 	void serialize(stringstream& ss);
 	void deserialize(zoo::TableCSV* pTable);
 
+	enum
+	{
+		dof_ = zoo::ESTATE_01,
+		parent_ = zoo::ESTATE_02
+	};
+
 public:
 	// tolua_begin
 	void setPosX(double x);
@@ -62,8 +68,15 @@ class Model : public zoo::Component, public Serializer { // tolua_export
 	ZOO_COMPONENT_IMPL(Model)
 
 public:
+	Model();
 	void serialize(stringstream& ss);
 	void deserialize(zoo::TableCSV* pTable);
+
+	enum
+	{
+		visible_ = zoo::ESTATE_01,
+		modelFile_ = zoo::ESTATE_02
+	};
 
 public:
 	// tolua_begin

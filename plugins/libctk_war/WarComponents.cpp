@@ -61,6 +61,7 @@ DoF::DoF()
 	, _sy(0)
 	, _sz(0)
 {
+	_dirty.addState(dof_ | parent_);
 }
 
 DoF::~DoF()
@@ -109,6 +110,7 @@ void DoF::deserialize(zoo::TableCSV* pTable)
 void DoF::setPosX(double x)
 {
 	_x = x;
+	_dirty.addState(dof_);
 }
 
 double DoF::getPosX() const
@@ -119,6 +121,7 @@ double DoF::getPosX() const
 void DoF::setPosY(double y)
 {
 	_y = y;
+	_dirty.addState(dof_);
 }
 
 double DoF::getPosY() const
@@ -129,6 +132,7 @@ double DoF::getPosY() const
 void DoF::setPosZ(double z)
 {
 	_z = z;
+	_dirty.addState(dof_);
 }
 
 double DoF::getPosZ() const
@@ -139,6 +143,7 @@ double DoF::getPosZ() const
 void DoF::setHeading(double h)
 {
 	_heading = h;
+	_dirty.addState(dof_);
 }
 
 float DoF::getHeading() const
@@ -149,6 +154,7 @@ float DoF::getHeading() const
 void DoF::setPitch(double p)
 {
 	_pitch = p;
+	_dirty.addState(dof_);
 }
 
 float DoF::getPitch() const
@@ -159,6 +165,7 @@ float DoF::getPitch() const
 void DoF::setRoll(double r)
 {
 	_roll = r;
+	_dirty.addState(dof_);
 }
 
 float DoF::getRoll() const
@@ -169,6 +176,7 @@ float DoF::getRoll() const
 void DoF::setScaleX(double x)
 {
 	_sx = x;
+	_dirty.addState(dof_);
 }
 
 float DoF::getScaleX() const
@@ -179,6 +187,7 @@ float DoF::getScaleX() const
 void DoF::setScaleY(double y)
 {
 	_sy = y;
+	_dirty.addState(dof_);
 }
 
 float DoF::getScaleY() const
@@ -189,6 +198,7 @@ float DoF::getScaleY() const
 void DoF::setScaleZ(double z)
 {
 	_sz = z;
+	_dirty.addState(dof_);
 }
 
 float DoF::getScaleZ() const
@@ -209,6 +219,8 @@ void DoF::setParent(DoF* parent)
 
 	if (parent)
 		parent->_children.push_back(this);
+
+	_dirty.addState(parent_);
 }
 
 DoF* DoF::getParent() const
@@ -217,6 +229,11 @@ DoF* DoF::getParent() const
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Model);
+Model::Model()
+{
+	_dirty.addState(visible_ | modelFile_);
+}
+
 void Model::serialize(stringstream& ss)
 {
 	ss << _visible << "," << _modelFile;
@@ -236,11 +253,13 @@ bool Model::isVisible() const
 void Model::setVisible(bool visible)
 {
 	_visible = visible;
+	_dirty.addState(visible_);
 }
 
 void Model::setModelFile(const string& modelFile)
 {
 	_modelFile = modelFile;
+	_dirty.addState(modelFile_);
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Sound);

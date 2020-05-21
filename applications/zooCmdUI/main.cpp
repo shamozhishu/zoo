@@ -1,7 +1,7 @@
-#include <QApplication>
 #include <QPluginLoader>
 #include <QDebug>
 #include <QFile>
+#include <QtWidgets/QApplication>
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <ctk_service/PluginfwAdminInterface.h>
 

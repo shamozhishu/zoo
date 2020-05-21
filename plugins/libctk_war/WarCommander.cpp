@@ -64,6 +64,12 @@ bool WarCommander::enterBattlefield(int id)
 		return false;
 	}
 
+	_SimStates[Ready_].init(pMainTable->item2str(id, "Ready"));
+	_SimStates[Running_].init(pMainTable->item2str(id, "Running"));
+	_SimStates[Paused_].init(pMainTable->item2str(id, "Paused"));
+	_SimStates[FinishedSuccess_].init(pMainTable->item2str(id, "FinishedSuccess"));
+	_SimStates[FinishedFailed_].init(pMainTable->item2str(id, "FinishedFailed"));
+
 	Battlefield* pBattlefield = new Battlefield(id, pMainTable->item2str(id, TableField[DESCRIPTION]));
 
 	TableCSV* pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_WEAPON]));
@@ -178,4 +184,6 @@ void WarCommander::tick()
 {
 	if (_currentBattlefield)
 		_currentBattlefield->update();
+
+	WarSimulator::update();
 }

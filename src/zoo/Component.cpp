@@ -2,17 +2,23 @@
 
 namespace zoo {
 
-zoo::Entity* Component::getEntity() const
+Entity* Component::getEntity() const
 {
 	return _entity;
 }
 
+EntityImpl* ComponentImpl::getEntityImpl() const
+{
+	return getComponent()->getEntity()->_imp.get();
+}
+
 ZOO_REFLEX_IMPLEMENT(Entity);
-std::set<Entity*> Entity::_uselessEntities;
+unordered_map<string, Entity*> Entity::_freeList;
 unordered_map<int, unordered_map<int, Entity*>> Entity::_entitiesPool;
 Entity::Entity()
 	: _id(-1)
 	, _kind(0)
+	, _inUse(true)
 {
 }
 
@@ -105,7 +111,7 @@ Entity* Entity::create(string className, int id, int kind /*= 0*/)
 		pEntity = ReflexFactory<>::getInstance().create<Entity>(className);
 		if (!pEntity)
 		{
-			zoo_warning("Entity type does not exist!");
+			zoo_warning("Entity type \"%s\" does not exist!", className.c_str());
 			return nullptr;
 		}
 
@@ -140,9 +146,11 @@ void Entity::destroy(Entity* pEntity, bool bDelete /*= false*/)
 {
 	if (pEntity)
 	{
-		_entitiesPool[pEntity->Kind()][pEntity->ID()] = nullptr;
 		if (bDelete)
+		{
+			_entitiesPool[pEntity->Kind()][pEntity->ID()] = nullptr;
 			delete pEntity;
+		}
 		else
 			discard(pEntity);
 	}
@@ -163,13 +171,8 @@ void Entity::clear()
 		}
 	}
 
-	auto itSet = _uselessEntities.begin();
-	auto itSetEnd = _uselessEntities.end();
-	for (; itSet != itSetEnd; ++itSet)
-		delete *itSet;
-
+	_freeList.clear();
 	_entitiesPool.clear();
-	_uselessEntities.clear();
 }
 
 Entity* Entity::find(int id, int kind /*= 0*/)
@@ -182,36 +185,55 @@ Entity* Entity::find(int id, int kind /*= 0*/)
 	if (itor == it->second.end())
 		return nullptr;
 
-	return itor->second;
+	Entity* pEnt = itor->second;
+	if (pEnt && !pEnt->_inUse)
+		return nullptr;
+
+	return pEnt;
 }
 
 Entity* Entity::fetch(string className)
 {
-	Entity* pEntity;
-	auto it = _uselessEntities.begin();
-	auto itEnd = _uselessEntities.end();
-	for (; it != itEnd; ++it)
+	Entity* pEntity = nullptr;
+	auto it = _freeList.find(className);
+	if (it == _freeList.end())
+		_freeList[className] = pEntity;
+
+	Entity* firstAvailable = _freeList[className];
+	if (firstAvailable)
 	{
-		pEntity = *it;
-		if (pEntity->typeName() == className)
-		{
-			_uselessEntities.erase(it);
-			return pEntity;
-		}
+		pEntity = firstAvailable;
+		pEntity->_inUse = true;
+		firstAvailable = pEntity->_next;
+		_freeList[className] = firstAvailable;
 	}
 
-	return nullptr;
+	return pEntity;
 }
 
 void Entity::discard(Entity* pEntity)
 {
-	if (pEntity)
-		_uselessEntities.insert(pEntity);
+	if (!pEntity)
+		return;
+
+	pEntity->_inUse = false;
+	pEntity->_next = nullptr;
+	string className = pEntity->typeName();
+	auto it = _freeList.find(className);
+	if (it == _freeList.end())
+	{
+		_freeList[className] = pEntity;
+		return;
+	}
+
+	Entity* firstAvailable = _freeList[className];
+	pEntity->_next = firstAvailable;
+	_freeList[className] = pEntity;
 }
 
 ComponentImpl* EntityImpl::getComponentImpl(string className)
 {
-	Component* pComponent = _entity->getComponent(className);
+	Component* pComponent = _entity->getComponent(className.substr(0, className.size() - 4));
 	if (pComponent)
 		pComponent->_imp.get();
 	return nullptr;

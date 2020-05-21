@@ -11,27 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CmdUsage.h" />
-    <ClInclude Include="BuiltinCmd.h" />
-    <ClInclude Include="Cmd.h" />
-    <ClInclude Include="CmdManager.h" />
-    <ClInclude Include="CmdParser.h" />
-    <ClInclude Include="InputAdapter.h" />
-    <ClInclude Include="Support.h" />
-    <ClInclude Include="ZooCmd.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="CmdUsage.cpp" />
-    <ClCompile Include="BuiltinCmd.cpp" />
-    <ClCompile Include="CmdManager.cpp" />
-    <ClCompile Include="CmdParser.cpp" />
-    <ClCompile Include="InputAdapter.cpp" />
-    <ClCompile Include="ZooCmd.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\zoo\zoo.vcxproj">
       <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\zooCmd\BuiltinCmd.cpp" />
+    <ClCompile Include="..\..\..\..\src\zooCmd\CmdManager.cpp" />
+    <ClCompile Include="..\..\..\..\src\zooCmd\CmdParser.cpp" />
+    <ClCompile Include="..\..\..\..\src\zooCmd\CmdUsage.cpp" />
+    <ClCompile Include="..\..\..\..\src\zooCmd\InputAdapter.cpp" />
+    <ClCompile Include="..\..\..\..\src\zooCmd\ZooCmd.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\zooCmd\BuiltinCmd.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\Cmd.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\CmdManager.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\CmdParser.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\CmdUsage.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\InputAdapter.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\Support.h" />
+    <ClInclude Include="..\..\..\..\src\zooCmd\ZooCmd.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -76,16 +76,16 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>ZOOCMD_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link />
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zooCmd"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zooCmd"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\include\zooCmd"
+xcopy /DY "..\..\..\..\src\zooCmd\*.h" "D:\SDK\vs2017_x64\zoo\include\zooCmd"
+mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+mkdir "D:\SDK\vs2017_x64\zoo\lib"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\SDK\vs2017_x64\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -96,7 +96,7 @@ xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ZOOCMD_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -104,12 +104,12 @@ xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zooCmd"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zooCmd"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\include\zooCmd"
+xcopy /DY "..\..\..\..\src\zooCmd\*.h" "D:\SDK\vs2017_x64\zoo\include\zooCmd"
+mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)"
+mkdir "D:\SDK\vs2017_x64\zoo\lib"
+xcopy /DY "$(OutDir)$(TargetName).lib" "D:\SDK\vs2017_x64\zoo\lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

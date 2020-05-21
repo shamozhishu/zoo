@@ -7,84 +7,84 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Any.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Any.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="BitState.h">
+    <ClInclude Include="..\..\..\..\src\zoo\BitState.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Block.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Block.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Common.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Component.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Component.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DatabaseCSV.h">
+    <ClInclude Include="..\..\..\..\src\zoo\DatabaseCSV.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DynLib.h">
+    <ClInclude Include="..\..\..\..\src\zoo\DynLib.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="DynLibManager.h">
+    <ClInclude Include="..\..\..\..\src\zoo\DynLibManager.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Interlock.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Interlock.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Log.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Log.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Reflection.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Reflection.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Sigslot.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Sigslot.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Singleton.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Support.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Support.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Timer.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="UserData.h">
+    <ClInclude Include="..\..\..\..\src\zoo\UserData.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="..\..\..\..\src\zoo\Utils.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Component.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\Component.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="DatabaseCSV.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\DatabaseCSV.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="DynLib.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\DynLib.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="DynLibManager.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\DynLibManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Log.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\Log.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Reflection.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\Reflection.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Sigslot.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\Sigslot.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="UserData.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\UserData.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
+    <ClCompile Include="..\..\..\..\src\zoo\Utils.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

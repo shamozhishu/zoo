@@ -23,3 +23,13 @@ void WarServiceImpl:: saveScene()
 {
 	WarCommander::getSingleton().saveCurBattlefield();
 }
+
+void WarServiceImpl::startSimulation()
+{
+
+}
+
+void WarServiceImpl::stopSimulation()
+{
+
+}

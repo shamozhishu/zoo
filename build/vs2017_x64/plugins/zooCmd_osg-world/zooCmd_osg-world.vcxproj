@@ -10,40 +10,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Any.h" />
-    <ClInclude Include="BitState.h" />
-    <ClInclude Include="Block.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Component.h" />
-    <ClInclude Include="DatabaseCSV.h" />
-    <ClInclude Include="DynLib.h" />
-    <ClInclude Include="DynLibManager.h" />
-    <ClInclude Include="Interlock.h" />
-    <ClInclude Include="Log.h" />
-    <ClInclude Include="Reflection.h" />
-    <ClInclude Include="Sigslot.h" />
-    <ClInclude Include="Singleton.h" />
-    <ClInclude Include="Support.h" />
-    <ClInclude Include="Timer.h" />
-    <ClInclude Include="UserData.h" />
-    <ClInclude Include="Utils.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Component.cpp" />
-    <ClCompile Include="DatabaseCSV.cpp" />
-    <ClCompile Include="DynLib.cpp" />
-    <ClCompile Include="DynLibManager.cpp" />
-    <ClCompile Include="Log.cpp" />
-    <ClCompile Include="Reflection.cpp" />
-    <ClCompile Include="Sigslot.cpp" />
-    <ClCompile Include="UserData.cpp" />
-    <ClCompile Include="Utils.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{9A74B9E2-53CA-46E0-A7F6-F5C5B938827D}</ProjectGuid>
-    <RootNamespace>zoo</RootNamespace>
+    <ProjectGuid>{3D663BF5-45D5-435C-AE5C-9A0FCD0AB73B}</ProjectGuid>
+    <RootNamespace>zooCmdosgworld</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,6 +44,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)d</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\zooCmd_osg\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\zooCmd_osg\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -81,17 +55,15 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ZOO_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\src;D:\SDK\vs2017_x64\OpenSceneGraph-3.6.3\include;D:\SDK\vs2017_x64\OSGEARTH-2.10.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NEED_OSGEARTH_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>D:\SDK\vs2017_x64\OpenSceneGraph-3.6.3\lib;D:\SDK\vs2017_x64\OSGEARTH-2.10.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zoo"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zoo"
-xcopy /y /s /e "..\..\include" "D:\Program Files\zoo\include"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\zooCmd_osg"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\zooCmd_osg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,23 +74,44 @@ xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ZOO_NONCLIENT_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\src;D:\SDK\vs2017_x64\OpenSceneGraph-3.6.3\include;D:\SDK\vs2017_x64\OSGEARTH-2.10.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NEED_OSGEARTH_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\SDK\vs2017_x64\OpenSceneGraph-3.6.3\lib;D:\SDK\vs2017_x64\OSGEARTH-2.10.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "D:\Program Files\zoo\include\zoo"
-xcopy /DY "*.h" "D:\Program Files\zoo\include\zoo"
-xcopy /y /s /e "..\..\include" "D:\Program Files\zoo\include"
-mkdir "D:\Program Files\zoo\bin"
-xcopy /DY "$(TargetPath)" "D:\Program Files\zoo\bin"
-mkdir "D:\Program Files\zoo\lib"
-xcopy /DY "$(OutDir)$(TargetName).lib" "D:\Program Files\zoo\lib"</Command>
+      <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\zooCmd_osg"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\zooCmd_osg"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\zooCmd\zooCmd.vcxproj">
+      <Project>{e2463d34-fde1-48a5-9345-10f28b9696eb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\zooCmd_osg\zooCmd_osg.vcxproj">
+      <Project>{e4ee5d59-6734-41d2-8497-8dec6cf7ae25}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
+      <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelEventHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeEventHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceEventHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\WorldCmd.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\WorldControls.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelEventHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeEventHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceEventHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\WorldCmd.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\WorldControls.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

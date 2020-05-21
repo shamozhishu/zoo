@@ -4,10 +4,11 @@
 #include <zoo/Support.h>
 #include <zoo/Singleton.h>
 #include "PublicEnum.h"
+#include "WarSimulator.h"
 
 class DoF;
 class Battlefield;
-class WarCommander : public QObject, public zoo::Singleton<WarCommander>
+class WarCommander : public QObject, public WarSimulator, public zoo::Singleton<WarCommander>
 {
 	Q_OBJECT
 public:

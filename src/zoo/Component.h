@@ -1,6 +1,7 @@
 #pragma once
 
 #include <zoo/Log.h>
+#include <zoo/BitState.h>
 #include <zoo/Reflection.h>
 
 namespace zoo {
@@ -11,6 +12,8 @@ class _zooExport Component : public Type
 	friend class EntityImpl;
 	Entity* _entity;
 	unique_ptr<ComponentImpl> _imp;
+protected:
+	BitState _dirty;
 public:
 	virtual Entity* getEntity() const;
 	template<typename T>
@@ -20,7 +23,7 @@ public:
 	}
 };
 
-class ComponentImpl : public Type
+class _zooExport ComponentImpl : public Type
 {
 	friend class Entity;
 	Component* _component;
@@ -31,10 +34,18 @@ public:
 	{
 		return dynamic_cast<T*>(getComponent());
 	}
+
+	virtual EntityImpl* getEntityImpl() const;
+	template<typename T>
+	T* getEntityImpl()
+	{
+		return dynamic_cast<T*>(getEntityImpl());
+	}
 };
 
 class _zooExport Entity : public Type
 {
+	friend class ComponentImpl;
 	ZOO_REFLEX_DECLARE(Entity)
 	DISALLOW_COPY_AND_ASSIGN(Entity)
 public:
@@ -82,13 +93,24 @@ public:
 	}
 
 private:
-	int _id;
-	int _kind;
+	union
+	{
+		// 使用时的状态
+		struct
+		{
+			int _id;
+			int _kind;
+		};
+
+		// 可重用时的状态
+		Entity* _next;
+	};
+	bool _inUse;
 	unique_ptr<EntityImpl> _imp;
 	unordered_map<string, Component*> _components;
 	static Entity* fetch(string className);
 	static void discard(Entity* pEntity);
-	static std::set<Entity*> _uselessEntities;
+	static unordered_map<string, Entity*> _freeList;
 	static unordered_map<int, unordered_map<int, Entity*>> _entitiesPool;
 };
 

@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ZooCmdLoader.cpp">
+    <ClCompile Include="..\..\..\..\src\zooCmdLoader\ZooCmdLoader.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ZooCmdLoader.h">
+    <ClInclude Include="..\..\..\..\src\zooCmdLoader\ZooCmdLoader.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
