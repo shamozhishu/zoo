@@ -58,7 +58,7 @@ tolua++ -o ToLuaWar.cpp ToLuaWar.pkg</Command>
 xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</Command>
     </PostBuildEvent>
     <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\ctk-0.1;D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;libluad.lib;libtolua++d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -67,7 +67,7 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;D:\SDK\vs2015_x64\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\ctk-0.1\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;liblua.lib;libtolua++.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>

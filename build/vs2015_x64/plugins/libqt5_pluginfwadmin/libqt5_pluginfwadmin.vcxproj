@@ -65,7 +65,7 @@
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -78,7 +78,7 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\ctk-0.1\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
