@@ -44,7 +44,7 @@ public:
 			auto itEnd = pluginList.end();
 			for (; it != itEnd; ++it)
 			{
-				if (it.key().length() > pluginName)
+				if (it.key().length() > pluginName.length())
 				{
 					pluginName_d = it.key();
 					pluginName_r = pluginName;

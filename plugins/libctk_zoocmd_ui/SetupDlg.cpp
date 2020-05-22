@@ -30,7 +30,7 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 		auto itEnd = cmdlist.end();
 		for (; it != itEnd; ++it)
 		{
-			if (it->length() > cmdName)
+			if (it->length() > cmdName.length())
 			{
 				cmdName_d = *it;
 				cmdName_r = cmdName;
