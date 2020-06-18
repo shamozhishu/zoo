@@ -4,9 +4,9 @@
 #include <zooCmd/CmdManager.h>
 #include <zoo/Utils.h>
 #include <zoo/Sigslot.h>
-#include "LocateModelEventHandler.h"
-#include "MeasureDistanceEventHandler.h"
-#include "LongitudeLatitudeEventHandler.h"
+#include "LocateModelHandler.h"
+#include "MeasureDistanceHandler.h"
+#include "LongitudeLatitudeHandler.h"
 
 using namespace osgEarth;
 using namespace zooCmd_osg;
@@ -123,7 +123,7 @@ void WorldCmd::onLonLatAltitude(const UserData& userdata)
 	{
 		if (!_lonLatHandler)
 		{
-			_lonLatHandler = new LongitudeLatitudeEventHandler();
+			_lonLatHandler = new LongitudeLatitudeHandler();
 			_view->addEventHandler(_lonLatHandler.get());
 		}
 	}
@@ -141,7 +141,7 @@ void WorldCmd::onLonLatAltitude(const UserData& userdata)
 
 void WorldCmd::onMeasureDistance(const UserData& userdata)
 {
-	osg::ref_ptr<MeasureDistanceEventHandler> measureDistanceHandler = new MeasureDistanceEventHandler();
+	osg::ref_ptr<MeasureDistanceHandler> measureDistanceHandler = new MeasureDistanceHandler();
 	_view->addEventHandler(measureDistanceHandler.get());
 	CmdManager::getSingleton().block(true);
 	WorldControls::getIns()->removeLabelTextDisplay(dist_label_);
@@ -158,7 +158,7 @@ void WorldCmd::onLocateModel(const UserData& userdata)
 	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + model);
 	if (node)
 	{
-		osg::ref_ptr<LocateModelEventHandler> locateModelHandler = new LocateModelEventHandler(node, height, scale, repeat);
+		osg::ref_ptr<LocateModelHandler> locateModelHandler = new LocateModelHandler(node, height, scale, repeat);
 		_view->addEventHandler(locateModelHandler.get());
 		CmdManager::getSingleton().block(true);
 		_view->removeEventHandler(locateModelHandler.get());

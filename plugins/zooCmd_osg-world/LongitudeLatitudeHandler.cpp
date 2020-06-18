@@ -1,4 +1,4 @@
-#include "LongitudeLatitudeEventHandler.h"
+#include "LongitudeLatitudeHandler.h"
 #include "WorldCmd.h"
 #include "WorldControls.h"
 #include <zooCmd/CmdManager.h>
@@ -6,12 +6,12 @@
 
 using namespace osgEarth;
 
-LongitudeLatitudeEventHandler::LongitudeLatitudeEventHandler()
+LongitudeLatitudeHandler::LongitudeLatitudeHandler()
 {
 	_nodePath.push_back(WorldCmd::getSingleton().getMapNode()->getTerrainEngine());
 }
 
-bool LongitudeLatitudeEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
+bool LongitudeLatitudeHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
 	if (!view)

@@ -1,13 +1,5 @@
 #include "WarCommander.h"
 #include "Battlefield.h"
-#include "CommonDef.h"
-#include "Effect.h"
-#include "Weapon.h"
-#include "RedArmy.h"
-#include "BlueArmy.h"
-#include "AllyArmy.h"
-#include "Stationary.h"
-#include "WarReporter.h"
 #include "InstanceReleaser.h"
 #include <zoo/DatabaseCSV.h>
 #include <QCoreApplication>
@@ -38,22 +30,15 @@ WarCommander::WarCommander(string relatedCmd, string mainTable)
 WarCommander::~WarCommander()
 {
 	_tickTimer.stop();
-	auto it = _battlefields.begin();
-	for (; it != _battlefields.end(); ++it)
-		delete it->second;
-
+	SAFE_DELETE(_currentBattlefield);
 	InstanceReleaser::destroyIns();
 	delete DatabaseCSV::getSingletonPtr();
 }
 
 bool WarCommander::enterBattlefield(int id)
 {
-	auto itor = _battlefields.find(id);
-	if (itor != _battlefields.end())
-	{
-		_currentBattlefield = itor->second;
+	if (_currentBattlefield && _currentBattlefield->getID() == id)
 		return true;
-	}
 
 	DatabaseCSV::getSingleton().clear();
 	DatabaseCSV::getSingleton().init(ZOO_DATA_ROOT_DIR, _mainTable);
@@ -70,91 +55,29 @@ bool WarCommander::enterBattlefield(int id)
 	_SimStates[FinishedSuccess_].init(pMainTable->item2str(id, "FinishedSuccess"));
 	_SimStates[FinishedFailed_].init(pMainTable->item2str(id, "FinishedFailed"));
 
-	Battlefield* pBattlefield = new Battlefield(id, pMainTable->item2str(id, TableField[DESCRIPTION]));
+	SAFE_DELETE(_currentBattlefield);
+	_currentBattlefield = new Battlefield(id, pMainTable->item2str(id, "description"));
 
-	TableCSV* pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_WEAPON]));
-	if (pTable)
+	for (int i = ENTITY_WEAPON; i < ENTITY_COUNT; ++i)
 	{
-		const set<string>& weaponKeys = pTable->getMajorKeys();
-		auto it = weaponKeys.begin();
-		for (; it != weaponKeys.end(); ++it)
-			pBattlefield->createWeapon(atoi((*it).c_str()));
+		TableCSV* pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[i]));
+		if (pTable)
+		{
+			auto keys = pTable->getMajorKeys();
+			for (auto it = keys.begin(); it != keys.end(); ++it)
+				_currentBattlefield->createEntity(atoi((*it).c_str()), (ENTITY_TYPE)i);
+		}
 	}
 
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_EFFECT]));
-	if (pTable)
-	{
-		const set<string>& effectKeys = pTable->getMajorKeys();
-		auto it = effectKeys.begin();
-		for (; it != effectKeys.end(); ++it)
-			pBattlefield->createEffect(atoi((*it).c_str()));
-	}
-
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_REDARMY]));
-	if (pTable)
-	{
-		const set<string>& redarmyKeys = pTable->getMajorKeys();
-		auto it = redarmyKeys.begin();
-		for (; it != redarmyKeys.end(); ++it)
-			pBattlefield->createRedArmy(atoi((*it).c_str()));
-	}
-
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_BLUEARMY]));
-	if (pTable)
-	{
-		const set<string>& bluearmyKeys = pTable->getMajorKeys();
-		auto it = bluearmyKeys.begin();
-		for (; it != bluearmyKeys.end(); ++it)
-			pBattlefield->createBlueArmy(atoi((*it).c_str()));
-	}
-
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_ALLYARMY]));
-	if (pTable)
-	{
-		const set<string>& allyarmyKeys = pTable->getMajorKeys();
-		auto it = allyarmyKeys.begin();
-		for (; it != allyarmyKeys.end(); ++it)
-			pBattlefield->createAllyArmy(atoi((*it).c_str()));
-	}
-
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_STATIONARY]));
-	if (pTable)
-	{
-		const set<string>& stationaryKeys = pTable->getMajorKeys();
-		auto it = stationaryKeys.begin();
-		for (; it != stationaryKeys.end(); ++it)
-			pBattlefield->createStationary(atoi((*it).c_str()));
-	}
-
-	pTable = DatabaseCSV::getSingleton().getTable(ZOO_DATA_ROOT_DIR + pMainTable->item2str(id, _entNames[ENTITY_WARREPORTER]));
-	if (pTable)
-	{
-		const set<string>& warReporterKeys = pTable->getMajorKeys();
-		auto it = warReporterKeys.begin();
-		for (; it != warReporterKeys.end(); ++it)
-			pBattlefield->createWarReporter(atoi((*it).c_str()));
-	}
-
-	pBattlefield->deserialize(pMainTable);
-	pBattlefield->init();
-	_currentBattlefield = pBattlefield;
-	_battlefields.insert(make_pair(id, _currentBattlefield));
+	_currentBattlefield->load();
+	_currentBattlefield->awake();
 	zooCmdL_Send(WarCommander::getSingleton().getRelatedCmd(), "enter_battlefield()");
 	return true;
 }
 
 void WarCommander::exitCurBattlefield()
 {
-	if (_currentBattlefield)
-	{
-		auto itor = _battlefields.find(_currentBattlefield->getID());
-		if (itor != _battlefields.end())
-		{
-			_currentBattlefield = nullptr;
-			delete itor->second;
-			_battlefields.erase(itor);
-		}
-	}
+	SAFE_DELETE(_currentBattlefield);
 }
 
 void WarCommander::saveCurBattlefield()
@@ -166,8 +89,12 @@ void WarCommander::saveCurBattlefield()
 	}
 
 	zoo_debug("保存当前战场:%s[id:%d]", _currentBattlefield->getDesc().c_str(), _currentBattlefield->getID());
-	stringstream ss;
-	_currentBattlefield->serialize(ss);
+	_currentBattlefield->save();
+}
+
+Battlefield* WarCommander::getCurBattlefield()
+{
+	return _currentBattlefield;
 }
 
 const char* WarCommander::getRelatedCmd() const
@@ -183,7 +110,7 @@ const char* WarCommander::getEntTypeName(ENTITY_TYPE entType) const
 void WarCommander::tick()
 {
 	if (_currentBattlefield)
-		_currentBattlefield->update();
+		_currentBattlefield->execScripts();
 
 	WarSimulator::update();
 }

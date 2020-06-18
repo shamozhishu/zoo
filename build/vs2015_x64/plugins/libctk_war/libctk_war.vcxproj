@@ -1,128 +1,228 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{943132B4-B4BB-43A4-868A-43BADDE59B63}</ProjectGuid>
+    <ProjectGuid>{6DEB219E-AC61-3C2A-881C-7554D193ECA7}</ProjectGuid>
+    <RootNamespace>libctk_war</RootNamespace>
     <Keyword>QtVS_v302</Keyword>
-    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.17763.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.17763.0</WindowsTargetPlatformVersion>
-    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolSet>v140</PlatformToolSet>
+    <OutputDirectory>release\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <IntermediateDirectory>release\</IntermediateDirectory>
+    <PrimaryOutput>libctk_war</PrimaryOutput>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <PlatformToolSet>v140</PlatformToolSet>
+    <OutputDirectory>debug\</OutputDirectory>
+    <ATLMinimizesCRunTimeLibraryUsage>false</ATLMinimizesCRunTimeLibraryUsage>
+    <CharacterSet>NotSet</CharacterSet>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <IntermediateDirectory>debug\</IntermediateDirectory>
+    <PrimaryOutput>libctk_war</PrimaryOutput>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(QtMsBuild)'=='' or !Exists('$(QtMsBuild)\qt.targets')">
+    <QtMsBuild>$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+  </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
   </Target>
   <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="Shared" />
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;D:\SDK\vs2015_x64\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_war" "."
-tolua++ -o ToLuaWar.cpp ToLuaWar.pkg</Command>
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>mkdir "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"
-xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</Command>
-    </PostBuildEvent>
-    <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;libluad.lib;libtolua++d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;D:\SDK\vs2015_x64\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;liblua.lib;libtolua++.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_war" "."
-tolua++ -o ToLuaWar.cpp ToLuaWar.pkg</Command>
-    </PreBuildEvent>
-    <PostBuildEvent>
-      <Command>mkdir "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"
-xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <QtInstall>msvc2015_64</QtInstall>
     <QtModules>core</QtModules>
-    <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
+  <PropertyGroup Label="QtSettings" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <QtInstall>msvc2015_64</QtInstall>
     <QtModules>core</QtModules>
-    <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.props')">
     <Import Project="$(QtMsBuild)\qt.props" />
   </ImportGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
+  <PropertyGroup>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">libctk_war</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</IgnoreImportLibrary>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">libctk_war</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <Optimization>Disabled</Optimization>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>LIBCTK_WAR_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
-    <ClCompile>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;D:\Qt\Qt5.7.1\5.7\msvc2015_64\include;D:\Qt\Qt5.7.1\5.7\msvc2015_64\include\QtCore;..\..\..\..\include;..\..\..\..\src;D:\SDK\vs2015_x64\lua-5.2.4\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;release;D:\Qt\Qt5.7.1\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>release\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>release\</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;WIN64;LIBCTK_WAR_LIBRARY;QT_DEPRECATED_WARNINGS;QT_NO_DEBUG;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <ProgramDataBaseFileName>
+      </ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>LIBCTK_WAR_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;liblua.lib;libtolua++.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Qt\Qt5.7.1\5.7\msvc2015_64\lib;D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkDLL>true</LinkDLL>
+      <LinkIncremental>false</LinkIncremental>
+      <OutputFile>$(OutDir)\libctk_war.dll</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;WIN64;LIBCTK_WAR_LIBRARY;QT_DEPRECATED_WARNINGS;QT_NO_DEBUG;QT_CORE_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+    <QtRcc>
+      <Compression>default</Compression>
+      <ExecutionDescription>Rcc'ing %(Identity)...</ExecutionDescription>
+      <QtRccDir>$(Configuration)</QtRccDir>
+      <QtRccFileName>qrc_%(Filename).cpp</QtRccFileName>
+    </QtRcc>
+    <PostBuildEvent>
+      <Command>mkdir "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>tolua++ -n ToLuaWar -o ToLuaWar.cpp ..\..\..\..\plugins\libctk_war\ToLuaWar.pkg</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\GeneratedFiles\$(ConfigurationName);.\GeneratedFiles;.;D:\Qt\Qt5.7.1\5.7\msvc2015_64\include;D:\Qt\Qt5.7.1\5.7\msvc2015_64\include\QtCore;..\..\..\..\include;..\..\..\..\src;D:\SDK\vs2015_x64\lua-5.2.4\include;D:\SDK\vs2015_x64\3rdParty\include\ctk-0.1;debug;D:\Qt\Qt5.7.1\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerListingLocation>debug\</AssemblerListingLocation>
+      <BrowseInformation>false</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4577;4467;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ObjectFileName>debug\</ObjectFileName>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;WIN64;LIBCTK_WAR_LIBRARY;QT_DEPRECATED_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <WarningLevel>Level3</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;libluad.lib;libtolua++d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Qt\Qt5.7.1\5.7\msvc2015_64\lib;D:\SDK\vs2015_x64\3rdParty\lib\$(Configuration);D:\SDK\vs2015_x64\lua-5.2.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DataExecutionPrevention>true</DataExecutionPrevention>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreImportLibrary>true</IgnoreImportLibrary>
+      <LinkDLL>true</LinkDLL>
+      <OutputFile>$(OutDir)\libctk_war.dll</OutputFile>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <SubSystem>Windows</SubSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <EnableErrorChecks>None</EnableErrorChecks>
+      <WarningLevel>0</WarningLevel>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;WIN64;LIBCTK_WAR_LIBRARY;QT_DEPRECATED_WARNINGS;QT_CORE_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <QtMoc>
+      <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
+      <DynamicSource>output</DynamicSource>
+      <QtMocDir>$(Configuration)</QtMocDir>
+      <QtMocFileName>moc_%(Filename).cpp</QtMocFileName>
+    </QtMoc>
+    <QtRcc>
+      <Compression>default</Compression>
+      <ExecutionDescription>Rcc'ing %(Identity)...</ExecutionDescription>
+      <QtRccDir>$(Configuration)</QtRccDir>
+      <QtRccFileName>qrc_%(Filename).cpp</QtRccFileName>
+    </QtRcc>
+    <PostBuildEvent>
+      <Command>mkdir "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"
+xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>tolua++ -n ToLuaWar -o ToLuaWar.cpp ..\..\..\..\plugins\libctk_war\ToLuaWar.pkg</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Battlefield.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\LuaScript.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarActivator.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarCommander.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarComponents.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarSimulator.cpp" />
+    <ClCompile Include="ToLuaWar.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Battlefield.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\LuaScript.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\PublicEnum.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarActivator.h">
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarCommander.h">
+    </QtMoc>
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarComponents.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.h">
+    </QtMoc>
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarSimulator.h" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\zooCmdLoader\zooCmdLoader.vcxproj">
       <Project>{c275c9f3-26c5-4949-a93c-58815f2000cf}</Project>
@@ -132,53 +232,16 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\plugins"</
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_war.qrc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MANIFEST.MF" />
-    <None Include="ToLuaWar.pkg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="AllyArmy.cpp" />
-    <ClCompile Include="Battlefield.cpp" />
-    <ClCompile Include="BlueArmy.cpp" />
-    <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="InstanceReleaser.cpp" />
-    <ClCompile Include="LuaScript.cpp" />
-    <ClCompile Include="RedArmy.cpp" />
-    <ClCompile Include="Stationary.cpp" />
-    <ClCompile Include="ToLuaWar.cpp" />
-    <ClCompile Include="WarActivator.cpp" />
-    <ClCompile Include="WarCommander.cpp" />
-    <ClCompile Include="WarComponents.cpp" />
-    <ClCompile Include="WarReporter.cpp" />
-    <ClCompile Include="WarServiceImpl.cpp" />
-    <ClCompile Include="WarSimulator.cpp" />
-    <ClCompile Include="Weapon.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AllyArmy.h" />
-    <ClInclude Include="Battlefield.h" />
-    <ClInclude Include="BlueArmy.h" />
-    <ClInclude Include="CommonDef.h" />
-    <ClInclude Include="Effect.h" />
-    <ClInclude Include="InstanceReleaser.h" />
-    <ClInclude Include="LuaScript.h" />
-    <ClInclude Include="PublicEnum.h" />
-    <ClInclude Include="RedArmy.h" />
-    <ClInclude Include="Stationary.h" />
-    <QtMoc Include="WarActivator.h" />
-    <QtMoc Include="WarCommander.h" />
-    <ClInclude Include="WarComponents.h" />
-    <ClInclude Include="WarReporter.h" />
-    <QtMoc Include="WarServiceImpl.h" />
-    <ClInclude Include="WarSimulator.h" />
-    <ClInclude Include="Weapon.h" />
+    <None Include="..\..\..\..\plugins\libctk_war\MANIFEST.MF" />
+    <None Include="..\..\..\..\plugins\libctk_war\ToLuaWar.pkg" />
+    <QtRcc Include="..\..\..\..\plugins\libctk_war\libctk_war.qrc">
+      <InitFuncName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">libctk_war</InitFuncName>
+      <InitFuncName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">libctk_war</InitFuncName>
+    </QtRcc>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
     <Import Project="$(QtMsBuild)\qt.targets" />
   </ImportGroup>
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

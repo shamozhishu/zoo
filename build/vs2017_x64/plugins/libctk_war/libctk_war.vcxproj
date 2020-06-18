@@ -50,8 +50,7 @@
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2017_x64\CTK\$(Configuration)\include\ctk-0.1;D:\SDK\vs2017_x64\lua-5.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_war" "."
-tolua++ -o ToLuaWar.cpp ToLuaWar.pkg</Command>
+      <Command>tolua++ -n ToLuaWar -o ToLuaWar.cpp ..\..\..\..\plugins\libctk_war\ToLuaWar.pkg</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"
@@ -71,8 +70,7 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;liblua.lib;libtolua++.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_war" "."
-tolua++ -o ToLuaWar.cpp ToLuaWar.pkg</Command>
+      <Command>tolua++ -n ToLuaWar -o ToLuaWar.cpp ..\..\..\..\plugins\libctk_war\ToLuaWar.pkg</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"
@@ -132,48 +130,48 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_war.qrc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MANIFEST.MF" />
-    <None Include="ToLuaWar.pkg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="AllyArmy.cpp" />
-    <ClCompile Include="Battlefield.cpp" />
-    <ClCompile Include="BlueArmy.cpp" />
-    <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="InstanceReleaser.cpp" />
-    <ClCompile Include="LuaScript.cpp" />
-    <ClCompile Include="RedArmy.cpp" />
-    <ClCompile Include="Stationary.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\AllyArmy.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Battlefield.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\BlueArmy.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Effect.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\LuaScript.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\RedArmy.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Stationary.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarActivator.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarCommander.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarComponents.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarReporter.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarSimulator.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Weapon.cpp" />
     <ClCompile Include="ToLuaWar.cpp" />
-    <ClCompile Include="WarActivator.cpp" />
-    <ClCompile Include="WarCommander.cpp" />
-    <ClCompile Include="WarComponents.cpp" />
-    <ClCompile Include="WarReporter.cpp" />
-    <ClCompile Include="WarServiceImpl.cpp" />
-    <ClCompile Include="WarSimulator.cpp" />
-    <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AllyArmy.h" />
-    <ClInclude Include="Battlefield.h" />
-    <ClInclude Include="BlueArmy.h" />
-    <ClInclude Include="CommonDef.h" />
-    <ClInclude Include="Effect.h" />
-    <ClInclude Include="InstanceReleaser.h" />
-    <ClInclude Include="LuaScript.h" />
-    <ClInclude Include="PublicEnum.h" />
-    <ClInclude Include="RedArmy.h" />
-    <ClInclude Include="Stationary.h" />
-    <QtMoc Include="WarActivator.h" />
-    <QtMoc Include="WarCommander.h" />
-    <ClInclude Include="WarComponents.h" />
-    <ClInclude Include="WarReporter.h" />
-    <QtMoc Include="WarServiceImpl.h" />
-    <ClInclude Include="WarSimulator.h" />
-    <ClInclude Include="Weapon.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\AllyArmy.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Battlefield.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\BlueArmy.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\CommonDef.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Effect.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\LuaScript.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\PublicEnum.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\RedArmy.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Stationary.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarComponents.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarReporter.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarSimulator.h" />
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Weapon.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarCommander.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarActivator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="..\..\..\..\plugins\libctk_war\libctk_war.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\plugins\libctk_war\MANIFEST.MF" />
+    <None Include="..\..\..\..\plugins\libctk_war\ToLuaWar.pkg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

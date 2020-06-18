@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PluginFrameworkAdmin.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libqt5_pluginfwadmin\PluginFrameworkAdmin.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="PluginFrameworkAdmin.h">
+    <QtMoc Include="..\..\..\..\plugins\libqt5_pluginfwadmin\PluginFrameworkAdmin.h">
       <Filter>src</Filter>
     </QtMoc>
   </ItemGroup>

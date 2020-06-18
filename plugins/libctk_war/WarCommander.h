@@ -6,7 +6,6 @@
 #include "PublicEnum.h"
 #include "WarSimulator.h"
 
-class DoF;
 class Battlefield;
 class WarCommander : public QObject, public WarSimulator, public zoo::Singleton<WarCommander>
 {
@@ -17,6 +16,7 @@ public:
 	bool enterBattlefield(int id);
 	void exitCurBattlefield();
 	void saveCurBattlefield();
+	Battlefield* getCurBattlefield();
 	const char* getRelatedCmd() const;
 	const char* getEntTypeName(ENTITY_TYPE entType) const;
 
@@ -29,5 +29,4 @@ private:
 	QTimer _tickTimer;
 	Battlefield* _currentBattlefield;
 	const char* _entNames[ENTITY_COUNT];
-	map<int, Battlefield*> _battlefields;
 };

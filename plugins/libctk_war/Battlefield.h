@@ -1,62 +1,40 @@
 #pragma once
 
-#include <component/war/SharedComponents.h>
+#include "PublicEnum.h"
+#include "WarComponents.h"
 
-class Weapon;
-class Effect;
-class RedArmy;
-class BlueArmy;
-class AllyArmy;
-class Stationary;
-class WarReporter;
-class Battlefield : public Serializer { // tolua_export
-	std::list<Weapon*> _weapons;
-	std::list<Effect*> _effects;
-	std::list<RedArmy*> _redArmies;
-	std::list<BlueArmy*> _blueArmies;
-	std::list<AllyArmy*> _allyArmies;
-	std::list<Stationary*> _stationaries;
-	std::list<WarReporter*> _warReporters;
-	friend class WarCommander;
+using namespace zoo;
+
+class Battlefield { // tolua_export
+	friend class Behavior;
+	list<Behavior*> _behaviors;
+	Spawner _spawner[ENTITY_COUNT];
+
 	PROPERTY_R(int, _id, ID)
 	PROPERTY_R(string, _desc, Desc)
+
 public:
 	Battlefield(int id, string description);
 	~Battlefield();
-	void init();
-	void update();
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void awake();
+	void load();
+	void save();
+	void execScripts();
+
+private:
+	void buildWeapon(Entity* pEnt);
+	void buildEffect(Entity* pEnt);
+	void buildRedArmy(Entity* pEnt);
+	void buildBlueArmy(Entity* pEnt);
+	void buildAllyArmy(Entity* pEnt);
+	void buildStationary(Entity* pEnt);
+	void buildWarReporter(Entity* pEnt);
 
 public:
 	// tolua_begin
-	Weapon* createWeapon(int id);
-	Weapon* getWeapon(int id);
-	void destroyWeapon(int id);
-
-	Effect* createEffect(int id);
-	Effect* getEffect(int id);
-	void destroyEffect(int id);
-
-	RedArmy* createRedArmy(int id);
-	RedArmy* getRedArmy(int id);
-	void destroyRedArmy(int id);
-
-	BlueArmy* createBlueArmy(int id);
-	BlueArmy* getBlueArmy(int id);
-	void destroyBlueArmy(int id);
-
-	AllyArmy* createAllyArmy(int id);
-	AllyArmy* getAllyArmy(int id);
-	void destroyAllyArmy(int id);
-
-	Stationary* createStationary(int id);
-	Stationary* getStationary(int id);
-	void destroyStationary(int id);
-
-	WarReporter* createWarReporter(int id);
-	WarReporter* getWarReporter(int id);
-	void destroyWarReporter(int id);
+	Entity* createEntity(int id, ENTITY_TYPE entType);
+	Entity* getEntity(int id, ENTITY_TYPE entType);
+	void destroyEntity(int id, ENTITY_TYPE entType);
 };
 
 // tolua_end

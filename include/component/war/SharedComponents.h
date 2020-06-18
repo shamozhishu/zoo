@@ -2,14 +2,9 @@
 
 #include <zoo/Component.h>
 
-class Serializer
-{
-public:
-	virtual void serialize(stringstream& ss) = 0;
-	virtual void deserialize(zoo::TableCSV* pTable) = 0;
-};
+using namespace zoo;
 
-class DoF : public zoo::Component, public Serializer { // tolua_export
+class DoF : public Component { // tolua_export
 	double _x;
 	double _y;
 	double _z;
@@ -27,13 +22,15 @@ class DoF : public zoo::Component, public Serializer { // tolua_export
 public:
 	DoF();
 	~DoF();
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
 
 	enum
 	{
-		dof_ = zoo::ESTATE_01,
-		parent_ = zoo::ESTATE_02
+		dof_ = ESTATE_01,
+		parent_ = ESTATE_02
 	};
 
 public:
@@ -61,7 +58,7 @@ public:
 };
 // tolua_end
 
-class Model : public zoo::Component, public Serializer { // tolua_export
+class Model : public Component { // tolua_export
 	bool _visible;
 	string _modelFile;
 	ZOO_REFLEX_DECLARE(Model)
@@ -69,13 +66,15 @@ class Model : public zoo::Component, public Serializer { // tolua_export
 
 public:
 	Model();
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
 
 	enum
 	{
-		visible_ = zoo::ESTATE_01,
-		modelFile_ = zoo::ESTATE_02
+		visible_ = ESTATE_01,
+		modelFile_ = ESTATE_02
 	};
 
 public:
@@ -86,7 +85,7 @@ public:
 };
 // tolua_end
 
-class Sound : public zoo::Component, public Serializer { // tolua_export
+class Sound : public Component { // tolua_export
 	bool _isPlay;
 	bool _isLoop;
 	string _soundFile;
@@ -94,8 +93,10 @@ class Sound : public zoo::Component, public Serializer { // tolua_export
 	ZOO_COMPONENT_IMPL(Sound)
 
 public:
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
 
 public:
 	// tolua_begin
@@ -107,14 +108,39 @@ public:
 };
 // tolua_end
 
-class Animator : public zoo::Component, public Serializer { // tolua_export
+class Animator : public Component { // tolua_export
 	string _trajFile;
 	ZOO_REFLEX_DECLARE(Animator)
 	ZOO_COMPONENT_IMPL(Animator)
 
 public:
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
+
+public:
+	// tolua_begin
+};
+// tolua_end
+
+class Collider : public Component { // tolua_export
+
+
+public:
+	// tolua_begin
+};
+// tolua_end
+
+class Camera : public Component { // tolua_export
+	ZOO_REFLEX_DECLARE(Camera)
+	ZOO_COMPONENT_IMPL(Camera)
+
+public:
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
 
 public:
 	// tolua_begin

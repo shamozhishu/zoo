@@ -1,4 +1,4 @@
-#include "MeasureDistanceEventHandler.h"
+#include "MeasureDistanceHandler.h"
 #include "WorldCmd.h"
 #include "WorldControls.h"
 #include <zooCmd/CmdManager.h>
@@ -7,7 +7,7 @@
 using namespace osgEarth;
 using namespace zooCmd_osg;
 
-MeasureDistanceEventHandler::MeasureDistanceEventHandler()
+MeasureDistanceHandler::MeasureDistanceHandler()
 	: _totalDistance(0)
 {
 	_lineStrip = new osg::Geode();
@@ -17,12 +17,12 @@ MeasureDistanceEventHandler::MeasureDistanceEventHandler()
 	InputDevice::getIns()->getRootNode(0)->addChild(_lineStrip);
 }
 
-MeasureDistanceEventHandler::~MeasureDistanceEventHandler()
+MeasureDistanceHandler::~MeasureDistanceHandler()
 {
 	InputDevice::getIns()->getRootNode(0)->removeChild(_lineStrip);
 }
 
-bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
+bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
 	if (!view)
@@ -125,7 +125,7 @@ bool MeasureDistanceEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA
 	return false;
 }
 
-bool MeasureDistanceEventHandler::intersectPoint(osg::Vec3d& intersectPt, osg::Vec3d startPt, osg::Vec3d endPt, osg::ref_ptr<osg::Node> node)
+bool MeasureDistanceHandler::intersectPoint(osg::Vec3d& intersectPt, osg::Vec3d startPt, osg::Vec3d endPt, osg::ref_ptr<osg::Node> node)
 {
 	osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(startPt, endPt);
 	osg::ref_ptr<osgUtil::IntersectionVisitor> iv = new osgUtil::IntersectionVisitor(ls);
@@ -143,7 +143,7 @@ bool MeasureDistanceEventHandler::intersectPoint(osg::Vec3d& intersectPt, osg::V
 	return false;
 }
 
-double MeasureDistanceEventHandler::getDistance(osg::Vec3dArray* ptset)
+double MeasureDistanceHandler::getDistance(osg::Vec3dArray* ptset)
 {
 	double dist = 0;
 	for (auto it = ptset->begin(); it != ptset->end(); ++it)

@@ -2,10 +2,10 @@
 
 #include <zooCmd_osg/Support.h>
 
-class LocateModelEventHandler : public osgGA::GUIEventHandler
+class LocateModelHandler : public osgGA::GUIEventHandler
 {
 public:
-	LocateModelEventHandler(osg::Node* model, float height, float scale, bool repeat);
+	LocateModelHandler(osg::Node* model, float height, float scale, bool repeat);
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
 private:

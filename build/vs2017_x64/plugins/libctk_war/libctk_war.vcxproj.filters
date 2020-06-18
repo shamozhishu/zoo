@@ -11,120 +11,120 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="MANIFEST.MF">
-      <Filter>res</Filter>
-    </None>
-    <None Include="ToLuaWar.pkg">
-      <Filter>res</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Weapon.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\AllyArmy.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarSimulator.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Battlefield.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarServiceImpl.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\BlueArmy.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarReporter.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Effect.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarComponents.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarCommander.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\LuaScript.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="WarActivator.cpp">
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\RedArmy.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Stationary.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarActivator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarCommander.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarComponents.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarReporter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\WarSimulator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_war\Weapon.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="ToLuaWar.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Stationary.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="RedArmy.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="LuaScript.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="InstanceReleaser.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Effect.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="BlueArmy.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Battlefield.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="AllyArmy.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Weapon.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\AllyArmy.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WarSimulator.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Battlefield.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WarReporter.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\BlueArmy.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="WarComponents.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\CommonDef.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Stationary.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Effect.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="RedArmy.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\InstanceReleaser.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="PublicEnum.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\LuaScript.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="LuaScript.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\PublicEnum.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="InstanceReleaser.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\RedArmy.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Effect.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Stationary.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="CommonDef.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarComponents.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="BlueArmy.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarReporter.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Battlefield.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\WarSimulator.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="AllyArmy.h">
+    <ClInclude Include="..\..\..\..\plugins\libctk_war\Weapon.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="WarServiceImpl.h">
+    <None Include="..\..\..\..\plugins\libctk_war\ToLuaWar.pkg">
+      <Filter>res</Filter>
+    </None>
+    <None Include="..\..\..\..\plugins\libctk_war\MANIFEST.MF">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarActivator.h">
       <Filter>src</Filter>
     </QtMoc>
-    <QtMoc Include="WarCommander.h">
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarCommander.h">
       <Filter>src</Filter>
     </QtMoc>
-    <QtMoc Include="WarActivator.h">
+    <QtMoc Include="..\..\..\..\plugins\libctk_war\WarServiceImpl.h">
       <Filter>src</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_war.qrc">
+    <QtRcc Include="..\..\..\..\plugins\libctk_war\libctk_war.qrc">
       <Filter>res</Filter>
     </QtRcc>
   </ItemGroup>

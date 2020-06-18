@@ -10,11 +10,7 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	QString bootPluginPath = QCoreApplication::applicationDirPath() + "/plugins/";
 	QString bootPluginFile = bootPluginPath;
-#ifdef _DEBUG
-	bootPluginFile += "libqt5_pluginfwadmind.dll";
-#else
 	bootPluginFile += "libqt5_pluginfwadmin.dll";
-#endif
 
 	if (!QFile(bootPluginFile).exists())
 	{

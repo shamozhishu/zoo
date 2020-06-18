@@ -19,34 +19,34 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="SetupDlg.ui" />
-    <QtUic Include="ZooCmdUI.ui" />
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\libctk_zoocmd_ui.qrc" />
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.qrc" />
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_zoocmd_ui.qrc" />
-    <QtRcc Include="SetupDlg.qrc" />
-    <QtRcc Include="ZooCmdUI.qrc" />
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\MANIFEST.MF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="MANIFEST.MF" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SetupDlg.cpp" />
-    <ClCompile Include="UIActivator.cpp" />
-    <ClCompile Include="ZooCmdUI.cpp" />
-    <ClCompile Include="ZooCmdWidget.cpp" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="ZooCmdWidget.h" />
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.ui" />
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.ui" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="ZooCmdUI.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="UIActivator.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="SetupDlg.h" />
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{84967864-9FC0-49EB-9574-7F3E81A35799}</ProjectGuid>
@@ -84,9 +84,7 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_zoocmd_ui" "."</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <ClCompile>
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2017_x64\CTK\$(Configuration)\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -107,9 +105,7 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</
       <AdditionalLibraryDirectories>D:\SDK\vs2017_x64\CTK\$(Configuration)\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libctk_zoocmd_ui" "."</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <PostBuildEvent>
       <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"
 xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</Command>

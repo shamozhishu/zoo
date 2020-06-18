@@ -46,6 +46,7 @@ using namespace std;
 namespace zoo {
 
 template<typename ...Args> class ReflexFactory;
+template class _zooExport ReflexFactory<>;
 class Type;
 class Log;
 class Any;
@@ -53,7 +54,7 @@ class AnyNumeric;
 class Block;
 class Timer;
 class Entity;
-class EntityImpl;
+class Spawner;
 class Component;
 class ComponentImpl;
 class Signal;

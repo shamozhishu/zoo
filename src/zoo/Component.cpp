@@ -1,23 +1,112 @@
 #include <zoo/Component.h>
+#include <zoo/DatabaseCSV.h>
 
 namespace zoo {
+
+Entity* Spawner::new_Entity(int id, const string& desc /*= ""*/)
+{
+	Entity* pEntity = Entity::find(id, _breed);
+	if (pEntity)
+	{
+		zoo_warning("Entity already exists[id=%d,breed=%d]!", id, _breed);
+		return nullptr;
+	}
+
+	pEntity = Entity::fetch();
+	if (!pEntity)
+		pEntity = new Entity;
+
+	pEntity->_id = id;
+	pEntity->_breed = _breed;
+	pEntity->_desc = desc;
+	Entity::_entitiesPool[_breed][id] = pEntity;
+	return pEntity;
+}
+
+Entity* Spawner::find_Entity(int id)
+{
+	return Entity::find(id, _breed);
+}
+
+unordered_map<int, Entity*> Spawner::gain_Entities()
+{
+	return Entity::gain(_breed);
+}
+
+void Spawner::awake()
+{
+	Entity* pEnt = nullptr;
+	auto entities = gain_Entities();
+	auto it = entities.begin();
+	auto itEnd = entities.end();
+	for (; it != itEnd; ++it)
+	{
+		pEnt = it->second;
+		if (pEnt)
+			pEnt->awake();
+	}
+}
+
+void Spawner::load()
+{
+	Entity* pEnt = nullptr;
+	auto entities = gain_Entities();
+	auto it = entities.begin();
+	auto itEnd = entities.end();
+	for (; it != itEnd; ++it)
+	{
+		pEnt = it->second;
+		if (pEnt)
+			pEnt->deserialize(this);
+	}
+}
+
+void Spawner::save(string filename)
+{
+	fstream fout(filename, ios::out | ios::ate);
+	if (!fout)
+	{
+		zoo_error("打开文件[%s]失败", filename.c_str());
+		return;
+	}
+
+	Entity* pEnt = nullptr;
+	bool isSeriHeader = false;
+	auto entities = gain_Entities();
+	auto it = entities.begin();
+	auto itEnd = entities.end();
+	for (; it != itEnd; ++it)
+	{
+		pEnt = it->second;
+		if (pEnt)
+		{
+			if (!isSeriHeader)
+			{
+				isSeriHeader = true;
+				pEnt->serializeHeader(this);
+				pEnt->serializeField(this);
+			}
+
+			pEnt->serialize(this);
+		}
+	}
+
+	fout << ss().str();
+	fout.close();
+	ss().clear();
+	ss().str("");
+}
 
 Entity* Component::getEntity() const
 {
 	return _entity;
 }
 
-EntityImpl* ComponentImpl::getEntityImpl() const
-{
-	return getComponent()->getEntity()->_imp.get();
-}
-
-ZOO_REFLEX_IMPLEMENT(Entity);
-unordered_map<string, Entity*> Entity::_freeList;
+Entity* Entity::_firstAvailable = nullptr;
 unordered_map<int, unordered_map<int, Entity*>> Entity::_entitiesPool;
 Entity::Entity()
 	: _id(-1)
-	, _kind(0)
+	, _breed(-1)
 	, _inUse(true)
 {
 }
@@ -33,6 +122,14 @@ Component* Entity::getComponent(string className)
 	if (it != _components.end())
 		return it->second;
 
+	return nullptr;
+}
+
+ComponentImpl* Entity::getComponentImpl(string className)
+{
+	Component* pComponent = getComponent(className.substr(0, className.size() - 4));
+	if (pComponent)
+		return pComponent->_imp.get();
 	return nullptr;
 }
 
@@ -96,50 +193,97 @@ unordered_map<string, Component*> Entity::getComponents() const
 	return _components;
 }
 
-Entity* Entity::create(string className, int id, int kind /*= 0*/)
+void Entity::awake()
 {
-	Entity* pEntity = find(id, kind);
-	if (pEntity)
+	ComponentImpl* pComponentImpl;
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
 	{
-		zoo_warning("Entity already exists[id=%d,kind=%d]!", id, kind);
-		return nullptr;
+		pComponentImpl = it->second->_imp.get();
+		if (pComponentImpl)
+			pComponentImpl->awake();
 	}
 
-	pEntity = fetch(className);
-	if (!pEntity)
-	{
-		pEntity = ReflexFactory<>::getInstance().create<Entity>(className);
-		if (!pEntity)
-		{
-			zoo_warning("Entity type \"%s\" does not exist!", className.c_str());
-			return nullptr;
-		}
-
-		EntityImpl* pEntityImpl = ReflexFactory<>::getInstance().create<EntityImpl>(className + "Impl");
-		if (pEntityImpl)
-		{
-			pEntityImpl->_entity = pEntity;
-			pEntity->_imp.reset(pEntityImpl);
-		}
-		else
-		{
-			zoo_warning("Entity implement type \"%s\" does not exist!", (className + "Impl").c_str());
-		}
-	}
-
-	pEntity->_id = id;
-	pEntity->_kind = kind;
-	_entitiesPool[kind][id] = pEntity;
-	return pEntity;
+	SignalTrigger::trigger(_AWAKED);
+	SignalTrigger::disconnect(_AWAKED);
 }
 
-unordered_map<int, Entity*> Entity::get(int kind /*= 0*/)
+void Entity::update()
 {
-	auto it = _entitiesPool.find(kind);
-	if (it != _entitiesPool.end())
-		return it->second;
+	ComponentImpl* pComponentImpl;
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		pComponentImpl = it->second->_imp.get();
+		if (pComponentImpl)
+			pComponentImpl->update();
+	}
 
-	return unordered_map<int, Entity*>();
+	SignalTrigger::trigger(_UPDATED);
+	SignalTrigger::disconnect(_UPDATED);
+}
+
+void Entity::serialize(Spawner* spawner)
+{
+	if (!spawner)
+		return;
+
+	spawner->ss() << ID() << "," << Description();
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		spawner->ss() << ",";
+		it->second->serialize(spawner);
+	}
+	spawner->ss() << std::endl;
+}
+
+void Entity::deserialize(Spawner* spawner)
+{
+	if (!spawner)
+		return;
+
+	TableCSV* pTable = spawner->getTable();
+	if (!pTable)
+		return;
+
+	_desc = pTable->item2str(_id, "description");
+
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		it->second->deserialize(spawner);
+	}
+}
+
+void Entity::serializeField(Spawner* spawner)
+{
+	if (!spawner)
+		return;
+
+	spawner->ss() << "id" << "," << "description";
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		spawner->ss() << ",";
+		it->second->serializeField(spawner);
+	}
+	spawner->ss() << std::endl;
+}
+
+void Entity::serializeHeader(Spawner* spawner)
+{
+	if (!spawner)
+		return;
+
+	spawner->ss() << "编号" << "," << "描述";
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		spawner->ss() << ",";
+		it->second->serializeHeader(spawner);
+	}
+	spawner->ss() << std::endl;
 }
 
 void Entity::destroy(Entity* pEntity, bool bDelete /*= false*/)
@@ -148,7 +292,7 @@ void Entity::destroy(Entity* pEntity, bool bDelete /*= false*/)
 	{
 		if (bDelete)
 		{
-			_entitiesPool[pEntity->Kind()][pEntity->ID()] = nullptr;
+			_entitiesPool[pEntity->Breed()][pEntity->ID()] = nullptr;
 			delete pEntity;
 		}
 		else
@@ -171,13 +315,25 @@ void Entity::clear()
 		}
 	}
 
-	_freeList.clear();
 	_entitiesPool.clear();
 }
 
-Entity* Entity::find(int id, int kind /*= 0*/)
+Entity* Entity::fetch()
 {
-	auto it = _entitiesPool.find(kind);
+	Entity* pEntity = nullptr;
+	if (_firstAvailable)
+	{
+		pEntity = _firstAvailable;
+		pEntity->_inUse = true;
+		_firstAvailable = pEntity->_next;
+	}
+
+	return pEntity;
+}
+
+Entity* Entity::find(int id, int breed)
+{
+	auto it = _entitiesPool.find(breed);
 	if (it == _entitiesPool.end())
 		return nullptr;
 
@@ -192,25 +348,6 @@ Entity* Entity::find(int id, int kind /*= 0*/)
 	return pEnt;
 }
 
-Entity* Entity::fetch(string className)
-{
-	Entity* pEntity = nullptr;
-	auto it = _freeList.find(className);
-	if (it == _freeList.end())
-		_freeList[className] = pEntity;
-
-	Entity* firstAvailable = _freeList[className];
-	if (firstAvailable)
-	{
-		pEntity = firstAvailable;
-		pEntity->_inUse = true;
-		firstAvailable = pEntity->_next;
-		_freeList[className] = firstAvailable;
-	}
-
-	return pEntity;
-}
-
 void Entity::discard(Entity* pEntity)
 {
 	if (!pEntity)
@@ -218,25 +355,24 @@ void Entity::discard(Entity* pEntity)
 
 	pEntity->_inUse = false;
 	pEntity->_next = nullptr;
-	string className = pEntity->typeName();
-	auto it = _freeList.find(className);
-	if (it == _freeList.end())
+	if (!_firstAvailable)
 	{
-		_freeList[className] = pEntity;
+		_firstAvailable = pEntity;
 		return;
 	}
 
-	Entity* firstAvailable = _freeList[className];
-	pEntity->_next = firstAvailable;
-	_freeList[className] = pEntity;
+	pEntity->_next = _firstAvailable;
+	_firstAvailable = pEntity;
 }
 
-ComponentImpl* EntityImpl::getComponentImpl(string className)
+const unordered_map<int, Entity*>& Entity::gain(int breed)
 {
-	Component* pComponent = _entity->getComponent(className.substr(0, className.size() - 4));
-	if (pComponent)
-		pComponent->_imp.get();
-	return nullptr;
+	static unordered_map<int, Entity*> s_emptyEntities;
+	auto it = _entitiesPool.find(breed);
+	if (it != _entitiesPool.end())
+		return it->second;
+
+	return s_emptyEntities;
 }
 
 }

@@ -4,7 +4,7 @@
 #include <zoo/Singleton.h>
 #include <zooCmd_osg/Support.h>
 
-class LongitudeLatitudeEventHandler;
+class LongitudeLatitudeHandler;
 class WorldCmd : public zooCmd::Cmd, public zoo::Singleton<WorldCmd>
 {
 	ZOO_REFLEX_DECLARE(WorldCmd)
@@ -26,6 +26,6 @@ private:
 private:
 	osgViewer::View* _view;
 	osg::ref_ptr<osgEarth::MapNode> _mapNode;
-	osg::ref_ptr<LongitudeLatitudeEventHandler> _lonLatHandler;
+	osg::ref_ptr<LongitudeLatitudeHandler> _lonLatHandler;
 	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;
 };

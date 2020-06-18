@@ -22,6 +22,5 @@ class CmdParser;
 class CmdManager;
 class BuiltinCmd;
 class InputAdapter;
-template class _zooCmdExport ReflexFactory<>;
 
 }

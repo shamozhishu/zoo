@@ -26,7 +26,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -99,16 +99,16 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2015_x64\zoo\bin\$(Configuration)\zooCmd_osg
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelEventHandler.cpp" />
-    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeEventHandler.cpp" />
-    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceEventHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeHandler.cpp" />
+    <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceHandler.cpp" />
     <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\WorldCmd.cpp" />
     <ClCompile Include="..\..\..\..\plugins\zooCmd_osg-world\WorldControls.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelEventHandler.h" />
-    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeEventHandler.h" />
-    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceEventHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LocateModelHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\LongitudeLatitudeHandler.h" />
+    <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\MeasureDistanceHandler.h" />
     <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\WorldCmd.h" />
     <ClInclude Include="..\..\..\..\plugins\zooCmd_osg-world\WorldControls.h" />
   </ItemGroup>

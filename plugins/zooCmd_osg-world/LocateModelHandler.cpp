@@ -1,4 +1,4 @@
-#include "LocateModelEventHandler.h"
+#include "LocateModelHandler.h"
 #include "WorldCmd.h"
 #include <zooCmd/CmdManager.h>
 #include <zooCmd_osg/InputDevice.h>
@@ -6,7 +6,7 @@
 using namespace osgEarth;
 using namespace zooCmd_osg;
 
-LocateModelEventHandler::LocateModelEventHandler(osg::Node* model, float height, float scale, bool repeat)
+LocateModelHandler::LocateModelHandler(osg::Node* model, float height, float scale, bool repeat)
 	: _modelNode(model)
 	, _height(height)
 	, _scale(scale)
@@ -21,7 +21,7 @@ LocateModelEventHandler::LocateModelEventHandler(osg::Node* model, float height,
 	InputDevice::getIns()->getRootNode(0)->addChild(_locateTransform);
 }
 
-bool LocateModelEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
+bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
 	if (!view)

@@ -11,15 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PluginFrameworkAdmin.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="PluginFrameworkAdmin.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\zoo\zoo.vcxproj">
       <Project>{9a74b9e2-53ca-46e0-a7f6-f5c5b938827d}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\plugins\libqt5_pluginfwadmin\PluginFrameworkAdmin.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="..\..\..\..\plugins\libqt5_pluginfwadmin\PluginFrameworkAdmin.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7C86B0CB-A08D-4C53-8DCF-BBF339D7D238}</ProjectGuid>
@@ -52,15 +52,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
-    <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libqt5_pluginfwadmin" "."</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <ClCompile>
       <AdditionalIncludeDirectories>..\..\..\..\src;..\..\..\..\include;D:\SDK\vs2017_x64\CTK\$(Configuration)\include\ctk-0.1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -81,9 +78,7 @@ xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</
       <AdditionalLibraryDirectories>D:\SDK\vs2017_x64\CTK\$(Configuration)\lib\ctk-0.1;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CTKCore.lib;CTKPluginFramework.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>xcopy /y /s /e "..\..\..\..\plugins\libqt5_pluginfwadmin" "."</Command>
-    </PreBuildEvent>
+    <PreBuildEvent />
     <PostBuildEvent>
       <Command>mkdir "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"
 xcopy /DY "$(TargetPath)" "D:\SDK\vs2017_x64\zoo\bin\$(Configuration)\plugins"</Command>

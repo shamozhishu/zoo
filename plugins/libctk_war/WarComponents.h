@@ -2,10 +2,13 @@
 
 #include <component/war/SharedComponents.h>
 
+using namespace zoo;
+
 class LuaScript;
-class Behavior : public zoo::Component, public Serializer
+class Behavior : public Component
 {
 	bool _scriptValid;
+	bool _scriptInited;
 	string _scriptFile;
 	ZOO_REFLEX_DECLARE(Behavior)
 	PROPERTY_R(LuaScript*, _script, Script)
@@ -13,8 +16,16 @@ class Behavior : public zoo::Component, public Serializer
 public:
 	Behavior();
 	~Behavior();
-	bool init();
-	void update();
-	void serialize(stringstream& ss);
-	void deserialize(zoo::TableCSV* pTable);
+	void exec();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+	void serializeField(Spawner* spawner);
+	void serializeHeader(Spawner* spawner);
+};
+
+class AI : public Component
+{
+public:
+	AI();
+	~AI();
 };

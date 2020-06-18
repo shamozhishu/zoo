@@ -11,54 +11,54 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="SetupDlg.ui">
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\libctk_zoocmd_ui.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.qrc">
+      <Filter>res</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.h">
+      <Filter>src</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.h">
+      <Filter>src</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.ui">
       <Filter>res</Filter>
     </QtUic>
-    <QtUic Include="ZooCmdUI.ui">
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.ui">
       <Filter>res</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_zoocmd_ui.qrc">
-      <Filter>res</Filter>
-    </QtRcc>
-    <QtRcc Include="SetupDlg.qrc">
-      <Filter>res</Filter>
-    </QtRcc>
-    <QtRcc Include="ZooCmdUI.qrc">
-      <Filter>res</Filter>
-    </QtRcc>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ZooCmdWidget.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ZooCmdUI.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UIActivator.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SetupDlg.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="ZooCmdWidget.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="ZooCmdUI.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="UIActivator.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="SetupDlg.h">
-      <Filter>src</Filter>
-    </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MANIFEST.MF">
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\MANIFEST.MF">
       <Filter>res</Filter>
     </None>
   </ItemGroup>

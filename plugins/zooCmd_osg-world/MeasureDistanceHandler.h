@@ -3,11 +3,11 @@
 #include <zooCmd_osg/Support.h>
 
 class WorldCmd;
-class MeasureDistanceEventHandler : public osgGA::GUIEventHandler
+class MeasureDistanceHandler : public osgGA::GUIEventHandler
 {
 public:
-	MeasureDistanceEventHandler();
-	~MeasureDistanceEventHandler();
+	MeasureDistanceHandler();
+	~MeasureDistanceHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
 private:

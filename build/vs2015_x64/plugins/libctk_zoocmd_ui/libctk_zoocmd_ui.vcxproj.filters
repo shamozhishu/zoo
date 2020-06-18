@@ -1,65 +1,119 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="res">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
     </Filter>
-    <Filter Include="src">
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="SetupDlg.ui">
-      <Filter>res</Filter>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\UIActivator.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.ui">
+      <Filter>Form Files</Filter>
     </QtUic>
-    <QtUic Include="ZooCmdUI.ui">
-      <Filter>res</Filter>
+    <QtUic Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.ui">
+      <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="libctk_zoocmd_ui.qrc">
-      <Filter>res</Filter>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\MANIFEST.MF">
+      <Filter>Resource Files</Filter>
+    </None>
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\SetupDlg.qrc">
+      <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtRcc Include="SetupDlg.qrc">
-      <Filter>res</Filter>
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\ZooCmdUI.qrc">
+      <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtRcc Include="ZooCmdUI.qrc">
-      <Filter>res</Filter>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\app.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <QtRcc Include="..\..\..\..\plugins\libctk_zoocmd_ui\libctk_zoocmd_ui.qrc">
+      <Filter>Resource Files</Filter>
     </QtRcc>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="ZooCmdWidget.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ZooCmdUI.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UIActivator.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SetupDlg.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="ZooCmdWidget.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="ZooCmdUI.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="UIActivator.h">
-      <Filter>src</Filter>
-    </QtMoc>
-    <QtMoc Include="SetupDlg.h">
-      <Filter>src</Filter>
-    </QtMoc>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MANIFEST.MF">
-      <Filter>res</Filter>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\open.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\save.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\setup.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\start.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\plugins\libctk_zoocmd_ui\Resources\images\stop.png">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
 </Project>
