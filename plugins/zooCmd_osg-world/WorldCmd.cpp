@@ -27,7 +27,7 @@ bool WorldCmd::init()
 		return false;
 
 	_view = InputDevice::getIns()->createView(0, 1, 0, 1);
-	osg::Group* pRootNode = InputDevice::getIns()->getRootNode(0);
+	osg::Group* pRootNode = InputDevice::getIns()->getGroupNode(0);
 	pRootNode->addChild(_mapNode);
 	_manipulator = new osgEarth::Util::EarthManipulator();
 	_manipulator->setNode(_mapNode);

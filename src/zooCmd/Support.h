@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_SUPPORT_H__
+#define __ZOOCMD_SUPPORT_H__
 
 #include <zoo/Support.h>
 
@@ -24,3 +25,5 @@ class BuiltinCmd;
 class InputAdapter;
 
 }
+
+#endif // __ZOOCMD_SUPPORT_H__

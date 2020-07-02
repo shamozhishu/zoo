@@ -18,7 +18,7 @@ LocateModelHandler::LocateModelHandler(osg::Node* model, float height, float sca
 	_locateTransform = new osg::MatrixTransform();
 	_locateTransform->addChild(_scaleTransform);
 	_scaleTransform->addChild(_modelNode);
-	InputDevice::getIns()->getRootNode(0)->addChild(_locateTransform);
+	InputDevice::getIns()->getGroupNode(0)->addChild(_locateTransform);
 }
 
 bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
@@ -29,7 +29,7 @@ bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 	if (ea.getButtonMask() == ea.RIGHT_MOUSE_BUTTON && ea.getEventType() == ea.DOUBLECLICK)
 	{
-		InputDevice::getIns()->getRootNode(0)->removeChild(_locateTransform);
+		InputDevice::getIns()->getGroupNode(0)->removeChild(_locateTransform);
 		zooCmd::CmdManager::getSingleton().block(false);
 		return true;
 	}
@@ -43,7 +43,7 @@ bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			_locateTransform = new osg::MatrixTransform();
 			_locateTransform->addChild(_scaleTransform);
 			_scaleTransform->addChild(_modelNode);
-			InputDevice::getIns()->getRootNode(0)->addChild(_locateTransform);
+			InputDevice::getIns()->getGroupNode(0)->addChild(_locateTransform);
 		}
 		else
 		{

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __WORLD_CONTROLS_H__
+#define __WORLD_CONTROLS_H__
 
 #include <zooCmd_osg/Support.h>
 
@@ -25,3 +26,5 @@ private:
 	osg::ref_ptr<osgEarth::Util::Controls::VBox> _vboxControl;
 	osgEarth::Util::Controls::LabelControl* _labelControls[count_label_];
 };
+
+#endif // __WORLD_CONTROLS_H__

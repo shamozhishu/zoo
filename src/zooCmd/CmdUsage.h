@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_CMD_USAGE_H__
+#define __ZOOCMD_CMD_USAGE_H__
 
 #include <zooCmd/Support.h>
 
@@ -38,3 +39,5 @@ protected:
 };
 
 }
+
+#endif // __ZOOCMD_CMD_USAGE_H__

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_TIMER_H__
+#define __ZOO_TIMER_H__
 
 #include <chrono>
 
@@ -50,3 +51,5 @@ private:
 };
 
 }
+
+#endif // __ZOO_TIMER_H__

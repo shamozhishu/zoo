@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_COMMON_H__
+#define __ZOO_COMMON_H__
 
 #define ZOO_DISABLE_ASSERT 0
 #if ZOO_DISABLE_ASSERT > 0
@@ -109,3 +110,5 @@ extern "C" __declspec(dllexport) const char* dllGetTypeName(void)          \
 {                                                                          \
 	return #type;                                                          \
 }
+
+#endif // __ZOO_COMMON_H__

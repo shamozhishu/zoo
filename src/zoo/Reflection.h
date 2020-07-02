@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_REFLECTION_H__
+#define __ZOO_REFLECTION_H__
 
 #include <zoo/Support.h>
 
@@ -119,3 +120,5 @@ public:
 };
 
 }
+
+#endif // __ZOO_REFLECTION_H__

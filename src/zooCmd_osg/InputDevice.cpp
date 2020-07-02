@@ -66,34 +66,34 @@ osgViewer::CompositeViewer* InputDevice::getViewer() const
 	return _compositeViewer.get();
 }
 
-osg::Group* InputDevice::getRootNode(unsigned int idx /*= -1*/, bool createIfNot /*= true*/)
+osg::Group* InputDevice::getGroupNode(unsigned int idx /*= -1*/, bool createIfNot /*= true*/)
 {
 	if (!createIfNot)
 	{
-		if (idx < s_rootNodeCount)
-			return _rootNodes[idx].get();
+		if (idx < s_groupNodeCount)
+			return _groupNodes[idx].get();
 		return nullptr;
 	}
 
-	if (idx < s_rootNodeCount)
+	if (idx < s_groupNodeCount)
 	{
-		if (!_rootNodes[idx].get())
+		if (!_groupNodes[idx].get())
 		{
 			osg::ref_ptr<osg::Group> ptr(new osg::Group);
-			_rootNodes[idx] = ptr;
+			_groupNodes[idx] = ptr;
 		}
 
-		return _rootNodes[idx].get();
+		return _groupNodes[idx].get();
 	}
 
 
-	for (unsigned int i = 0; i < s_rootNodeCount; ++i)
+	for (unsigned int i = 0; i < s_groupNodeCount; ++i)
 	{
-		if (!_rootNodes[i].get())
+		if (!_groupNodes[i].get())
 		{
 			osg::ref_ptr<osg::Group> ptr(new osg::Group);
-			_rootNodes[i] = ptr;
-			return _rootNodes[i].get();
+			_groupNodes[i] = ptr;
+			return _groupNodes[i].get();
 		}
 	}
 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_DYN_LIB_H__
+#define __ZOO_DYN_LIB_H__
 
 #include <zoo/Support.h>
 
@@ -31,3 +32,5 @@ protected:
 };
 
 }
+
+#endif // __ZOO_DYN_LIB_H__

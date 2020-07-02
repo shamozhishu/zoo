@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __LONGITUDE_LATITUDE_HANDLER_H__
+#define __LONGITUDE_LATITUDE_HANDLER_H__
 
 #include <zooCmd_osg/Support.h>
 
@@ -12,3 +13,5 @@ public:
 private:
 	osg::NodePath _nodePath;
 };
+
+#endif // __LONGITUDE_LATITUDE_HANDLER_H__

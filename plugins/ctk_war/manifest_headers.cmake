@@ -1,0 +1,8 @@
+﻿set(Plugin-SymbolicName "ctk.war")
+set(Plugin-ActivationPolicy "eager")
+set(Plugin-Category "plugins")
+set(Plugin-ContactAddress "https://github.com/shamozhishu")
+set(Plugin-Description "A plugin for war")
+set(Plugin-Name "ctk_war")
+set(Plugin-Vendor "shamozhishu")
+set(Plugin-Version "1.0.0")

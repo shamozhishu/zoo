@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __PLUGIN_FRAMEWORK_ADMIN_INTERFACE_H__
+#define __PLUGIN_FRAMEWORK_ADMIN_INTERFACE_H__
 
 #include <QtPlugin>
 
@@ -12,3 +13,5 @@ public:
 
 #define PluginfwAdminInterface_iid "com.Interface.PluginfwAdminInterface"
 Q_DECLARE_INTERFACE(PluginfwAdminInterface, PluginfwAdminInterface_iid)
+
+#endif // __PLUGIN_FRAMEWORK_ADMIN_INTERFACE_H__

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_SINGLETON_H__
+#define __ZOO_SINGLETON_H__
 
 #include <zoo/Common.h>
 
@@ -40,3 +41,5 @@ template<typename T>
 T* Singleton<T>::_singleton = nullptr;
 
 }
+
+#endif // __ZOO_SINGLETON_H__

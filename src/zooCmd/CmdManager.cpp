@@ -56,13 +56,13 @@ void CmdManager::start()
 		_cmdThread = new thread(&CmdManager::runCmd, this);
 }
 
-void CmdManager::update()
+void CmdManager::refresh()
 {
 	auto it = _commands.begin();
 	auto itEnd = _commands.end();
 	for (; it != itEnd; ++it)
 	{
-		it->second->update();
+		it->second->refresh();
 	}
 }
 

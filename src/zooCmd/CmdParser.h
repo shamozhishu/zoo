@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_CMD_PARSER_H__
+#define __ZOOCMD_CMD_PARSER_H__
 
 #include <zooCmd/Support.h>
 #include <zooCmd/CmdUsage.h>
@@ -93,3 +94,5 @@ protected:
 };
 
 }
+
+#endif // __ZOOCMD_CMD_PARSER_H__

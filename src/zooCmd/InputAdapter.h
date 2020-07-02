@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_INPUT_ADAPTER_H__
+#define __ZOOCMD_INPUT_ADAPTER_H__
 
 #include <zooCmd/Support.h>
 
@@ -33,3 +34,5 @@ protected:
 };
 
 }
+
+#endif // __ZOOCMD_INPUT_ADAPTER_H__

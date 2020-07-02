@@ -153,7 +153,7 @@ int zooCmd_Run()
 void zooCmd_Tick()
 {
 	if (s_isInited)
-		CmdManager::getSingleton().update();
+		CmdManager::getSingleton().refresh();
 }
 
 void zooCmd_Destroy()

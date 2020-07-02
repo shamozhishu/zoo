@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_SUPPORT_H__
+#define __ZOO_SUPPORT_H__
 
 #include <cassert>
 #include <cstdio>
@@ -67,3 +68,5 @@ class TableCSV;
 class DatabaseCSV;
 
 }
+
+#endif // __ZOO_SUPPORT_H__

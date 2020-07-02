@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_OSG_SUPPORT_H__
+#define __ZOOCMD_OSG_SUPPORT_H__
 
 #ifdef _WIN32
 #define WIN32 1
@@ -115,3 +116,5 @@
 
 #include <zooCmd/Support.h>
 using namespace zooCmd;
+
+#endif // __ZOOCMD_OSG_SUPPORT_H__

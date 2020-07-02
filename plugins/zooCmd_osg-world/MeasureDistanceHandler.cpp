@@ -14,12 +14,12 @@ MeasureDistanceHandler::MeasureDistanceHandler()
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
 	_lineStrip->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 	_lineStrip->getOrCreateStateSet()->setRenderBinDetails(11, "RenderBin");
-	InputDevice::getIns()->getRootNode(0)->addChild(_lineStrip);
+	InputDevice::getIns()->getGroupNode(0)->addChild(_lineStrip);
 }
 
 MeasureDistanceHandler::~MeasureDistanceHandler()
 {
-	InputDevice::getIns()->getRootNode(0)->removeChild(_lineStrip);
+	InputDevice::getIns()->getGroupNode(0)->removeChild(_lineStrip);
 }
 
 bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)

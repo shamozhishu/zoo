@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_CMD_MANAGER_H__
+#define __ZOOCMD_CMD_MANAGER_H__
 
 #include <zooCmd/Support.h>
 #include <zooCmd/Cmd.h>
@@ -15,7 +16,7 @@ public:
 	CmdManager();
 	~CmdManager();
 	void start();
-	void update();
+	void refresh();
 	void initBuiltinCmd();
 	void block(bool isBlock);
 	bool addCmd(const string& cmd, Cmd* pCmd);
@@ -49,3 +50,5 @@ private:
 };
 
 }
+
+#endif // __ZOOCMD_CMD_MANAGER_H__

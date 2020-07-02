@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_ZOO_CMD_H__
+#define __ZOOCMD_ZOO_CMD_H__
 
 #if defined(ZOOCMD_NONCLIENT_BUILD)
 #	define _zooCmdExport __declspec(dllexport)
@@ -122,3 +123,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif // __ZOOCMD_ZOO_CMD_H__

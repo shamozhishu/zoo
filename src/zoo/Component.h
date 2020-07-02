@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_COMPONENT_H__
+#define __ZOO_COMPONENT_H__
 
 #include <zoo/Log.h>
 #include <zoo/Sigslot.h>
@@ -7,37 +8,11 @@
 
 namespace zoo {
 
-class _zooExport Spawner
-{
-	PROPERTY_R(TableCSV*, _table, Table)
-public:
-	Spawner() : _breed(0), _table(nullptr) {}
-	Spawner(int breed) : _breed(breed), _table(nullptr) {}
-	Spawner(int breed, TableCSV* table) : _breed(breed), _table(table) {}
-	operator int() { return _breed; }
-	Spawner& operator()(int breed) { _breed = breed; return *this; }
-	Spawner& operator()(int breed, TableCSV* table) { _breed = breed; _table = table; return *this; }
-	stringstream& ss() { return _ss; }
-	Entity* new_Entity(int id, const string& desc = "");
-	Entity* find_Entity(int id);
-	unordered_map<int, Entity*> gain_Entities();
-
-	void awake();
-	void load();
-	void save(string filename);
-
-protected:
-	int _breed;
-	stringstream _ss;
-};
-
 class Serializer
 {
 public:
 	virtual void serialize(Spawner* spawner) = 0;
 	virtual void deserialize(Spawner* spawner) = 0;
-	virtual void serializeField(Spawner* spawner) = 0;
-	virtual void serializeHeader(Spawner* spawner) = 0;
 };
 
 class _zooExport Component : public Serializer, public Type
@@ -48,7 +23,7 @@ protected:
 	BitState _dirty;
 	unique_ptr<ComponentImpl> _imp;
 public:
-	Entity* getEntity() const;
+	Entity* getEntity() const { return _entity; }
 };
 
 class _zooExport ComponentImpl : public Type
@@ -67,18 +42,20 @@ public:
 	}
 };
 
-class _zooExport Entity : public Serializer
+class _zooExport Entity : public Serializer, public Signal
 {
-	DISALLOW_COPY_AND_ASSIGN(Entity)
-	Entity();
-	~Entity();
 	friend class Spawner;
 	friend class ComponentImpl;
+	PROPERTY_R(Spawner*, _spawner, Spawner)
+	DISALLOW_COPY_AND_ASSIGN(Entity)
+private:
+	Entity();
+	~Entity();
 public:
-	int ID() const { return _id; }
-	int Breed() const { return _breed; }
-	string& Description() { return _desc; }
-	const string& Description() const { return _desc; }
+	int id() const { return _id; }
+	int breed() const { return _breed; }
+	string& desc() { return _desc; }
+	const string& desc() const { return _desc; }
 
 	Component* getComponent(string className);
 	template<typename T>
@@ -106,19 +83,11 @@ public:
 	void removeComponents();
 	unordered_map<string, Component*> getComponents() const;
 
-public:
+private:
 	void awake();
 	void update();
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
-
-	Signal _AWAKED;
-	Signal _UPDATED;
-public:
-	static void destroy(Entity* pEntity, bool bDelete = false);
-	static void clear();
 
 private:
 	union
@@ -136,14 +105,38 @@ private:
 	};
 	bool _inUse;
 	unordered_map<string, Component*> _components;
+};
 
-	static Entity* fetch();
-	static Entity* find(int id, int breed);
-	static void discard(Entity* pEntity);
-	static const unordered_map<int, Entity*>& gain(int breed);
+class _zooExport Spawner : public Entity
+{
+	friend class Entity;
+	Spawner();
+	~Spawner();
+	DISALLOW_COPY_AND_ASSIGN(Spawner)
+	PROPERTY_R(void*, _parser, Parser)
+public:
+	static Spawner* create(int id, const string& desc = "");
+	static Spawner* find(int id);
+	static void destroy(Spawner* spawner);
+	Entity* born(int id, int breed);
+	Entity* gain(int id, int breed);
+	void awake();
+	void update();
+	void remove(Entity* pEntity, bool bDelete = false);
+	void clear();
+	bool load(const string& filename);
+	void save(const string& filename);
 
-	static Entity* _firstAvailable; // ø’œ–¡–±Ì
-	static unordered_map<int, unordered_map<int, Entity*>> _entitiesPool;
+private:
+	Entity* fetch();
+	void discard(Entity* pEntity);
+
+private:
+	Entity* _firstAvailable;
+	static unordered_map<int, Spawner*> _spawners;
+	unordered_map<int, unordered_map<int, Entity*>> _entitiesPool;
 };
 
 }
+
+#endif // __ZOO_COMPONENT_H__

@@ -1,10 +1,17 @@
-#pragma once
+#ifndef __SHARED_COMPONENTS_H__
+#define __SHARED_COMPONENTS_H__
 
 #include <zoo/Component.h>
 
 using namespace zoo;
 
 class DoF : public Component { // tolua_export
+	enum
+	{
+		dof_ = ESTATE_01,
+		parent_ = ESTATE_02
+	};
+
 	double _x;
 	double _y;
 	double _z;
@@ -15,6 +22,8 @@ class DoF : public Component { // tolua_export
 	float _sy;
 	float _sz;
 	DoF* _parent;
+	int _mountEntID;
+	int _mountEntBreed;
 	vector<DoF*> _children;
 	ZOO_REFLEX_DECLARE(DoF)
 	ZOO_COMPONENT_IMPL(DoF)
@@ -24,14 +33,9 @@ public:
 	~DoF();
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
 
-	enum
-	{
-		dof_ = ESTATE_01,
-		parent_ = ESTATE_02
-	};
+private:
+	void onSetParent(const UserData& userdata);
 
 public:
 	// tolua_begin
@@ -59,6 +63,12 @@ public:
 // tolua_end
 
 class Model : public Component { // tolua_export
+	enum
+	{
+		visible_ = ESTATE_01,
+		modelFile_ = ESTATE_02
+	};
+
 	bool _visible;
 	string _modelFile;
 	ZOO_REFLEX_DECLARE(Model)
@@ -68,14 +78,6 @@ public:
 	Model();
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
-
-	enum
-	{
-		visible_ = ESTATE_01,
-		modelFile_ = ESTATE_02
-	};
 
 public:
 	// tolua_begin
@@ -95,8 +97,6 @@ class Sound : public Component { // tolua_export
 public:
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
 
 public:
 	// tolua_begin
@@ -116,8 +116,6 @@ class Animator : public Component { // tolua_export
 public:
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
 
 public:
 	// tolua_begin
@@ -133,16 +131,45 @@ public:
 // tolua_end
 
 class Camera : public Component { // tolua_export
+	enum
+	{
+		trackEnt_ = ESTATE_01,
+		viewport_ = ESTATE_02
+	};
+
+	int _trackEntID;
+	int _trackEntBreed;
+	float _lRatio;
+	float _rRatio;
+	float _bRatio;
+	float _tRatio;
 	ZOO_REFLEX_DECLARE(Camera)
 	ZOO_COMPONENT_IMPL(Camera)
 
 public:
+	Camera();
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
-	void serializeField(Spawner* spawner);
-	void serializeHeader(Spawner* spawner);
+
+public:
+	// tolua_begin
+	void setTrackEnt(int id, int breed);
+	void setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio);
+};
+// tolua_end
+
+class Environment : public Component { // tolua_export
+	ZOO_REFLEX_DECLARE(Environment)
+	ZOO_COMPONENT_IMPL(Environment)
+
+public:
+	Environment();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
 
 public:
 	// tolua_begin
 };
 // tolua_end
+
+#endif // __SHARED_COMPONENTS_H__

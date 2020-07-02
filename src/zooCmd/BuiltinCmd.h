@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_BUILTIN_CMD_H__
+#define __ZOOCMD_BUILTIN_CMD_H__
 
 #include <zooCmd/Cmd.h>
 
@@ -18,3 +19,5 @@ private:
 };
 
 }
+
+#endif // __ZOOCMD_BUILTIN_CMD_H__

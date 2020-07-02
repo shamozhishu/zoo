@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_UTILS_H__
+#define __ZOO_UTILS_H__
 
 #include <zoo/Support.h>
 
@@ -156,3 +157,5 @@ _zooExport string&  strReplaceAllDistinct(string& str, const string& old_value, 
 _zooExport wstring& wstrReplaceAllDistinct(wstring& str, const wstring& old_value, const wstring& new_value);
 
 }
+
+#endif // __ZOO_UTILS_H__

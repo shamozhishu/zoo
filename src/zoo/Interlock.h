@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_INTERLOCK_H__
+#define __ZOO_INTERLOCK_H__
 
 #include <zoo/Support.h>
 
@@ -39,3 +40,5 @@ public:
 };
 
 }
+
+#endif // __ZOO_INTERLOCK_H__

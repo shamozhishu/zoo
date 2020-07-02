@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_SIG_SLOT_H__
+#define __ZOO_SIG_SLOT_H__
 
 #include <zoo/Support.h>
 #include <zoo/UserData.h>
@@ -114,3 +115,5 @@ void SignalTrigger::disconnect(const Signal& sig, T* caller, typename SlotMethod
 }
 
 }
+
+#endif // __ZOO_SIG_SLOT_H__

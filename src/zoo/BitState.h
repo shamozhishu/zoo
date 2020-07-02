@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_BIT_STATE_H__
+#define __ZOO_BIT_STATE_H__
 
 namespace zoo {
 
@@ -86,3 +87,5 @@ private:
 };
 
 }
+
+#endif // __ZOO_BIT_STATE_H__

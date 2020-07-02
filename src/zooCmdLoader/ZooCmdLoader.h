@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_LOADER_H__
+#define __ZOOCMD_LOADER_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -158,3 +159,5 @@ extern ZOOCMDREMAPKEYBOARDPROC zooCmd_RemapKeyboard_Loader;
 #ifdef __cplusplus
 }
 #endif
+
+#endif // __ZOOCMD_LOADER_H__

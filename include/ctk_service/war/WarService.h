@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __WAR_SERVICE_H__
+#define __WAR_SERVICE_H__
 
 #include <QtPlugin>
 
@@ -15,3 +16,5 @@ public:
 
 #define WarService_iid "ckt.war.service"
 Q_DECLARE_INTERFACE(WarService, WarService_iid)
+
+#endif // __WAR_SERVICE_H__

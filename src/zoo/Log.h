@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_LOG_H__
+#define __ZOO_LOG_H__
 
 #include <zoo/Support.h>
 
@@ -20,3 +21,5 @@ public:
 };
 
 }
+
+#endif // __ZOO_LOG_H__

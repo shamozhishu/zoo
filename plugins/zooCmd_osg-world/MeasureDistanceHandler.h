@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MEASURE_DISTANCE_HANDLER_H__
+#define __MEASURE_DISTANCE_HANDLER_H__
 
 #include <zooCmd_osg/Support.h>
 
@@ -21,3 +22,5 @@ private:
 	osg::ref_ptr<osg::Geode> _lineStrip;
 	osg::ref_ptr<osg::Vec3dArray> _distPointSet;
 };
+
+#endif // __MEASURE_DISTANCE_HANDLER_H__

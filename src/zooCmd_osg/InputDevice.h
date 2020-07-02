@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOOCMD_OSG_INPUT_DEVICE_H__
+#define __ZOOCMD_OSG_INPUT_DEVICE_H__
 
 #include <zoo/Reflection.h>
 #include <zooCmd_osg/Support.h>
@@ -14,7 +15,7 @@ public:
 	~InputDevice();
 	static InputDevice* getIns();
 	osgViewer::CompositeViewer* getViewer() const;
-	osg::Group* getRootNode(unsigned int idx = -1, bool createIfNot = true);
+	osg::Group* getGroupNode(unsigned int idx = -1, bool createIfNot = true);
 	osgViewer::View* createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop);
 
 public:
@@ -42,8 +43,10 @@ private:
 	osg::ref_ptr<osgViewer::GraphicsWindow>  _osgWinEmb;
 	float                                    _windowScale;
 	osg::ref_ptr<osgViewer::CompositeViewer> _compositeViewer;
-	static const int                         s_rootNodeCount = 100;
-	osg::ref_ptr<osg::Group>                 _rootNodes[s_rootNodeCount];
+	static const int                         s_groupNodeCount = 100;
+	osg::ref_ptr<osg::Group>                 _groupNodes[s_groupNodeCount];
 };
 
 }
+
+#endif // __ZOOCMD_OSG_INPUT_DEVICE_H__

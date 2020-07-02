@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_BLOCK_H__
+#define __ZOO_BLOCK_H__
 
 #include <zoo/Support.h>
 
@@ -61,3 +62,5 @@ private:
 };
 
 }
+
+#endif // __ZOO_BLOCK_H__

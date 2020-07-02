@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_ANY_H__
+#define __ZOO_ANY_H__
 
 #include <zoo/Support.h>
 
@@ -257,3 +258,5 @@ ValueType any_cast(const Any& operand)
 }
 
 }
+
+#endif // __ZOO_ANY_H__

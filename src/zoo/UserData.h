@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_USER_DATA_H__
+#define __ZOO_USER_DATA_H__
 
 #include <zoo/Any.h>
 
@@ -60,3 +61,5 @@ private:
 };
 
 }
+
+#endif // __ZOO_USER_DATA_H__

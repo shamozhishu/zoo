@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ZOO_DATABASE_CSV_H__
+#define __ZOO_DATABASE_CSV_H__
 
 #include <zoo/Support.h>
 #include <zoo/Singleton.h>
@@ -40,12 +41,11 @@ class _zooExport DatabaseCSV : public Singleton<DatabaseCSV>
 public:
 	DatabaseCSV();
 	~DatabaseCSV();
-	bool init(string& csvTablePath, const string& mainTable = "");
+	bool init(string& csvTablePath);
 	bool loadTable(const string& csvTablePath, string& tableDataBuff);
 	void clear();
 	int  getTableCount() const;
 	TableCSV* getTable(const string& tableName);
-	TableCSV* getMainTable() const;
 
 private:
 	void  lazyInit();
@@ -56,10 +56,11 @@ private:
 	char*                            _buffer;
 	unordered_map<string, TableCSV*> _tables;
 	bool                             _canInit;
-	TableCSV*                        _mainTable;
 	int                              _curCharOffset;
 	int                              _maxBufferSize;
 	const int                        _startValidLine;
 };
 
 }
+
+#endif // __ZOO_DATABASE_CSV_H__

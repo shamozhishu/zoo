@@ -1,7 +1,0 @@
-﻿Plugin-SymbolicName: ctk.war
-Plugin-Category: plugins
-Plugin-ContactAddress: https://github.com/shamozhishu
-Plugin-Description: A plugin for war
-Plugin-Name: ctk_war
-Plugin-Vendor: shamozhishu
-Plugin-Version: 1.0.0

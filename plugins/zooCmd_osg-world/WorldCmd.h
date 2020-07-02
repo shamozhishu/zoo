@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __WORLD_CMD_H__
+#define __WORLD_CMD_H__
 
 #include <zooCmd/Cmd.h>
 #include <zoo/Singleton.h>
@@ -29,3 +30,5 @@ private:
 	osg::ref_ptr<LongitudeLatitudeHandler> _lonLatHandler;
 	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;
 };
+
+#endif // __WORLD_CMD_H__

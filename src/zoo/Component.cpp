@@ -1,109 +1,9 @@
 #include <zoo/Component.h>
 #include <zoo/DatabaseCSV.h>
+#include <cJSON/CJsonObject.h>
 
 namespace zoo {
 
-Entity* Spawner::new_Entity(int id, const string& desc /*= ""*/)
-{
-	Entity* pEntity = Entity::find(id, _breed);
-	if (pEntity)
-	{
-		zoo_warning("Entity already exists[id=%d,breed=%d]!", id, _breed);
-		return nullptr;
-	}
-
-	pEntity = Entity::fetch();
-	if (!pEntity)
-		pEntity = new Entity;
-
-	pEntity->_id = id;
-	pEntity->_breed = _breed;
-	pEntity->_desc = desc;
-	Entity::_entitiesPool[_breed][id] = pEntity;
-	return pEntity;
-}
-
-Entity* Spawner::find_Entity(int id)
-{
-	return Entity::find(id, _breed);
-}
-
-unordered_map<int, Entity*> Spawner::gain_Entities()
-{
-	return Entity::gain(_breed);
-}
-
-void Spawner::awake()
-{
-	Entity* pEnt = nullptr;
-	auto entities = gain_Entities();
-	auto it = entities.begin();
-	auto itEnd = entities.end();
-	for (; it != itEnd; ++it)
-	{
-		pEnt = it->second;
-		if (pEnt)
-			pEnt->awake();
-	}
-}
-
-void Spawner::load()
-{
-	Entity* pEnt = nullptr;
-	auto entities = gain_Entities();
-	auto it = entities.begin();
-	auto itEnd = entities.end();
-	for (; it != itEnd; ++it)
-	{
-		pEnt = it->second;
-		if (pEnt)
-			pEnt->deserialize(this);
-	}
-}
-
-void Spawner::save(string filename)
-{
-	fstream fout(filename, ios::out | ios::ate);
-	if (!fout)
-	{
-		zoo_error("打开文件[%s]失败", filename.c_str());
-		return;
-	}
-
-	Entity* pEnt = nullptr;
-	bool isSeriHeader = false;
-	auto entities = gain_Entities();
-	auto it = entities.begin();
-	auto itEnd = entities.end();
-	for (; it != itEnd; ++it)
-	{
-		pEnt = it->second;
-		if (pEnt)
-		{
-			if (!isSeriHeader)
-			{
-				isSeriHeader = true;
-				pEnt->serializeHeader(this);
-				pEnt->serializeField(this);
-			}
-
-			pEnt->serialize(this);
-		}
-	}
-
-	fout << ss().str();
-	fout.close();
-	ss().clear();
-	ss().str("");
-}
-
-Entity* Component::getEntity() const
-{
-	return _entity;
-}
-
-Entity* Entity::_firstAvailable = nullptr;
-unordered_map<int, unordered_map<int, Entity*>> Entity::_entitiesPool;
 Entity::Entity()
 	: _id(-1)
 	, _breed(-1)
@@ -183,7 +83,10 @@ void Entity::removeComponents()
 	auto it = _components.begin();
 	auto itEnd = _components.end();
 	for (; it != itEnd; ++it)
+	{
 		delete it->second;
+		it->second = nullptr;
+	}
 
 	_components.clear();
 }
@@ -195,104 +98,223 @@ unordered_map<string, Component*> Entity::getComponents() const
 
 void Entity::awake()
 {
+	Component* pComponent;
 	ComponentImpl* pComponentImpl;
 	auto it = _components.begin();
 	for (; it != _components.end(); ++it)
 	{
-		pComponentImpl = it->second->_imp.get();
-		if (pComponentImpl)
-			pComponentImpl->awake();
+		pComponent = it->second;
+		if (pComponent)
+		{
+			pComponentImpl = pComponent->_imp.get();
+			if (pComponentImpl)
+				pComponentImpl->awake();
+		}
 	}
 
-	SignalTrigger::trigger(_AWAKED);
-	SignalTrigger::disconnect(_AWAKED);
+	if (SignalTrigger::hasSignal(*this))
+	{
+		SignalTrigger::trigger(*this);
+		SignalTrigger::disconnect(*this);
+	}
 }
 
 void Entity::update()
 {
+	Component* pComponent;
 	ComponentImpl* pComponentImpl;
 	auto it = _components.begin();
 	for (; it != _components.end(); ++it)
 	{
-		pComponentImpl = it->second->_imp.get();
-		if (pComponentImpl)
-			pComponentImpl->update();
+		pComponent = it->second;
+		if (pComponent)
+		{
+			pComponentImpl = pComponent->_imp.get();
+			if (pComponentImpl && !pComponent->_dirty.isEmptyState())
+			{
+				pComponentImpl->update();
+				pComponent->_dirty.clearState();
+			}
+		}
 	}
 
-	SignalTrigger::trigger(_UPDATED);
-	SignalTrigger::disconnect(_UPDATED);
+	if (SignalTrigger::hasSignal(*this))
+	{
+		SignalTrigger::trigger(*this);
+		SignalTrigger::disconnect(*this);
+	}
 }
 
 void Entity::serialize(Spawner* spawner)
 {
-	if (!spawner)
+	if (!spawner || !spawner->getParser())
 		return;
 
-	spawner->ss() << ID() << "," << Description();
+	CJsonObject& entJson = *(CJsonObject*)spawner->getParser();
+	entJson.Add("id", _id);
+	entJson.Add("breed", _breed);
+	entJson.Add("desc", _desc);
+	entJson.AddEmptySubArray("component");
+
 	auto it = _components.begin();
 	for (; it != _components.end(); ++it)
 	{
-		spawner->ss() << ",";
+		CJsonObject comJson;
+		spawner->_parser = &comJson;
 		it->second->serialize(spawner);
+		entJson["component"].Add(comJson);
 	}
-	spawner->ss() << std::endl;
 }
 
 void Entity::deserialize(Spawner* spawner)
 {
-	if (!spawner)
+	if (!spawner || !spawner->getParser())
 		return;
 
-	TableCSV* pTable = spawner->getTable();
-	if (!pTable)
-		return;
+	CJsonObject& entJson = *(CJsonObject*)spawner->getParser();
+	entJson.Get("desc", _desc);
 
-	_desc = pTable->item2str(_id, "description");
-
-	auto it = _components.begin();
-	for (; it != _components.end(); ++it)
+	int comCount = entJson["component"].GetArraySize();
+	for (int i = 0; i < comCount; ++i)
 	{
-		it->second->deserialize(spawner);
+		CJsonObject comJson;
+		entJson["component"].Get(i, comJson);
+		spawner->_parser = &comJson;
+		string type;
+		comJson.Get("type", type);
+		Component* pCom = addComponent(type);
+		if (pCom)
+			pCom->deserialize(spawner);
 	}
 }
-
-void Entity::serializeField(Spawner* spawner)
+//////////////////////////////////////////////////////////////////////////
+std::unordered_map<int, Spawner*> Spawner::_spawners;
+Spawner::Spawner()
+	: _firstAvailable(nullptr)
 {
-	if (!spawner)
-		return;
-
-	spawner->ss() << "id" << "," << "description";
-	auto it = _components.begin();
-	for (; it != _components.end(); ++it)
-	{
-		spawner->ss() << ",";
-		it->second->serializeField(spawner);
-	}
-	spawner->ss() << std::endl;
 }
 
-void Entity::serializeHeader(Spawner* spawner)
+Spawner::~Spawner()
 {
-	if (!spawner)
-		return;
-
-	spawner->ss() << "编号" << "," << "描述";
-	auto it = _components.begin();
-	for (; it != _components.end(); ++it)
-	{
-		spawner->ss() << ",";
-		it->second->serializeHeader(spawner);
-	}
-	spawner->ss() << std::endl;
+	clear();
 }
 
-void Entity::destroy(Entity* pEntity, bool bDelete /*= false*/)
+Spawner* Spawner::create(int id, const string& desc /*= ""*/)
+{
+	Spawner* spawner = find(id);
+	if (spawner)
+	{
+		zoo_warning("Spawner already exists[id=%d,desc=%s]!", id, spawner->desc().c_str());
+		return nullptr;
+	}
+
+	spawner = new Spawner;
+	spawner->_id = id;
+	spawner->desc() = desc;
+	_spawners[id] = spawner;
+	return spawner;
+}
+
+Spawner* Spawner::find(int id)
+{
+	auto it = _spawners.find(id);
+	if (it != _spawners.end())
+		return it->second;
+	return nullptr;
+}
+
+void Spawner::destroy(Spawner* spawner)
+{
+	auto it = _spawners.find(spawner->id());
+	if (it != _spawners.end())
+	{
+		_spawners.erase(it);
+		delete spawner;
+	}
+}
+
+Entity* Spawner::born(int id, int breed)
+{
+	Entity* pEnt = gain(id, breed);
+	if (pEnt)
+	{
+		zoo_warning("Entity already exists[id=%d,breed=%d]!", id, breed);
+		return nullptr;
+	}
+
+	pEnt = fetch();
+	if (!pEnt)
+		pEnt = new Entity;
+
+	pEnt->_id = id;
+	pEnt->_breed = breed;
+	pEnt->_spawner = this;
+	_entitiesPool[breed][id] = pEnt;
+	return pEnt;
+}
+
+Entity* Spawner::gain(int id, int breed)
+{
+	auto it = _entitiesPool.find(breed);
+	if (it != _entitiesPool.end())
+	{
+		auto itor = it->second.find(id);
+		if (itor != it->second.end())
+		{
+			Entity* pEnt = itor->second;
+			if (pEnt && pEnt->_inUse)
+				return pEnt;
+		}
+	}
+
+	return nullptr;
+}
+
+void Spawner::awake()
+{
+	Entity* pEnt;
+	auto it = _entitiesPool.begin();
+	for (; it != _entitiesPool.end(); ++it)
+	{
+		unordered_map<int, Entity*>& entMap = it->second;
+		auto itEnts = entMap.begin();
+		for (; itEnts != entMap.end(); ++itEnts)
+		{
+			pEnt = itEnts->second;
+			if (pEnt)
+				pEnt->awake();
+		}
+	}
+
+	Entity::awake();
+}
+
+void Spawner::update()
+{
+	Entity* pEnt;
+	auto it = _entitiesPool.begin();
+	for (; it != _entitiesPool.end(); ++it)
+	{
+		unordered_map<int, Entity*>& entMap = it->second;
+		auto itEnts = entMap.begin();
+		for (; itEnts != entMap.end(); ++itEnts)
+		{
+			pEnt = itEnts->second;
+			if (pEnt)
+				pEnt->update();
+		}
+	}
+
+	Entity::update();
+}
+
+void Spawner::remove(Entity* pEntity, bool bDelete /*= false*/)
 {
 	if (pEntity)
 	{
 		if (bDelete)
 		{
-			_entitiesPool[pEntity->Breed()][pEntity->ID()] = nullptr;
+			_entitiesPool[pEntity->breed()][pEntity->id()] = nullptr;
 			delete pEntity;
 		}
 		else
@@ -300,7 +322,7 @@ void Entity::destroy(Entity* pEntity, bool bDelete /*= false*/)
 	}
 }
 
-void Entity::clear()
+void Spawner::clear()
 {
 	auto it = _entitiesPool.begin();
 	auto itEnd = _entitiesPool.end();
@@ -316,9 +338,58 @@ void Entity::clear()
 	}
 
 	_entitiesPool.clear();
+	_firstAvailable = nullptr;
 }
 
-Entity* Entity::fetch()
+bool Spawner::load(const string& filename)
+{
+	fstream fout(filename);
+	if (!fout)
+	{
+		zoo_error("打开文件[%s]失败", filename.c_str());
+		return false;
+	}
+
+	stringstream ss;
+	ss << fout.rdbuf();
+
+	CJsonObject sceneJson(ss.str());
+	_parser = &sceneJson;
+	deserialize(this);
+
+	int entCount = sceneJson["entity"].GetArraySize();
+	for (int i = 0; i < entCount; ++i)
+	{
+		CJsonObject entJson;
+		sceneJson["entity"].Get(i, entJson);
+		int id, breed;
+		entJson.Get("id", id);
+		entJson.Get("breed", breed);
+		_parser = &entJson;
+		born(id, breed)->deserialize(this);
+	}
+
+	return true;
+}
+
+void Spawner::save(const string& filename)
+{
+	fstream fout(filename, ios::out | ios::ate);
+	if (!fout)
+	{
+		zoo_error("打开文件[%s]失败", filename.c_str());
+		return;
+	}
+
+	CJsonObject sceneJson;
+	_parser = &sceneJson;
+	serialize(this);
+
+	fout << sceneJson.ToFormattedString();
+	fout.close();
+}
+
+Entity* Spawner::fetch()
 {
 	Entity* pEntity = nullptr;
 	if (_firstAvailable)
@@ -331,24 +402,7 @@ Entity* Entity::fetch()
 	return pEntity;
 }
 
-Entity* Entity::find(int id, int breed)
-{
-	auto it = _entitiesPool.find(breed);
-	if (it == _entitiesPool.end())
-		return nullptr;
-
-	auto itor = it->second.find(id);
-	if (itor == it->second.end())
-		return nullptr;
-
-	Entity* pEnt = itor->second;
-	if (pEnt && !pEnt->_inUse)
-		return nullptr;
-
-	return pEnt;
-}
-
-void Entity::discard(Entity* pEntity)
+void Spawner::discard(Entity* pEntity)
 {
 	if (!pEntity)
 		return;
@@ -363,16 +417,6 @@ void Entity::discard(Entity* pEntity)
 
 	pEntity->_next = _firstAvailable;
 	_firstAvailable = pEntity;
-}
-
-const unordered_map<int, Entity*>& Entity::gain(int breed)
-{
-	static unordered_map<int, Entity*> s_emptyEntities;
-	auto it = _entitiesPool.find(breed);
-	if (it != _entitiesPool.end())
-		return it->second;
-
-	return s_emptyEntities;
 }
 
 }

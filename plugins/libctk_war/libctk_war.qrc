@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/ctk.war/META-INF">
-        <file>MANIFEST.MF</file>
-    </qresource>
-</RCC>
