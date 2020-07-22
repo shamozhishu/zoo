@@ -5,6 +5,8 @@
 ZOOCMDINITAPROC zooCmd_InitA_Loader;
 ZOOCMDINITWPROC zooCmd_InitW_Loader;
 ZOOCMDISINITEDPROC zooCmd_IsInited_Loader;
+ZOOCMDREGISTERPROC zooCmd_Register_Loader;
+ZOOCMDUNREGISTERPROC zooCmd_Unregister_Loader;
 ZOOCMDSENDPROC zooCmd_Send_Loader;
 ZOOCMDRUNPROC zooCmd_Run_Loader;
 ZOOCMDTICKPROC zooCmd_Tick_Loader;
@@ -45,6 +47,8 @@ static void load_zoocmd(HMODULE libZooCmd, void*(*load)(HMODULE, const char*))
 	zooCmd_InitA_Loader = (ZOOCMDINITAPROC)load(libZooCmd, "zooCmd_InitA");
 	zooCmd_InitW_Loader = (ZOOCMDINITWPROC)load(libZooCmd, "zooCmd_InitW");
 	zooCmd_IsInited_Loader = (ZOOCMDISINITEDPROC)load(libZooCmd, "zooCmd_IsInited");
+	zooCmd_Register_Loader = (ZOOCMDREGISTERPROC)load(libZooCmd, "zooCmd_Register");
+	zooCmd_Unregister_Loader = (ZOOCMDUNREGISTERPROC)load(libZooCmd, "zooCmd_Unregister");
 	zooCmd_Send_Loader = (ZOOCMDSENDPROC)load(libZooCmd, "zooCmd_Send");
 	zooCmd_Run_Loader = (ZOOCMDRUNPROC)load(libZooCmd, "zooCmd_Run");
 	zooCmd_Tick_Loader = (ZOOCMDTICKPROC)load(libZooCmd, "zooCmd_Tick");

@@ -16,7 +16,8 @@ public:
 	static InputDevice* getIns();
 	osgViewer::CompositeViewer* getViewer() const;
 	osg::Group* getGroupNode(unsigned int idx = -1, bool createIfNot = true);
-	osgViewer::View* createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop);
+	osgViewer::View* createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color = osg::Vec4(0, 0, 0, 0));
+	void resizeView(osgViewer::View* view, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop);
 
 public:
 	int  run();

@@ -8,12 +8,6 @@ UIActivator::UIActivator()
 {
 }
 
-UIActivator::~UIActivator()
-{
-	if (_ui)
-		delete _ui;
-}
-
 void UIActivator::start(ctkPluginContext* context)
 {
 	QSurfaceFormat format = QSurfaceFormat::defaultFormat();
@@ -28,6 +22,10 @@ void UIActivator::start(ctkPluginContext* context)
 	QSurfaceFormat::setDefaultFormat(format);
 
 	_ui = new ZooCmdUI();
+	ctkDictionary props;
+	props.insert(ctkPluginConstants::SERVICE_RANKING, 0);
+	context->registerService<UIManagerService>(_ui, props);
+
 	_pluginContext = context;
 }
 

@@ -1,7 +1,6 @@
 #include "WarComponents.h"
 #include "LuaScript.h"
 #include <zoo/Utils.h>
-#include <cJSON/CJsonObject.h>
 #include "WarCommander.h"
 #include "Battlefield.h"
 
@@ -52,14 +51,12 @@ void Behavior::exec()
 
 void Behavior::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("script", _scriptFile);
+	spawner->addValue("script", _scriptFile);
 }
 
 void Behavior::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("script", _scriptFile);
+	spawner->getValue("script", _scriptFile);
 }
 //////////////////////////////////////////////////////////////////////////
 AI::AI()
@@ -81,9 +78,9 @@ DoF::DoF()
 	, _heading(0)
 	, _pitch(0)
 	, _roll(0)
-	, _sx(0)
-	, _sy(0)
-	, _sz(0)
+	, _sx(1)
+	, _sy(1)
+	, _sz(1)
 {
 	_dirty.addState(dof_ | parent_);
 }
@@ -104,45 +101,43 @@ DoF::~DoF()
 
 void DoF::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("x", _x);
-	comJson.Add("y", _y);
-	comJson.Add("z", _z);
-	comJson.Add("heading", _heading);
-	comJson.Add("pitch", _pitch);
-	comJson.Add("roll", _roll);
-	comJson.Add("sx", _sx);
-	comJson.Add("sy", _sy);
-	comJson.Add("sz", _sz);
+	spawner->addValue("x", _x);
+	spawner->addValue("y", _y);
+	spawner->addValue("z", _z);
+	spawner->addValue("heading", _heading);
+	spawner->addValue("pitch", _pitch);
+	spawner->addValue("roll", _roll);
+	spawner->addValue("sx", _sx);
+	spawner->addValue("sy", _sy);
+	spawner->addValue("sz", _sz);
 
 	if (_parent)
 	{
 		_mountEntID = _parent->getEntity()->id();
 		_mountEntBreed = _parent->getEntity()->breed();
-		comJson.Add("mount_entity_id", _mountEntID);
-		comJson.Add("mount_entity_breed", _mountEntBreed);
+		spawner->addValue("mount_entity_id", _mountEntID);
+		spawner->addValue("mount_entity_breed", _mountEntBreed);
 	}
 	else
 	{
-		comJson.AddNull("mount_entity_id");
-		comJson.AddNull("mount_entity_breed");
+		spawner->addNull("mount_entity_id");
+		spawner->addNull("mount_entity_breed");
 	}
 }
 
 void DoF::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("x", _x);
-	comJson.Get("y", _y);
-	comJson.Get("z", _z);
-	comJson.Get("heading", _heading);
-	comJson.Get("pitch", _pitch);
-	comJson.Get("roll", _roll);
-	comJson.Get("sx", _sx);
-	comJson.Get("sy", _sy);
-	comJson.Get("sz", _sz);
-	comJson.Get("mount_entity_id", _mountEntID);
-	comJson.Get("mount_entity_breed", _mountEntBreed);
+	spawner->getValue("x", _x);
+	spawner->getValue("y", _y);
+	spawner->getValue("z", _z);
+	spawner->getValue("heading", _heading);
+	spawner->getValue("pitch", _pitch);
+	spawner->getValue("roll", _roll);
+	spawner->getValue("sx", _sx);
+	spawner->getValue("sy", _sy);
+	spawner->getValue("sz", _sz);
+	spawner->getValue("mount_entity_id", _mountEntID);
+	spawner->getValue("mount_entity_breed", _mountEntBreed);
 	SignalTrigger::connect(*getEntity()->getSpawner(), this, &DoF::onSetParent);
 }
 
@@ -281,22 +276,21 @@ DoF* DoF::getParent() const
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Model);
 Model::Model()
+	: _visible(true)
 {
 	_dirty.addState(visible_ | modelFile_);
 }
 
 void Model::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("visible", _visible);
-	comJson.Add("model_file", _modelFile);
+	spawner->addValue("visible", _visible);
+	spawner->addValue("model_file", _modelFile);
 }
 
 void Model::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("visible", _visible);
-	comJson.Get("model_file", _modelFile);
+	spawner->getValue("visible", _visible);
+	spawner->getValue("model_file", _modelFile);
 }
 
 bool Model::isVisible() const
@@ -319,14 +313,12 @@ void Model::setModelFile(const string& modelFile)
 ZOO_REFLEX_IMPLEMENT(Sound);
 void Sound::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("sound_file", _soundFile);
+	spawner->addValue("sound_file", _soundFile);
 }
 
 void Sound::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("sound_file", _soundFile);
+	spawner->getValue("sound_file", _soundFile);
 }
 
 void Sound::play()
@@ -357,14 +349,12 @@ void Sound::setLoop(bool loop)
 ZOO_REFLEX_IMPLEMENT(Animator);
 void Animator::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("traj_file", _trajFile);
+	spawner->addValue("traj_file", _trajFile);
 }
 
 void Animator::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("traj_file", _trajFile);
+	spawner->getValue("traj_file", _trajFile);
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Camera);
@@ -375,29 +365,39 @@ Camera::Camera()
 	, _rRatio(1)
 	, _bRatio(0)
 	, _tRatio(1)
+	, _red(0)
+	, _green(0)
+	, _blue(0)
+	, _alpha(255)
 {
 }
 
 void Camera::serialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Add("ratio_left", _lRatio);
-	comJson.Add("ratio_right", _rRatio);
-	comJson.Add("ratio_bottom", _bRatio);
-	comJson.Add("ratio_top", _tRatio);
-	comJson.Add("track_entity_id", _trackEntID);
-	comJson.Add("track_entity_breed", _trackEntBreed);
+	spawner->addValue("bgcolor_red", _red);
+	spawner->addValue("bgcolor_green", _green);
+	spawner->addValue("bgcolor_blue", _blue);
+	spawner->addValue("bgcolor_alpha", _alpha);
+	spawner->addValue("ratio_left", _lRatio);
+	spawner->addValue("ratio_right", _rRatio);
+	spawner->addValue("ratio_bottom", _bRatio);
+	spawner->addValue("ratio_top", _tRatio);
+	spawner->addValue("track_entity_id", _trackEntID);
+	spawner->addValue("track_entity_breed", _trackEntBreed);
 }
 
 void Camera::deserialize(Spawner* spawner)
 {
-	CJsonObject& comJson = *(CJsonObject*)spawner->getParser();
-	comJson.Get("ratio_left", _lRatio);
-	comJson.Get("ratio_right", _rRatio);
-	comJson.Get("ratio_bottom", _bRatio);
-	comJson.Get("ratio_top", _tRatio);
-	comJson.Get("track_entity_id", _trackEntID);
-	comJson.Get("track_entity_breed", _trackEntBreed);
+	spawner->getValue("bgcolor_red", _red);
+	spawner->getValue("bgcolor_green", _green);
+	spawner->getValue("bgcolor_blue", _blue);
+	spawner->getValue("bgcolor_alpha", _alpha);
+	spawner->getValue("ratio_left", _lRatio);
+	spawner->getValue("ratio_right", _rRatio);
+	spawner->getValue("ratio_bottom", _bRatio);
+	spawner->getValue("ratio_top", _tRatio);
+	spawner->getValue("track_entity_id", _trackEntID);
+	spawner->getValue("track_entity_breed", _trackEntBreed);
 }
 
 void Camera::setTrackEnt(int id, int breed)
@@ -405,6 +405,12 @@ void Camera::setTrackEnt(int id, int breed)
 	_trackEntID = id;
 	_trackEntBreed = breed;
 	_dirty.addState(trackEnt_);
+}
+
+void Camera::setBgColor(int r, int g, int b, int a /*= 255*/)
+{
+	_red = r; _green = g; _blue = b; _alpha = a;
+	_dirty.addState(bgcolour_);
 }
 
 void Camera::setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio)
@@ -429,4 +435,23 @@ void Environment::serialize(Spawner* spawner)
 void Environment::deserialize(Spawner* spawner)
 {
 	
+}
+//////////////////////////////////////////////////////////////////////////
+Earth::Earth()
+{
+
+}
+void Earth::serialize(Spawner* spawner)
+{
+
+}
+
+void Earth::deserialize(Spawner* spawner)
+{
+
+}
+
+void Earth::setEarthFile(const string& earthFile)
+{
+
 }

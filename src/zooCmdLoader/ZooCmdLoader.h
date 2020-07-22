@@ -13,6 +13,8 @@ extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 #define zooCmd_InitA zooCmd_InitA_Loader
 #define zooCmd_InitW zooCmd_InitW_Loader
 #define zooCmd_IsInited zooCmd_IsInited_Loader
+#define zooCmd_Register zooCmd_Register_Loader
+#define zooCmd_Unregister zooCmd_Unregister_Loader
 #define zooCmd_Send zooCmd_Send_Loader
 #define zooCmd_Run zooCmd_Run_Loader
 #define zooCmd_Tick zooCmd_Tick_Loader
@@ -109,12 +111,16 @@ extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 
 typedef unsigned int zooCmd_Key, zooCmd_Scroll, zooCmd_MouseButton;
 
-typedef bool(*ZOOCMDINITAPROC)(int cmdcount, const char* cmdset[], const char* input_adapter, const char* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/);
+typedef bool(*ZOOCMDINITAPROC)(const char* input_adapter, const char* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/);
 extern ZOOCMDINITAPROC zooCmd_InitA_Loader;
-typedef bool(*ZOOCMDINITWPROC)(int cmdcount, const char* cmdset[], const char* input_adapter, const wchar_t* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/);
+typedef bool(*ZOOCMDINITWPROC)(const char* input_adapter, const wchar_t* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/);
 extern ZOOCMDINITWPROC zooCmd_InitW_Loader;
 typedef bool(*ZOOCMDISINITEDPROC)();
 extern ZOOCMDISINITEDPROC zooCmd_IsInited_Loader;
+typedef bool(*ZOOCMDREGISTERPROC)(const char* cmd);
+extern ZOOCMDREGISTERPROC zooCmd_Register_Loader;
+typedef bool(*ZOOCMDUNREGISTERPROC)(const char* cmd);
+extern ZOOCMDUNREGISTERPROC zooCmd_Unregister_Loader;
 typedef bool(*ZOOCMDSENDPROC)(const char* cmdline);
 extern ZOOCMDSENDPROC zooCmd_Send_Loader;
 typedef int(*ZOOCMDRUNPROC)();

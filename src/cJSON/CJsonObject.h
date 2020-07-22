@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  neb
- * @file     CJsonObject.hpp
+ * @file     CJsonObject.h
  * @brief    Json
  * @author   bwarliao
  * @date:    2014-7-16
@@ -27,11 +27,10 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#include <zoo/Common.h>
 
-class _zooExport CJsonObject
+class CJsonObject
 {
-public:     // method of ordinary json object or json array
+public: // method of ordinary json object or json array
     CJsonObject();
     CJsonObject(const std::string& strJson);
     CJsonObject(const CJsonObject* pJsonObject);
@@ -51,7 +50,7 @@ public:     // method of ordinary json object or json array
         return(m_strErrMsg);
     }
 
-public:     // method of ordinary json object
+public: // method of ordinary json object
     bool AddEmptySubObject(const std::string& strKey);
     bool AddEmptySubArray(const std::string& strKey);
     bool GetKey(std::string& strKey);
@@ -77,7 +76,7 @@ public:     // method of ordinary json object
     bool Add(const std::string& strKey, bool bValue, bool bValueAgain);
     bool Add(const std::string& strKey, float fValue);
     bool Add(const std::string& strKey, double dValue);
-    bool AddNull(const std::string& strKey);    // add null like this:   "key":null
+    bool AddNull(const std::string& strKey); // add null like this: "key": null
     bool Delete(const std::string& strKey);
     bool Replace(const std::string& strKey, const CJsonObject& oJsonObject);
     bool Replace(const std::string& strKey, const std::string& strValue);
@@ -88,9 +87,9 @@ public:     // method of ordinary json object
     bool Replace(const std::string& strKey, bool bValue, bool bValueAgain);
     bool Replace(const std::string& strKey, float fValue);
     bool Replace(const std::string& strKey, double dValue);
-    bool ReplaceWithNull(const std::string& strKey);    // replace value with null
+    bool ReplaceWithNull(const std::string& strKey); // replace value with null
 
-public:     // method of json array
+public: // method of json array
     int GetArraySize();
     CJsonObject& operator[](unsigned int uiWhich);
     std::string operator()(unsigned int uiWhich) const;
@@ -113,7 +112,7 @@ public:     // method of json array
     bool Add(int iAnywhere, bool bValue);
     bool Add(float fValue);
     bool Add(double dValue);
-    bool AddNull();   // add a null value
+    bool AddNull(); // add a null value
     bool AddAsFirst(const CJsonObject& oJsonObject);
     bool AddAsFirst(const std::string& strValue);
     bool AddAsFirst(int32 iValue);
@@ -123,7 +122,7 @@ public:     // method of json array
     bool AddAsFirst(int iAnywhere, bool bValue);
     bool AddAsFirst(float fValue);
     bool AddAsFirst(double dValue);
-    bool AddNullAsFirst();     // add a null value
+    bool AddNullAsFirst(); // add a null value
     bool Delete(int iWhich);
     bool Replace(int iWhich, const CJsonObject& oJsonObject);
     bool Replace(int iWhich, const std::string& strValue);
@@ -134,7 +133,7 @@ public:     // method of json array
     bool Replace(int iWhich, bool bValue, bool bValueAgain);
     bool Replace(int iWhich, float fValue);
     bool Replace(int iWhich, double dValue);
-    bool ReplaceWithNull(int iWhich);      // replace with a null value
+    bool ReplaceWithNull(int iWhich); // replace with a null value
 
 private:
     CJsonObject(cJSON* pJsonData);

@@ -1,10 +1,6 @@
 <RCC>
-  <qresource prefix="/images">
-    <file>Resources/images/open.png</file>
-    <file>Resources/images/save.png</file>
-    <file>Resources/images/setup.png</file>
-    <file>Resources/images/app.png</file>
-    <file>Resources/images/start.png</file>
-    <file>Resources/images/stop.png</file>
-  </qresource>
+    <qresource prefix="/images">
+        <file>Resources/images/app.png</file>
+        <file>Resources/images/cmd.png</file>
+    </qresource>
 </RCC>

@@ -23,14 +23,14 @@ void Battlefield::enter()
 {
 	string sceneFile = _table->item2str(_id, "scene_file");
 	if (sceneFile != "" && _spawner->load(ZOO_DATA_ROOT_DIR + sceneFile))
-		_spawner->awake();
+		_spawner->awakeAll();
 }
 
 void Battlefield::save()
 {
 	string sceneFile = _table->item2str(_id, "scene_file");
 	if (sceneFile != "")
-		_spawner->save(sceneFile);
+		_spawner->save(ZOO_DATA_ROOT_DIR + sceneFile);
 }
 
 void Battlefield::exit()
@@ -46,7 +46,7 @@ void Battlefield::refresh()
 		(*it)->exec();
 
 	WarSimulator::refresh();
-	_spawner->update();
+	_spawner->updateAll();
 }
 
 void Battlefield::addBehavior(Behavior* behavior)

@@ -4,10 +4,16 @@
 
 namespace zoo {
 
+Component::~Component()
+{
+	delete _imp;
+}
+
 Entity::Entity()
 	: _id(-1)
 	, _breed(-1)
 	, _inUse(true)
+	, _spawner(nullptr)
 {
 }
 
@@ -29,11 +35,11 @@ ComponentImpl* Entity::getComponentImpl(string className)
 {
 	Component* pComponent = getComponent(className.substr(0, className.size() - 4));
 	if (pComponent)
-		return pComponent->_imp.get();
+		return pComponent->_imp;
 	return nullptr;
 }
 
-Component* Entity::addComponent(string className)
+Component* Entity::addComponent(string className, string implName /*= ""*/)
 {
 	Component* pComponent = getComponent(className);
 	if (pComponent)
@@ -46,18 +52,22 @@ Component* Entity::addComponent(string className)
 		return nullptr;
 	}
 
+	pComponent->_imp = nullptr;
 	pComponent->_entity = this;
 	_components[className] = pComponent;
 
-	ComponentImpl* pComponentImpl = ReflexFactory<>::getInstance().create<ComponentImpl>(className + "Impl");
-	if (pComponentImpl)
+	if (implName != "")
 	{
-		pComponentImpl->_component = pComponent;
-		pComponent->_imp.reset(pComponentImpl);
-	}
-	else
-	{
-		zoo_warning("Component implement type \"%s\" does not exist!", (className + "Impl").c_str());
+		ComponentImpl* pComponentImpl = ReflexFactory<>::getInstance().create<ComponentImpl>(implName);
+		if (pComponentImpl)
+		{
+			pComponentImpl->_component = pComponent;
+			pComponent->_imp = pComponentImpl;
+		}
+		else
+		{
+			zoo_warning("Component implement type \"%s\" does not exist!", implName.c_str());
+		}
 	}
 
 	return pComponent;
@@ -91,27 +101,8 @@ void Entity::removeComponents()
 	_components.clear();
 }
 
-unordered_map<string, Component*> Entity::getComponents() const
+void Entity::notifyComponents()
 {
-	return _components;
-}
-
-void Entity::awake()
-{
-	Component* pComponent;
-	ComponentImpl* pComponentImpl;
-	auto it = _components.begin();
-	for (; it != _components.end(); ++it)
-	{
-		pComponent = it->second;
-		if (pComponent)
-		{
-			pComponentImpl = pComponent->_imp.get();
-			if (pComponentImpl)
-				pComponentImpl->awake();
-		}
-	}
-
 	if (SignalTrigger::hasSignal(*this))
 	{
 		SignalTrigger::trigger(*this);
@@ -119,7 +110,12 @@ void Entity::awake()
 	}
 }
 
-void Entity::update()
+unordered_map<string, Component*> Entity::getComponents() const
+{
+	return _components;
+}
+
+void Entity::awakeAll()
 {
 	Component* pComponent;
 	ComponentImpl* pComponentImpl;
@@ -129,7 +125,26 @@ void Entity::update()
 		pComponent = it->second;
 		if (pComponent)
 		{
-			pComponentImpl = pComponent->_imp.get();
+			pComponentImpl = pComponent->_imp;
+			if (pComponentImpl)
+				pComponentImpl->awake();
+		}
+	}
+
+	notifyComponents();
+}
+
+void Entity::updateAll()
+{
+	Component* pComponent;
+	ComponentImpl* pComponentImpl;
+	auto it = _components.begin();
+	for (; it != _components.end(); ++it)
+	{
+		pComponent = it->second;
+		if (pComponent)
+		{
+			pComponentImpl = pComponent->_imp;
 			if (pComponentImpl && !pComponent->_dirty.isEmptyState())
 			{
 				pComponentImpl->update();
@@ -138,22 +153,28 @@ void Entity::update()
 		}
 	}
 
-	if (SignalTrigger::hasSignal(*this))
-	{
-		SignalTrigger::trigger(*this);
-		SignalTrigger::disconnect(*this);
-	}
+	notifyComponents();
 }
 
 void Entity::serialize(Spawner* spawner)
 {
-	if (!spawner || !spawner->getParser())
+	if (!spawner || !spawner->_parser)
 		return;
 
-	CJsonObject& entJson = *(CJsonObject*)spawner->getParser();
-	entJson.Add("id", _id);
-	entJson.Add("breed", _breed);
-	entJson.Add("desc", _desc);
+	CJsonObject& entJson = *(CJsonObject*)spawner->_parser;
+	if (_id != -1)
+		entJson.Add("id", _id);
+	else
+		entJson.AddNull("id");
+	if (_breed != -1)
+		entJson.Add("breed", _breed);
+	else
+		entJson.AddNull("breed");
+	if (_desc != "")
+		entJson.Add("desc", _desc);
+	else
+		entJson.AddNull("desc");
+
 	entJson.AddEmptySubArray("component");
 
 	auto it = _components.begin();
@@ -161,6 +182,13 @@ void Entity::serialize(Spawner* spawner)
 	{
 		CJsonObject comJson;
 		spawner->_parser = &comJson;
+		comJson.Add("type", it->second->typeName());
+
+		if (it->second->_imp)
+			comJson.Add("impl", it->second->_imp->typeName());
+		else
+			comJson.AddNull("impl");
+
 		it->second->serialize(spawner);
 		entJson["component"].Add(comJson);
 	}
@@ -168,10 +196,10 @@ void Entity::serialize(Spawner* spawner)
 
 void Entity::deserialize(Spawner* spawner)
 {
-	if (!spawner || !spawner->getParser())
+	if (!spawner || !spawner->_parser)
 		return;
 
-	CJsonObject& entJson = *(CJsonObject*)spawner->getParser();
+	CJsonObject& entJson = *(CJsonObject*)spawner->_parser;
 	entJson.Get("desc", _desc);
 
 	int comCount = entJson["component"].GetArraySize();
@@ -180,9 +208,10 @@ void Entity::deserialize(Spawner* spawner)
 		CJsonObject comJson;
 		entJson["component"].Get(i, comJson);
 		spawner->_parser = &comJson;
-		string type;
+		string type, impl;
 		comJson.Get("type", type);
-		Component* pCom = addComponent(type);
+		comJson.Get("impl", impl);
+		Component* pCom = addComponent(type, impl);
 		if (pCom)
 			pCom->deserialize(spawner);
 	}
@@ -191,7 +220,9 @@ void Entity::deserialize(Spawner* spawner)
 std::unordered_map<int, Spawner*> Spawner::_spawners;
 Spawner::Spawner()
 	: _firstAvailable(nullptr)
+	, _parser(nullptr)
 {
+	_spawner = this;
 }
 
 Spawner::~Spawner()
@@ -255,6 +286,9 @@ Entity* Spawner::born(int id, int breed)
 
 Entity* Spawner::gain(int id, int breed)
 {
+	if (breed == -1)
+		return find(id);
+
 	auto it = _entitiesPool.find(breed);
 	if (it != _entitiesPool.end())
 	{
@@ -270,7 +304,7 @@ Entity* Spawner::gain(int id, int breed)
 	return nullptr;
 }
 
-void Spawner::awake()
+void Spawner::awakeAll()
 {
 	Entity* pEnt;
 	auto it = _entitiesPool.begin();
@@ -282,14 +316,14 @@ void Spawner::awake()
 		{
 			pEnt = itEnts->second;
 			if (pEnt)
-				pEnt->awake();
+				pEnt->awakeAll();
 		}
 	}
 
-	Entity::awake();
+	Entity::awakeAll();
 }
 
-void Spawner::update()
+void Spawner::updateAll()
 {
 	Entity* pEnt;
 	auto it = _entitiesPool.begin();
@@ -301,16 +335,16 @@ void Spawner::update()
 		{
 			pEnt = itEnts->second;
 			if (pEnt)
-				pEnt->update();
+				pEnt->updateAll();
 		}
 	}
 
-	Entity::update();
+	Entity::updateAll();
 }
 
 void Spawner::remove(Entity* pEntity, bool bDelete /*= false*/)
 {
-	if (pEntity)
+	if (pEntity && !pEntity->isSpawner())
 	{
 		if (bDelete)
 		{
@@ -374,7 +408,7 @@ bool Spawner::load(const string& filename)
 
 void Spawner::save(const string& filename)
 {
-	fstream fout(filename, ios::out | ios::ate);
+	fstream fout(filename, ios::out);
 	if (!fout)
 	{
 		zoo_error("打开文件[%s]失败", filename.c_str());
@@ -384,6 +418,23 @@ void Spawner::save(const string& filename)
 	CJsonObject sceneJson;
 	_parser = &sceneJson;
 	serialize(this);
+
+	sceneJson.AddEmptySubArray("entity");
+	auto it = _entitiesPool.begin();
+	auto itEnd = _entitiesPool.end();
+	for (; it != itEnd; ++it)
+	{
+		unordered_map<int, Entity*>& entities = it->second;
+		auto itor = entities.begin();
+		auto itorEnd = entities.end();
+		for (; itor != itorEnd; ++itor)
+		{
+			CJsonObject entJson;
+			_parser = &entJson;
+			itor->second->serialize(this);
+			sceneJson["entity"].Add(entJson);
+		}
+	}
 
 	fout << sceneJson.ToFormattedString();
 	fout.close();
@@ -417,6 +468,73 @@ void Spawner::discard(Entity* pEntity)
 
 	pEntity->_next = _firstAvailable;
 	_firstAvailable = pEntity;
+}
+
+void Spawner::addNull(const string& key)
+{
+	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	if (pJsonObj)
+		pJsonObj->AddNull(key);
+}
+
+void Spawner::addValue(const string& key, Any val, const char* typeName)
+{
+	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	if (!pJsonObj)
+		return;
+
+	if (ReflexFactory<>::getTypeName(typeid(string).name()) == typeName)
+	{
+		string strval = any_cast<string>(val);
+		if (strval == "")
+			pJsonObj->AddNull(key);
+		else
+			pJsonObj->Add(key, strval);
+	}
+	else if (ReflexFactory<>::getTypeName(typeid(int32).name()) == typeName)
+	{
+		int32 ival = any_cast<int32>(val);
+		if (ival == -1)
+			pJsonObj->AddNull(key);
+		else
+			pJsonObj->Add(key, ival);
+	}
+	else if (ReflexFactory<>::getTypeName(typeid(bool).name()) == typeName)
+		pJsonObj->Add(key, any_cast<bool>(val), true);
+	else if (ReflexFactory<>::getTypeName(typeid(float).name()) == typeName)
+		pJsonObj->Add(key, any_cast<float>(val));
+	else if (ReflexFactory<>::getTypeName(typeid(double).name()) == typeName)
+		pJsonObj->Add(key, any_cast<double>(val));
+	else if (ReflexFactory<>::getTypeName(typeid(uint32).name()) == typeName)
+		pJsonObj->Add(key, any_cast<uint32>(val));
+	else if (ReflexFactory<>::getTypeName(typeid(int64).name()) == typeName)
+		pJsonObj->Add(key, any_cast<int64>(val));
+	else if (ReflexFactory<>::getTypeName(typeid(uint64).name()) == typeName)
+		pJsonObj->Add(key, any_cast<uint64>(val));
+}
+
+void Spawner::getValue(const string& key, void* val, const char* typeName)
+{
+	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	if (!pJsonObj)
+		return;
+
+	if (ReflexFactory<>::getTypeName(typeid(string).name()) == typeName)
+		pJsonObj->Get(key, *(string*)val);
+	else if (ReflexFactory<>::getTypeName(typeid(int32).name()) == typeName)
+		pJsonObj->Get(key, *(int32*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(bool).name()) == typeName)
+		pJsonObj->Get(key, *(bool*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(float).name()) == typeName)
+		pJsonObj->Get(key, *(float*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(double).name()) == typeName)
+		pJsonObj->Get(key, *(double*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(uint32).name()) == typeName)
+		pJsonObj->Get(key, *(uint32*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(int64).name()) == typeName)
+		pJsonObj->Get(key, *(int64*)(val));
+	else if (ReflexFactory<>::getTypeName(typeid(uint64).name()) == typeName)
+		pJsonObj->Get(key, *(uint64*)(val));
 }
 
 }

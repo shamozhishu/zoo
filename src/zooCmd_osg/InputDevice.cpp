@@ -100,12 +100,27 @@ osg::Group* InputDevice::getGroupNode(unsigned int idx /*= -1*/, bool createIfNo
 	return nullptr;
 }
 
-osgViewer::View* InputDevice::createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop)
+osgViewer::View* InputDevice::createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color /*= osg::Vec4(0, 0, 0, 0)*/)
 {
 	osgViewer::View* view = new osgViewer::View;
 	_compositeViewer->addView(view);
 
 	if (_osgWinEmb)
+	{
+		resizeView(view, ratioLeft, ratioRight, ratioBottom, ratioTop);
+		view->getCamera()->setGraphicsContext(_osgWinEmb.get());
+	}
+
+	view->getCamera()->setNearFarRatio(0.00003);
+	view->getCamera()->setClearColor(color);
+	view->addEventHandler(new osgViewer::StatsHandler);
+	view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
+	return view;
+}
+
+void InputDevice::resizeView(osgViewer::View* view, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop)
+{
+	if (view && _osgWinEmb)
 	{
 		int x, y, width, height;
 		_osgWinEmb->getWindowRectangle(x, y, width, height);
@@ -133,15 +148,7 @@ osgViewer::View* InputDevice::createView(float ratioLeft, float ratioRight, floa
 			left = left * fudge;
 			view->getCamera()->setProjectionMatrixAsFrustum(left, right, bottom, top, near_ref, far_ref);
 		}
-
-		view->getCamera()->setGraphicsContext(_osgWinEmb.get());
 	}
-
-	view->getCamera()->setNearFarRatio(0.00003);
-	view->getCamera()->setClearColor(osg::Vec4(0.0f, 0.0f, 0.0f, 0.0f));
-	view->addEventHandler(new osgViewer::StatsHandler);
-	view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
-	return view;
 }
 
 int InputDevice::run()

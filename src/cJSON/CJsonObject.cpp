@@ -17,7 +17,6 @@
 CJsonObject::CJsonObject()
     : m_pJsonData(NULL), m_pExternJsonDataRef(NULL), m_pKeyTravers(NULL)
 {
-    // m_pJsonData = cJSON_CreateObject();  
 }
 
 CJsonObject::CJsonObject(const std::string& strJson)

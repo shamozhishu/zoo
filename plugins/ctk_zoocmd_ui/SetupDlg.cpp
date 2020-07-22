@@ -5,19 +5,23 @@
 #include <QStandardItemModel>
 #include "ZooCmdUI.h"
 
+// Qt5中文乱码
+#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#pragma execution_character_set("utf-8")
+#endif
+
 SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
-	connect(ui.pushButton_datadir, SIGNAL(clicked()), this, SLOT(onSetDataDir()));
 	connect(ui.okButton, SIGNAL(clicked()), this, SLOT(onOk()));
 
 	QStringList cmdlist;
 	QStringList pluginLibFilter;
 	QString cmdName, cmdName_r, cmdName_d;
-	pluginLibFilter << "*.dll" << "*.so" << "*.dylib";
-	QDirIterator dirIter(QCoreApplication::applicationDirPath() + "/" + inputAdaName, pluginLibFilter, QDir::Files);
+	pluginLibFilter << inputAdaName + "-*.dll" << inputAdaName + "-*.so" << inputAdaName + "-*.dylib";
+	QDirIterator dirIter(QCoreApplication::applicationDirPath(), pluginLibFilter, QDir::Files);
 	while (dirIter.hasNext())
 	{
 		dirIter.next();
@@ -75,18 +79,13 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	int rowCount = cmdlist.size();
 	_model = new QStandardItemModel(this);
 	_model->setColumnCount(2);
-	_model->setHeaderData(0, Qt::Horizontal, QString::fromLocal8Bit(""));
-	_model->setHeaderData(1, Qt::Horizontal, QString::fromLocal8Bit("命令"));
+	_model->setHeaderData(0, Qt::Horizontal, "#");
+	_model->setHeaderData(1, Qt::Horizontal, "命令");
 
 	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 	settings.beginGroup("ZOO_CMDSET");
 
-	QString datadir = settings.value("datadir").toString();
-	if (!datadir.isEmpty())
-		ui.lineEdit_datadir->setText(datadir);
-
 	QStringList cmdset = settings.value("activecmd").toStringList();
-
 	if (rowCount > 0)
 	{
 		_model->setRowCount(rowCount);
@@ -111,19 +110,15 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 		ui.tableView_cmdset->setShowGrid(true);
 		ui.tableView_cmdset->setModel(_model);
 		ui.tableView_cmdset->setColumnWidth(0, 20);
-		ui.tableView_cmdset->setColumnWidth(1, 289);
+		ui.tableView_cmdset->setColumnWidth(1, 269);
 		ui.tableView_cmdset->setFocusPolicy(Qt::NoFocus);
 		ui.tableView_cmdset->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		ui.tableView_cmdset->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+		ui.tableView_cmdset->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
 	}
 
 	settings.endGroup();
 	setFixedSize(width(), height());
-}
-
-QString SetupDlg::getDataDir() const
-{
-	return _datadir;
 }
 
 QStringList SetupDlg::getCmdset() const
@@ -134,18 +129,10 @@ QStringList SetupDlg::getCmdset() const
 void SetupDlg::onOk()
 {
 	_cmdset.clear();
-	_datadir = ui.lineEdit_datadir->text();
 	int rowCount = _model->rowCount();
 	for (int i = 0; i < rowCount; ++i)
 	{
 		if (_model->item(i, 0)->checkState() == Qt::Checked)
 			_cmdset.push_back(_model->item(i, 1)->text());
 	}
-}
-
-void SetupDlg::onSetDataDir()
-{
-	QString datadir = QFileDialog::getExistingDirectory(this, QString::fromLocal8Bit("选择资源路径"));
-	if (!datadir.isEmpty())
-		ui.lineEdit_datadir->setText(datadir);
 }

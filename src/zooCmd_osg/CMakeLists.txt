@@ -32,12 +32,14 @@ SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/src/zooCmd_osg)
 set(ZOOCMD_OSG_H 
 	${PROJECT_INCLUDE}/Support.h
 	${PROJECT_INCLUDE}/InputDevice.h
+	${PROJECT_INCLUDE}/SharedComponentImpls.h
 )
 
 set(ZOOCMD_OSG_CPP
 	${PROJECT_SRC}/InputDevice.cpp
+	${PROJECT_SRC}/SharedComponentImpls.cpp
 )
-	  
+
 if(${BUILD_SHARED_LIBS} STREQUAL "On")
     add_library(
     	${OUT_NAME} SHARED 

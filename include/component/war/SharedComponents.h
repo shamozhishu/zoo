@@ -6,6 +6,7 @@
 using namespace zoo;
 
 class DoF : public Component { // tolua_export
+public:
 	enum
 	{
 		dof_ = ESTATE_01,
@@ -26,7 +27,6 @@ class DoF : public Component { // tolua_export
 	int _mountEntBreed;
 	vector<DoF*> _children;
 	ZOO_REFLEX_DECLARE(DoF)
-	ZOO_COMPONENT_IMPL(DoF)
 
 public:
 	DoF();
@@ -63,6 +63,7 @@ public:
 // tolua_end
 
 class Model : public Component { // tolua_export
+public:
 	enum
 	{
 		visible_ = ESTATE_01,
@@ -72,7 +73,6 @@ class Model : public Component { // tolua_export
 	bool _visible;
 	string _modelFile;
 	ZOO_REFLEX_DECLARE(Model)
-	ZOO_COMPONENT_IMPL(Model)
 
 public:
 	Model();
@@ -88,11 +88,11 @@ public:
 // tolua_end
 
 class Sound : public Component { // tolua_export
+public:
 	bool _isPlay;
 	bool _isLoop;
 	string _soundFile;
 	ZOO_REFLEX_DECLARE(Sound)
-	ZOO_COMPONENT_IMPL(Sound)
 
 public:
 	void serialize(Spawner* spawner);
@@ -109,9 +109,9 @@ public:
 // tolua_end
 
 class Animator : public Component { // tolua_export
+public:
 	string _trajFile;
 	ZOO_REFLEX_DECLARE(Animator)
-	ZOO_COMPONENT_IMPL(Animator)
 
 public:
 	void serialize(Spawner* spawner);
@@ -131,20 +131,18 @@ public:
 // tolua_end
 
 class Camera : public Component { // tolua_export
+public:
 	enum
 	{
 		trackEnt_ = ESTATE_01,
-		viewport_ = ESTATE_02
+		bgcolour_ = ESTATE_02,
+		viewport_ = ESTATE_03
 	};
 
-	int _trackEntID;
-	int _trackEntBreed;
-	float _lRatio;
-	float _rRatio;
-	float _bRatio;
-	float _tRatio;
+	int _trackEntID, _trackEntBreed;
+	int _red, _green, _blue, _alpha;
+	float _lRatio, _rRatio, _bRatio, _tRatio;
 	ZOO_REFLEX_DECLARE(Camera)
-	ZOO_COMPONENT_IMPL(Camera)
 
 public:
 	Camera();
@@ -154,13 +152,13 @@ public:
 public:
 	// tolua_begin
 	void setTrackEnt(int id, int breed);
+	void setBgColor(int r, int g, int b, int a = 255);
 	void setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio);
 };
 // tolua_end
 
 class Environment : public Component { // tolua_export
 	ZOO_REFLEX_DECLARE(Environment)
-	ZOO_COMPONENT_IMPL(Environment)
 
 public:
 	Environment();
@@ -169,6 +167,22 @@ public:
 
 public:
 	// tolua_begin
+};
+// tolua_end
+
+class Earth : public Component { // tolua_export
+public:
+	string _earthFile;
+	ZOO_REFLEX_DECLARE(Earth)
+
+public:
+	Earth();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+
+public:
+	// tolua_begin
+	void setEarthFile(const string& earthFile);
 };
 // tolua_end
 

@@ -90,9 +90,11 @@ extern "C" {
 		zooCmd_Scroll_2D
 	};
 
-	_zooCmdExport bool zooCmd_InitA(int cmdcount, const char* cmdset[], const char* input_adapter, const char* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
-	_zooCmdExport bool zooCmd_InitW(int cmdcount, const char* cmdset[], const char* input_adapter, const wchar_t* datadir = nullptr, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
+	_zooCmdExport bool zooCmd_InitA(const char* input_adapter, const char* datadir, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
+	_zooCmdExport bool zooCmd_InitW(const char* input_adapter, const wchar_t* datadir, int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f);
 	_zooCmdExport bool zooCmd_IsInited();
+	_zooCmdExport bool zooCmd_Register(const char* cmd);
+	_zooCmdExport bool zooCmd_Unregister(const char* cmd);
 	_zooCmdExport bool zooCmd_Send(const char* cmdline);
 	_zooCmdExport int  zooCmd_Run();
 	_zooCmdExport void zooCmd_Tick();

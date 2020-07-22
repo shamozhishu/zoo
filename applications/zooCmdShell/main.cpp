@@ -109,12 +109,15 @@ int main(int argc, char* args[])
 	}
 
 	zooCmdL_Load();
-	if (!zooCmd_InitA(cmdcount, (const char**)cmdset, "zooCmd_osg", datadir, 0, 0, 1))
+	if (!zooCmd_InitA("zooCmd_osg", datadir, 0, 0, 1))
 	{
 		if (cmdset)
 			delete[] cmdset;
 		return -1;
 	}
+
+	for (int i = 0; i < cmdcount; ++i)
+		zooCmd_Register(cmdset[i]);
 
 	if (cmdset)
 		delete[] cmdset;

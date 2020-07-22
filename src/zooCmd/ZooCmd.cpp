@@ -18,6 +18,7 @@ namespace zooCmd
 typedef const char* (*DllGetTypeName)(void);
 
 static bool s_isInited = false;
+static string s_inputAdapter = "";
 
 static bool s_AdaRegister(const char* input_adapter)
 {
@@ -50,16 +51,59 @@ static bool s_AdaRegister(const char* input_adapter)
 	return true;
 }
 
-static bool s_CmdRegister(const char* cmd, const char* input_adapter)
+bool zooCmd_InitA(const char* input_adapter, const char* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
 {
+	if (input_adapter == nullptr || 0 == strcmp(input_adapter, "") || datadir == nullptr || 0 == strcmp(datadir, ""))
+		return false;
+
+	DATA_ROOT_DIR_ANSI = datadir;
+	unsigned int lastIdx = DATA_ROOT_DIR_ANSI.size() - 1;
+	if (DATA_ROOT_DIR_ANSI[lastIdx] != '/' && DATA_ROOT_DIR_ANSI[lastIdx] != '\\')
+		DATA_ROOT_DIR_ANSI += "/";
+
+	DATA_ROOT_DIR_UTF8 = ansiToUtf8(DATA_ROOT_DIR_ANSI);
+
+	CmdManager* pCmdMgr = new CmdManager();
+
+	if (!s_AdaRegister(input_adapter))
+	{
+		zooCmd_Destroy();
+		return false;
+	}
+
+	g_inputAdapter->setup(windowWidth, windowHeight, windowScale);
+	pCmdMgr->initBuiltinCmd();
+	s_inputAdapter = input_adapter;
+	pCmdMgr->start();
+	s_isInited = true;
+	return true;
+}
+
+bool zooCmd_InitW(const char* input_adapter, const wchar_t* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+{
+	if (datadir == nullptr || 0 == wcscmp(datadir, L""))
+		return false;
+	return zooCmd_InitA(input_adapter, w2a_(datadir).c_str(), windowWidth, windowHeight, windowScale);
+}
+
+bool zooCmd_IsInited()
+{
+	return s_isInited;
+}
+
+bool zooCmd_Register(const char* cmd)
+{
+	if (!s_isInited)
+		return false;
+
 	if (CmdManager::getSingleton().findCmd(cmd))
 		return true;
 
 	DynLib* lib = nullptr;
 #ifdef _DEBUG
-	lib = CmdManager::getSingleton().load(string(input_adapter) + "\\" + string(input_adapter) + "-" + string(cmd) + "d");
+	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + string(cmd) + "d");
 #else
-	lib = CmdManager::getSingleton().load(string(input_adapter) + "\\" + string(input_adapter) + "-" + string(cmd));
+	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + string(cmd));
 #endif
 	if (!lib)
 		return false;
@@ -74,65 +118,22 @@ static bool s_CmdRegister(const char* cmd, const char* input_adapter)
 	return CmdManager::getSingleton().addCmd(cmd, ReflexFactory<>::getInstance().create<Cmd>(getTypeName()));
 }
 
-bool zooCmd_InitA(int cmdcount, const char* cmdset[], const char* input_adapter, const char* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+bool zooCmd_Unregister(const char* cmd)
 {
-	if (input_adapter == nullptr || strcmp(input_adapter, "") == 0)
+	if (!s_isInited)
 		return false;
 
-	if (datadir != nullptr && 0 != strcmp(datadir, ""))
-	{
-		DATA_ROOT_DIR_ANSI = datadir;
-		unsigned int lastIdx = DATA_ROOT_DIR_ANSI.size() - 1;
-		if (DATA_ROOT_DIR_ANSI[lastIdx] != '/' && DATA_ROOT_DIR_ANSI[lastIdx] != '\\')
-			DATA_ROOT_DIR_ANSI += "/";
-	}
-
-	if (DATA_ROOT_DIR_ANSI != "")
-		DATA_ROOT_DIR_UTF8 = ansiToUtf8(DATA_ROOT_DIR_ANSI);
-
-	CmdManager* pCmdMgr = new CmdManager();
-
-	if (!s_AdaRegister(input_adapter))
-	{
-		zooCmd_Destroy();
+	if (!CmdManager::getSingleton().findCmd(cmd))
 		return false;
-	}
 
-	g_inputAdapter->setup(windowWidth, windowHeight, windowScale);
+	CmdManager::getSingleton().removeCmd(cmd);
 
-	if (cmdset)
-	{
-		string strCmdset;
-		for (int i = 0; i < cmdcount; ++i)
-		{
-			if (!s_CmdRegister(cmdset[i], input_adapter))
-			{
-				if (strCmdset == "")
-					strCmdset = cmdset[i];
-				else
-					strCmdset += (string(", ") + cmdset[i]);
-			}
-		}
-
-		if (strCmdset != "")
-			pCmdMgr->setErrorMessage(string("¼ÓÔØ[") + strCmdset + "]ÃüÁî²å¼þÊ§°Ü£¡");
-	}
-
-	pCmdMgr->initBuiltinCmd();
-	CmdManager::cancelRetValueBlock();
-	pCmdMgr->start();
-	s_isInited = true;
+#ifdef _DEBUG
+	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + string(cmd) + "d");
+#else
+	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + string(cmd));
+#endif
 	return true;
-}
-
-bool zooCmd_InitW(int cmdcount, const char* cmdset[], const char* input_adapter, const wchar_t* datadir /*= nullptr*/, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
-{
-	return zooCmd_InitA(cmdcount, cmdset, input_adapter, w2a_(datadir).c_str(), windowWidth, windowHeight, windowScale);
-}
-
-bool zooCmd_IsInited()
-{
-	return s_isInited;
 }
 
 bool zooCmd_Send(const char* cmdline)
@@ -159,6 +160,7 @@ void zooCmd_Tick()
 void zooCmd_Destroy()
 {
 	s_isInited = false;
+	s_inputAdapter = "";
 	g_renderThreadID = std::thread::id();
 	delete CmdManager::getSingletonPtr();
 	InputAdapter::clearKeyboardMap();

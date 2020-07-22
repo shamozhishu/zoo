@@ -48,8 +48,6 @@
 #define zoo_error(format, ...)
 #endif
 
-#define ZOO_COMPONENT_IMPL(Class) friend class Class##Impl;
-
 #define ZOO_REFLEX_DECLARE(CLASS_TYPE) private: static zoo::Reflex<CLASS_TYPE> _dynReflex;
 #define ZOO_REFLEX_IMPLEMENT(CLASS_TYPE) zoo::Reflex<CLASS_TYPE> CLASS_TYPE::_dynReflex
 

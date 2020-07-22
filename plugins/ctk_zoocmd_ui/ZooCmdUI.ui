@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>400</height>
+    <width>685</width>
+    <height>548</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,28 @@
    <iconset resource="zooCmdUI.qrc">
     <normaloff>:/images/Resources/images/app.png</normaloff>:/images/Resources/images/app.png</iconset>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_left"/>
+    </item>
+    <item row="0" column="1">
+     <layout class="QGridLayout" name="gridLayout_center"/>
+    </item>
+    <item row="0" column="2">
+     <layout class="QGridLayout" name="gridLayout_right"/>
+    </item>
+    <item row="1" column="0" colspan="3">
+     <layout class="QGridLayout" name="gridLayout_bottom"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>600</width>
+     <width>685</width>
      <height>23</height>
     </rect>
    </property>
@@ -38,62 +53,21 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_open"/>
-   <addaction name="action_save"/>
-   <addaction name="action_sim"/>
+   <addaction name="separator"/>
    <addaction name="action_setup"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_setup">
    <property name="icon">
     <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/setup.png</normaloff>:/images/Resources/images/setup.png</iconset>
+     <normaloff>:/images/Resources/images/cmd.png</normaloff>:/images/Resources/images/cmd.png</iconset>
    </property>
    <property name="text">
     <string>设置</string>
    </property>
    <property name="toolTip">
     <string>设置</string>
-   </property>
-  </action>
-  <action name="action_sim">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/start.png</normaloff>
-     <normalon>:/images/Resources/images/stop.png</normalon>:/images/Resources/images/start.png</iconset>
-   </property>
-   <property name="text">
-    <string>仿真</string>
-   </property>
-   <property name="toolTip">
-    <string>仿真</string>
-   </property>
-  </action>
-  <action name="action_open">
-   <property name="icon">
-    <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/open.png</normaloff>:/images/Resources/images/open.png</iconset>
-   </property>
-   <property name="text">
-    <string>打开</string>
-   </property>
-   <property name="toolTip">
-    <string>打开</string>
-   </property>
-  </action>
-  <action name="action_save">
-   <property name="icon">
-    <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/save.png</normaloff>:/images/Resources/images/save.png</iconset>
-   </property>
-   <property name="text">
-    <string>保存</string>
-   </property>
-   <property name="toolTip">
-    <string>保存</string>
    </property>
   </action>
  </widget>

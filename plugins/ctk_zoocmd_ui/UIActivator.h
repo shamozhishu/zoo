@@ -7,10 +7,9 @@ class UIActivator : public QObject, public ctkPluginActivator
 {
 	Q_OBJECT
 	Q_INTERFACES(ctkPluginActivator)
-	Q_PLUGIN_METADATA(IID "UIActivator")
+	Q_PLUGIN_METADATA(IID "ctk_zoocmd_ui")
 public:
 	UIActivator();
-	~UIActivator();
 	void start(ctkPluginContext* context);
 	void stop(ctkPluginContext* context);
 	static ctkPluginContext* getPluginContext();

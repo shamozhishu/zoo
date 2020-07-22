@@ -14,12 +14,15 @@ class ZooCmdWidget : public QGLWidget
 {
 	Q_OBJECT
 public:
-	ZooCmdWidget(QStringList cmdset, QString inputAdaName, QString datadir = "", bool mainThreadInit = true,
+	ZooCmdWidget(QString inputAdaName, QString datadir = "", bool mainThreadInit = true,
 		QWidget* parent = Q_NULLPTR, const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
 	~ZooCmdWidget();
+	void resgisterCmdset(QStringList cmdset);
+	bool isRegCmdCompleted() const;
 
 signals:
 	void inited();
+	void cmdRegistered();
 
 protected:
 	void initializeGL() override;
@@ -43,6 +46,7 @@ private:
 	bool _mainThreadInit;
 	QTimer   _frameTimer;
 	QThread* _initThread;
+	QThread* _regCmdThread;
 };
 
 #endif // __ZOO_CMD_WIDGET_H__

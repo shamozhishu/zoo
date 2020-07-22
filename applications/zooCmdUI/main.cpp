@@ -8,9 +8,9 @@
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-	QString bootPluginPath = QCoreApplication::applicationDirPath() + "/plugins/";
+	QString bootPluginPath = QCoreApplication::applicationDirPath();
 	QString bootPluginFile = bootPluginPath;
-	bootPluginFile += "ctk_pluginfwadmin.dll";
+	bootPluginFile += "/ctk_pluginfwadmin.dll";
 
 	if (!QFile(bootPluginFile).exists())
 	{
@@ -26,8 +26,15 @@ int main(int argc, char *argv[])
 
 	QPluginLoader pluginLoader(bootPluginFile);
 	PluginfwAdminInterface* fwAdmin = qobject_cast<PluginfwAdminInterface*>(pluginLoader.instance());
-	fwAdmin->addPluginPath(bootPluginPath);
+	if (!fwAdmin)
+	{
+		qCritical() << pluginLoader.errorString();
+		return -1;
+	}
+
+	fwAdmin->addPluginPath(bootPluginPath + "/plugins");
 	int ret = QCoreApplication::exec();
+	fwAdmin->uninstallAllPlugins();
 	zooCmdL_Close();
 	return ret;
 }

@@ -10,13 +10,6 @@ WarActivator::WarActivator()
 	zooCmdL_Load();
 }
 
-WarActivator::~WarActivator()
-{
-	SAFE_DELETE(_warService);
-	if (WarCommander::getSingletonPtr())
-		delete WarCommander::getSingletonPtr();
-}
-
 void WarActivator::start(ctkPluginContext* context)
 {
 	QString cmdName = context->getProperty("ctk.war.cmd").toString();
@@ -32,8 +25,8 @@ void WarActivator::start(ctkPluginContext* context)
 	zoo_debug("ctk.war.cmd=%s", cmdName.toStdString().c_str());
 	zoo_debug("ctk.war.table=%s", tableName.toStdString().c_str());
 	new WarCommander(cmdName.toStdString(), tableName.toStdString());
-	ctkDictionary props;
 	_warService = new WarServiceImpl();
+	ctkDictionary props;
 	props.insert(ctkPluginConstants::SERVICE_RANKING, 1);
 	context->registerService<WarService>(_warService, props);
 }

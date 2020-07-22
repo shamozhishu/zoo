@@ -1,6 +1,7 @@
 #ifndef __PLUGIN_FRAMEWORK_ADMIN_H__
 #define __PLUGIN_FRAMEWORK_ADMIN_H__
 
+#include <ctkPluginEvent.h>
 #include <ctkPluginFramework_global.h>
 #include <ctk_service/PluginfwAdminInterface.h>
 
@@ -18,6 +19,10 @@ public:
 	void addPluginPath(const QString& pluginPath);
 	void installPlugin(const QString& pluginName);
 	void uninstallPlugin(const QString& pluginName);
+	void uninstallAllPlugins();
+
+private slots:
+	void onPluginEvent(ctkPluginEvent pluginEvt);
 
 private:
 	Q_DECLARE_PRIVATE(PluginFrameworkAdmin)

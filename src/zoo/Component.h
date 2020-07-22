@@ -21,9 +21,12 @@ class _zooExport Component : public Serializer, public Type
 	Entity* _entity;
 protected:
 	BitState _dirty;
-	unique_ptr<ComponentImpl> _imp;
+	ComponentImpl* _imp;
 public:
+	virtual ~Component();
 	Entity* getEntity() const { return _entity; }
+	const BitState& dirtyBit() const { return _dirty; }
+	ComponentImpl* getImp() const { return _imp; }
 };
 
 class _zooExport ComponentImpl : public Type
@@ -56,6 +59,7 @@ public:
 	int breed() const { return _breed; }
 	string& desc() { return _desc; }
 	const string& desc() const { return _desc; }
+	virtual bool isSpawner() { return false; }
 
 	Component* getComponent(string className);
 	template<typename T>
@@ -71,23 +75,24 @@ public:
 		return dynamic_cast<T*>(getComponentImpl(ReflexFactory<>::getTypeName(typeid(T).name())));
 	}
 
-	Component* addComponent(string className);
+	Component* addComponent(string className, string implName = "");
 	template<typename T>
-	T* addComponent()
+	T* addComponent(string implName = "")
 	{
-		return dynamic_cast<T*>(addComponent(ReflexFactory<>::getTypeName(typeid(T).name())));
+		return dynamic_cast<T*>(addComponent(ReflexFactory<>::getTypeName(typeid(T).name()), implName));
 	}
 
 	void removeComponent(string className);
 	void removeComponent(Component* pComponent);
 	void removeComponents();
+	void notifyComponents();
 	unordered_map<string, Component*> getComponents() const;
 
 private:
-	void awake();
-	void update();
-	void serialize(Spawner* spawner);
-	void deserialize(Spawner* spawner);
+	virtual void awakeAll();
+	virtual void updateAll();
+	virtual void serialize(Spawner* spawner);
+	virtual void deserialize(Spawner* spawner);
 
 private:
 	union
@@ -97,13 +102,13 @@ private:
 		{
 			int _id;
 			int _breed;
-			string _desc;
 		};
 
 		// 可重用时的状态
 		Entity* _next;
 	};
 	bool _inUse;
+	string _desc;
 	unordered_map<string, Component*> _components;
 };
 
@@ -113,25 +118,39 @@ class _zooExport Spawner : public Entity
 	Spawner();
 	~Spawner();
 	DISALLOW_COPY_AND_ASSIGN(Spawner)
-	PROPERTY_R(void*, _parser, Parser)
 public:
 	static Spawner* create(int id, const string& desc = "");
 	static Spawner* find(int id);
 	static void destroy(Spawner* spawner);
+	bool isSpawner() { return true; }
 	Entity* born(int id, int breed);
 	Entity* gain(int id, int breed);
-	void awake();
-	void update();
+	void awakeAll();
+	void updateAll();
 	void remove(Entity* pEntity, bool bDelete = false);
 	void clear();
 	bool load(const string& filename);
 	void save(const string& filename);
+	void addNull(const string& key);
+	template<typename T>
+	void addValue(const string& key, const T& value)
+	{
+		addValue(key, value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
+	}
+	template<typename T>
+	void getValue(const string& key, T& value)
+	{
+		getValue(key, &value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
+	}
 
 private:
 	Entity* fetch();
 	void discard(Entity* pEntity);
+	void addValue(const string& key, Any val, const char* typeName);
+	void getValue(const string& key, void* val, const char* typeName);
 
 private:
+	void* _parser;
 	Entity* _firstAvailable;
 	static unordered_map<int, Spawner*> _spawners;
 	unordered_map<int, unordered_map<int, Entity*>> _entitiesPool;
