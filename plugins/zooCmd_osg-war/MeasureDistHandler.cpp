@@ -1,28 +1,27 @@
-#include "MeasureDistanceHandler.h"
-#include "WorldCmd.h"
-#include "WorldControls.h"
+#include "MeasureDistHandler.h"
+#include "WarControls.h"
 #include <zooCmd/CmdManager.h>
-#include <zooCmd_osg/InputDevice.h>
 
 using namespace osgEarth;
-using namespace zooCmd_osg;
 
-MeasureDistanceHandler::MeasureDistanceHandler()
+MeasureDistHandler::MeasureDistHandler(osgEarth::Util::EarthManipulator* manipulator)
 	: _totalDistance(0)
+	, _manipulator(manipulator)
 {
+	_mapNode = dynamic_cast<osgEarth::MapNode*>(manipulator->getNode());
 	_lineStrip = new osg::Geode();
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
 	_lineStrip->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 	_lineStrip->getOrCreateStateSet()->setRenderBinDetails(11, "RenderBin");
-	InputDevice::getIns()->getGroupNode(0)->addChild(_lineStrip);
+	_mapNode->addChild(_lineStrip);
 }
 
-MeasureDistanceHandler::~MeasureDistanceHandler()
+MeasureDistHandler::~MeasureDistHandler()
 {
-	InputDevice::getIns()->getGroupNode(0)->removeChild(_lineStrip);
+	_mapNode->removeChild(_lineStrip);
 }
 
-bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
+bool MeasureDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
 {
 	osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
 	if (!view)
@@ -35,7 +34,7 @@ bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 		return true;
 	}
 
-	double vpRange = WorldCmd::getSingleton().getEarthManipulator()->getViewpoint().getRange();
+	double vpRange = _manipulator->getViewpoint().getRange();
 	if (vpRange > 100000)
 		return false;
 
@@ -63,9 +62,9 @@ bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 
 					_endPoint = pt;
 					GeoPoint mapPoint;
-					mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), _startPoint);
+					mapPoint.fromWorld(_mapNode->getMapSRS(), _startPoint);
 					osg::Vec3d startlla = mapPoint.vec3d();
-					mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), _endPoint);
+					mapPoint.fromWorld(_mapNode->getMapSRS(), _endPoint);
 					osg::Vec3d endlla = mapPoint.vec3d();
 
 					int dist = (_endPoint - _startPoint).length();
@@ -80,15 +79,15 @@ bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 							double lat = startlla.y() + i * deltaLat;
 
 							osg::Vec3d lowPt;
-							GeoPoint point(WorldCmd::getSingleton().getMapNode()->getMapSRS(), lon, lat, -1000, osgEarth::ALTMODE_ABSOLUTE);
+							GeoPoint point(_mapNode->getMapSRS(), lon, lat, -1000, osgEarth::ALTMODE_ABSOLUTE);
 							point.toWorld(lowPt);
 
 							osg::Vec3d heightPt;
-							point.set(WorldCmd::getSingleton().getMapNode()->getMapSRS(), lon, lat, 80000, osgEarth::ALTMODE_ABSOLUTE);
+							point.set(_mapNode->getMapSRS(), lon, lat, 80000, osgEarth::ALTMODE_ABSOLUTE);
 							point.toWorld(heightPt);
 
 							osg::Vec3d intersectPt;
-							if (!intersectPoint(intersectPt, lowPt, heightPt, WorldCmd::getSingleton().getMapNode()->getTerrainEngine()))
+							if (!intersectPoint(intersectPt, lowPt, heightPt, _mapNode->getTerrainEngine()))
 								continue;
 
 							_distPointSet->push_back(intersectPt);
@@ -112,7 +111,7 @@ bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 
 						char szbuf[128];
 						sprintf_s(szbuf, sizeof(szbuf), "[Measure distance] Total distance: %.2f", _totalDistance);
-						WorldControls::getIns()->addLabelTextDisplay(szbuf, dist_label_);
+						WarControls::getIns()->addLabelTextDisplay(szbuf, dist_label_);
 					}
 
 				} while (0);
@@ -125,7 +124,7 @@ bool MeasureDistanceHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 	return false;
 }
 
-bool MeasureDistanceHandler::intersectPoint(osg::Vec3d& intersectPt, osg::Vec3d startPt, osg::Vec3d endPt, osg::ref_ptr<osg::Node> node)
+bool MeasureDistHandler::intersectPoint(osg::Vec3d& intersectPt, osg::Vec3d startPt, osg::Vec3d endPt, osg::ref_ptr<osg::Node> node)
 {
 	osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(startPt, endPt);
 	osg::ref_ptr<osgUtil::IntersectionVisitor> iv = new osgUtil::IntersectionVisitor(ls);
@@ -143,7 +142,7 @@ bool MeasureDistanceHandler::intersectPoint(osg::Vec3d& intersectPt, osg::Vec3d 
 	return false;
 }
 
-double MeasureDistanceHandler::getDistance(osg::Vec3dArray* ptset)
+double MeasureDistHandler::getDistance(osg::Vec3dArray* ptset)
 {
 	double dist = 0;
 	for (auto it = ptset->begin(); it != ptset->end(); ++it)

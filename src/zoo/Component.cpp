@@ -4,6 +4,11 @@
 
 namespace zoo {
 
+Component::Component()
+	: _dirty(0xffffffff)
+{		
+}
+
 Component::~Component()
 {
 	delete _imp;
@@ -107,6 +112,7 @@ void Entity::notifyComponents()
 	{
 		SignalTrigger::trigger(*this);
 		SignalTrigger::disconnect(*this);
+		userData().clear();
 	}
 }
 
@@ -470,14 +476,14 @@ void Spawner::discard(Entity* pEntity)
 	_firstAvailable = pEntity;
 }
 
-void Spawner::addNull(const string& key)
+void Spawner::setNull(const string& key)
 {
 	CJsonObject* pJsonObj = (CJsonObject*)_parser;
 	if (pJsonObj)
 		pJsonObj->AddNull(key);
 }
 
-void Spawner::addValue(const string& key, Any val, const char* typeName)
+void Spawner::setValue(const string& key, const void* val, const char* typeName)
 {
 	CJsonObject* pJsonObj = (CJsonObject*)_parser;
 	if (!pJsonObj)
@@ -485,7 +491,7 @@ void Spawner::addValue(const string& key, Any val, const char* typeName)
 
 	if (ReflexFactory<>::getTypeName(typeid(string).name()) == typeName)
 	{
-		string strval = any_cast<string>(val);
+		const string& strval = *(string*)(val);
 		if (strval == "")
 			pJsonObj->AddNull(key);
 		else
@@ -493,24 +499,24 @@ void Spawner::addValue(const string& key, Any val, const char* typeName)
 	}
 	else if (ReflexFactory<>::getTypeName(typeid(int32).name()) == typeName)
 	{
-		int32 ival = any_cast<int32>(val);
+		int32 ival = *(int32*)(val);
 		if (ival == -1)
 			pJsonObj->AddNull(key);
 		else
 			pJsonObj->Add(key, ival);
 	}
 	else if (ReflexFactory<>::getTypeName(typeid(bool).name()) == typeName)
-		pJsonObj->Add(key, any_cast<bool>(val), true);
+		pJsonObj->Add(key, *(bool*)(val), true);
 	else if (ReflexFactory<>::getTypeName(typeid(float).name()) == typeName)
-		pJsonObj->Add(key, any_cast<float>(val));
+		pJsonObj->Add(key, *(float*)(val));
 	else if (ReflexFactory<>::getTypeName(typeid(double).name()) == typeName)
-		pJsonObj->Add(key, any_cast<double>(val));
+		pJsonObj->Add(key, *(double*)(val));
 	else if (ReflexFactory<>::getTypeName(typeid(uint32).name()) == typeName)
-		pJsonObj->Add(key, any_cast<uint32>(val));
+		pJsonObj->Add(key, *(uint32*)(val));
 	else if (ReflexFactory<>::getTypeName(typeid(int64).name()) == typeName)
-		pJsonObj->Add(key, any_cast<int64>(val));
+		pJsonObj->Add(key, *(int64*)(val));
 	else if (ReflexFactory<>::getTypeName(typeid(uint64).name()) == typeName)
-		pJsonObj->Add(key, any_cast<uint64>(val));
+		pJsonObj->Add(key, *(uint64*)(val));
 }
 
 void Spawner::getValue(const string& key, void* val, const char* typeName)

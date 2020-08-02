@@ -16,15 +16,16 @@
 enum ComType
 {
 	dof_,
+	camera_,
+	earth_,
 	model_,
 	sound_,
 	animator_,
 	collider_,
-	camera_,
 	environment_
 };
 
-const char* g_comTypeName[] = { "DoF", "Model", "Sound", "Animator", "Collider", "Camera", "Environment", nullptr };
+static const char* s_comTypeName[] = { "DoF", "Camera", "Earth", "Model", "Sound", "Animator", "Collider", "Environment", nullptr };
 
 static QHash<QString, ComType> s_comsTypeMap;
 ComPropertyBoard::ComPropertyBoard()
@@ -33,13 +34,12 @@ ComPropertyBoard::ComPropertyBoard()
 	, _addComponentBtn(new QPushButton("添加组件", this))
 	, _removeComponentBtn(new QPushButton("移除组件", this))
 {
-	s_comsTypeMap[g_comTypeName[dof_]] = dof_;
-	s_comsTypeMap[g_comTypeName[model_]] = model_;
-	s_comsTypeMap[g_comTypeName[sound_]] = sound_;
-	s_comsTypeMap[g_comTypeName[animator_]] = animator_;
-	s_comsTypeMap[g_comTypeName[collider_]] = collider_;
-	s_comsTypeMap[g_comTypeName[camera_]] = camera_;
-	s_comsTypeMap[g_comTypeName[environment_]] = environment_;
+	int i = dof_;
+	while (s_comTypeName[i])
+	{
+		s_comsTypeMap[s_comTypeName[i]] = (ComType)i;
+		++i;
+	}
 
 	hideAll();
 	setLayout(_rootLayout);
@@ -54,22 +54,34 @@ ComPropertyBoard::ComPropertyBoard()
 	_rootLayout->addStretch();
 
 	ComListWgt* pComListWgt = new ComListWgt(this);
-	connect(_addComponentBtn, &QPushButton::clicked, [this, pComListWgt]
+	std::function<void(bool)> addDelComsFunc = [this, pComListWgt](bool bAddComponentBtn)
 	{
 		if (_curSelEnt)
 		{
-			pComListWgt->refreshComList(_curSelEnt, true);
-			pComListWgt->setVisible(true);
-		}
-	});
+			QStringList comlist;
+			if (_curSelEnt->isSpawner())
+			{
+				comlist << s_comTypeName[earth_] << s_comTypeName[model_] << s_comTypeName[sound_]
+					<< s_comTypeName[animator_] << s_comTypeName[collider_] << s_comTypeName[environment_];
+			}
+			else
+			{
+				comlist << s_comTypeName[camera_] << s_comTypeName[model_] << s_comTypeName[sound_]
+					<< s_comTypeName[animator_] << s_comTypeName[collider_] << s_comTypeName[environment_];
+			}
 
-	connect(_removeComponentBtn, &QPushButton::clicked, [this, pComListWgt]
-	{
-		if (_curSelEnt)
-		{
-			pComListWgt->refreshComList(_curSelEnt, false);
+			pComListWgt->refreshComList(_curSelEnt, bAddComponentBtn, comlist);
 			pComListWgt->setVisible(true);
 		}
+	};
+
+	connect(_addComponentBtn, &QPushButton::clicked, [addDelComsFunc]
+	{
+		addDelComsFunc(true);
+	});
+	connect(_removeComponentBtn, &QPushButton::clicked, [addDelComsFunc]
+	{
+		addDelComsFunc(false);
 	});
 }
 
@@ -112,6 +124,9 @@ void ComPropertyBoard::showCom(QString comTypeName, zoo::Component* pCom)
 			break;
 		case camera_:
 			pWgt = new CameraPropertyWgt(this);
+			break;
+		case earth_:
+			pWgt = new EarthPropertyWgt(this);
 			break;
 		default:
 			return;

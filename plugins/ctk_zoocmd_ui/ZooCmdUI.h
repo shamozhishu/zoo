@@ -7,13 +7,15 @@
 
 class QLineEdit;
 class QProgressBar;
-class ZooCmdWidget;
+class ZooCmdWgt;
 class ZooCmdUI : public QMainWindow, public UIManagerService
 {
 	Q_OBJECT
 	Q_INTERFACES(UIManagerService)
 public:
 	ZooCmdUI(QWidget *parent = Q_NULLPTR);
+	~ZooCmdUI();
+	void finishWindowLaunch(QString windowTitle);
 	void addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area, Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas);
 	void removeWidget(const QString& strId);
 	QWidget* getWidget(const QString& strId);
@@ -35,7 +37,7 @@ private:
 	QString _inputAdaName;
 	QLineEdit* _cmdlineEdit;
 	QProgressBar* _progressBar;
-	ZooCmdWidget* _mainWidget;
+	ZooCmdWgt* _mainWidget;
 	QVector<QString> _cmdlines;
 	QMap<QString, QMenu*> _subMenus;
 	QMap<QString, QDockWidget*> _dockWgts;

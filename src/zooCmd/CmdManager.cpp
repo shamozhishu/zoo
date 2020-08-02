@@ -1,31 +1,52 @@
 #include <zooCmd/CmdManager.h>
 #include <zooCmd/InputAdapter.h>
-#include <zooCmd/BuiltinCmd.h>
 #include <zooCmd/CmdParser.h>
 #include <zoo/Reflection.h>
 #include <zoo/Interlock.h>
 #include <zoo/Utils.h>
 
-#define ZOO_ERROR_MESSAGE "ZOO_ERROR_MESSAGE"
+#define ZOO_TIP_MESSAGE "__ZOO_TIP_MESSAGE__"
 
 namespace zooCmd {
 
 std::thread::id g_renderThreadID;
 InputAdapter* g_inputAdapter = nullptr;
 
-static UserData s_retValue;
 static std::mutex s_mutex;
-static bool s_blockWhenWaitReturnValue = true;
-static map<string, std::pair<bool, shared_ptr<promise<Any>>>> s_promises;
-static BuiltinCmd* s_builtinCmd = nullptr;
+static UserData s_retValue;
 static Interlock s_interlock;
+static Cmd* s_builtinCmd = nullptr;
+static map<string, shared_ptr<promise<Any>>> s_promises;
+
+struct BlockMutex
+{
+	void lockRetValue() {
+		std::lock_guard<std::mutex> lock(_mut);
+		_blockWhenWaitReturnValue = true;
+	}
+
+	void releaseRetValue() {
+		std::lock_guard<std::mutex> lock(_mut);
+		_blockWhenWaitReturnValue = false;
+	}
+
+	bool isBlockWhenWaitReturnValue() const {
+		return _blockWhenWaitReturnValue;
+	}
+
+private:
+	std::mutex _mut;
+	bool _blockWhenWaitReturnValue;
+};
+
+static BlockMutex s_blockMutex;
 
 CmdManager::CmdManager()
 	: _running(false)
+	, _isBlock(false)
 	, _lastCmd(nullptr)
 	, _cmdThread(nullptr)
 {
-	s_blockWhenWaitReturnValue = true;
 }
 
 CmdManager::~CmdManager()
@@ -47,7 +68,6 @@ CmdManager::~CmdManager()
 	g_inputAdapter = nullptr;
 	s_promises.clear();
 	s_retValue.clear();
-	s_blockWhenWaitReturnValue = true;
 }
 
 void CmdManager::start()
@@ -61,34 +81,35 @@ void CmdManager::refresh()
 	auto it = _commands.begin();
 	auto itEnd = _commands.end();
 	for (; it != itEnd; ++it)
-	{
 		it->second->refresh();
-	}
-}
-
-void CmdManager::initBuiltinCmd()
-{
-	s_builtinCmd = ReflexFactory<>::getInstance().create<BuiltinCmd>("zooCmd::BuiltinCmd");
-	addCmd("__BUILTIN__", s_builtinCmd);
 }
 
 void CmdManager::block(bool isBlock)
 {
 	if (isBlock)
 	{
-		if (_cmdThread->get_id() == std::this_thread::get_id())
+		if (_cmdThread->get_id() == std::this_thread::get_id()) // 如果当前执行block()的线程是命令线程,则阻塞命令执行.
 		{
 			s_interlock.endExchanging();
-			cancelRetValueBlock();
+			releaseBlockAndRetValue();
+			_isBlock = true;
 			_block[0].reset();
 			_block[0].block();
+			s_blockMutex.lockRetValue();
 			s_interlock.beginExchanging();
 		}
 	}
 	else
 	{
 		_block[0].release();
+		_isBlock = false;
 	}
+}
+
+void CmdManager::initBuiltinCmd()
+{
+	s_builtinCmd = ReflexFactory<>::getInstance().create<Cmd>(__BUILTIN__);
+	addCmd(__BUILTIN__, s_builtinCmd);
 }
 
 bool CmdManager::addCmd(const string& cmd, Cmd* pCmd)
@@ -100,37 +121,70 @@ bool CmdManager::addCmd(const string& cmd, Cmd* pCmd)
 	if (!cmdPtr->init())
 		return false;
 
-	_commands[strToUpper(cmd)] = cmdPtr;
+	_commands[strToLower(cmd)] = cmdPtr;
 	return true;
 }
 
 void CmdManager::removeCmd(const string& cmd)
 {
-	auto it = _commands.find(strToUpper(cmd));
+	auto it = _commands.find(strToLower(cmd));
 	if (it != _commands.end())
 		_commands.erase(it);
 }
 
+vector<string> CmdManager::removeAllCmds()
+{
+	vector<string> cmdset;
+	auto it = _commands.begin();
+	while (it != _commands.end())
+	{
+		if (it->first == __BUILTIN__)
+		{
+			it++;
+			continue;
+		}
+
+		cmdset.push_back(it->first);
+		it = _commands.erase(it);
+	}
+
+	return cmdset;
+}
+
 bool CmdManager::sendCmd(const string& cmdline)
 {
+	static string tips;
+
 	if (!_running)
 	{
-		zoo_warning("Command manager not started!");
+		tips = "Command manager not started!";
+		zoo_warning(tips.c_str());
+		setTipMessage(tips);
+		return false;
+	}
+
+	if (_isBlock)
+	{
+		tips = "Command thread has been block!";
+		zoo_warning(tips.c_str());
+		setTipMessage(tips);
 		return false;
 	}
 
 	CmdParser cmdArg;
 	if (!cmdArg.parseToken(cmdline))
 	{
-		zoo_warning("Please enter valid command parameters!");
+		tips = "Please enter valid command parameters!";
+		zoo_warning(tips.c_str());
+		setTipMessage(tips);
 		return false;
 	}
 
 	Cmd* pCmd = nullptr;
-	string cmdname = cmdArg.getCmdName();
+	string cmdname = trim(cmdArg.getCmdName());
 	do 
 	{
-		if (cmdname == "__BUILTIN__")
+		if (cmdname == __BUILTIN__)
 		{
 			pCmd = s_builtinCmd;
 			break;
@@ -153,56 +207,69 @@ bool CmdManager::sendCmd(const string& cmdline)
 
 	if (!pCmd)
 	{
-		zoo_warning("Non-existent command!");
+		tips = "Non-existent command!";
+		zoo_warning(tips.c_str());
+		setTipMessage(tips);
 		return false;
 	}
 
 	if (_lastCmd != pCmd)
 	{
-		cmdArg.getCmdUsage()->setCommandProcedureCalls(CmdUsage::UsageMap());
+		_lastCmd = pCmd;
+		_lastCmdName = cmdname;
+		cmdArg.getCmdUsage()->setCommandProcedureCalls(CmdUsage::UsageVec());
 		cmdArg.getCmdUsage()->setCommandProcedureCallsDefaults(CmdUsage::UsageMap());
-		cmdArg.getCmdUsage()->setCmdProcedureUsage(cmdArg.getCmdName() + ".Procedure(type1 arg1, type2 arg2, ...); // return_value_type& return_value_variable_name, ...");
+		cmdArg.getCmdUsage()->setCmdProcedureUsage(cmdArg.getCmdName() + ".procedure(type1 arg1, type2 arg2, ...); // return_value_type& return_value_variable_name, ...");
 		pCmd->help(cmdArg.getCmdUsage());
+		cmdArg.getCmdUsage()->addCommandProcedureCall("h()", "Display all command procedure calls");
 	}
 
 	if ((cmdArg.readHelpType()))
 	{
-		_lastCmd = pCmd;
-		_lastCmdName = cmdname;
-		cmdArg.getCmdUsage()->write(std::cout);
+		std::stringstream ss;
+		cmdArg.getCmdUsage()->write(ss);
+		zoo_info(ss.str().c_str());
+		setTipMessage(ss.str());
 		return true;
 	}
 
-	s_promises.clear();
 	s_retValue.clear();
 	std::shared_ptr<Signal> subCmd((new Signal));
-	pCmd->parse(*subCmd, cmdArg, s_retValue);
+	pCmd->parse(*subCmd, cmdArg, s_retValue); // s_retValue: 在此处调用parse()用于给返回值设置默认值.
 	cmdArg.reportRemainingCallsAsUnrecognized();
 	if (cmdArg.errors())
 	{
-		cmdArg.writeErrorMessages(std::cout);
+		std::stringstream ss;
+		cmdArg.writeErrorMessages(ss);
+		zoo_warning(ss.str().c_str());
+		setTipMessage(ss.str());
 		return false;
 	}
 
-	_lastCmd = pCmd;
-	_lastCmdName = cmdname;
+	s_blockMutex.lockRetValue();
 	_cmdQueue.push(subCmd);
-	s_blockWhenWaitReturnValue = true;
 	_block[1].release();
 	return true;
 }
 
 Cmd* CmdManager::findCmd(const string& cmdname)
 {
-	auto it = _commands.find(strToUpper(cmdname));
+	auto it = _commands.find(strToLower(cmdname));
 	if (it == _commands.end())
 		return nullptr;
 	return it->second.get();
 }
 
-InputAdapter* CmdManager::getInputAdapter() const
+void CmdManager::sendEvent(const string& topic, const UserData& props /*= nullptr*/)
 {
-	return g_inputAdapter;
+	if (_commands.size() > 0)
+	{
+		Event evt(topic, props);
+		auto it = _commands.begin();
+		auto itEnd = _commands.end();
+		for (; it != itEnd; ++it)
+			it->second->handle(evt);
+	}
 }
 
 void CmdManager::waitExchanged()
@@ -217,16 +284,10 @@ void CmdManager::releaseWait()
 
 bool CmdManager::setReturnValue(const string& key, const Any& retval)
 {
-	if (key != ZOO_ERROR_MESSAGE && s_retValue.getData(key).has_value())
+	if (key != ZOO_TIP_MESSAGE && s_retValue.getData(key).has_value())
 	{
-		lazyInitPromise(key);
-		if (!s_promises[key].first)
-		{
-			s_promises[key].first = true;
-			s_promises[key].second->set_value(retval);
-			s_retValue.setData(key, retval);
-			return true;
-		}
+		s_retValue.setData(key, retval);
+		return true;
 	}
 
 	return false;
@@ -234,12 +295,12 @@ bool CmdManager::setReturnValue(const string& key, const Any& retval)
 
 Any CmdManager::getReturnValue(const string& key)
 {
-	if (key != ZOO_ERROR_MESSAGE && s_retValue.getData(key).has_value())
+	if (key != ZOO_TIP_MESSAGE && s_retValue.getData(key).has_value())
 	{
-		if (s_blockWhenWaitReturnValue)
+		if (s_blockMutex.isBlockWhenWaitReturnValue())
 		{
 			lazyInitPromise(key);
-			std::future<Any> fut = s_promises[key].second->get_future();
+			std::future<Any> fut = s_promises[key]->get_future();
 
 			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
 			if (g_renderThreadID == std::this_thread::get_id())
@@ -256,26 +317,17 @@ Any CmdManager::getReturnValue(const string& key)
 	return Any();
 }
 
-bool CmdManager::setErrorMessage(const string& errMessage)
+void CmdManager::setTipMessage(const string& tips)
 {
-	lazyInitPromise(ZOO_ERROR_MESSAGE);
-	if (!s_promises[ZOO_ERROR_MESSAGE].first)
-	{
-		s_promises[ZOO_ERROR_MESSAGE].first = true;
-		s_promises[ZOO_ERROR_MESSAGE].second->set_value(errMessage);
-		s_retValue.setData(errMessage);
-		return true;
-	}
-
-	return false;
+	s_retValue.setData(ZOO_TIP_MESSAGE, tips);
 }
 
-string CmdManager::getErrorMessage()
+string CmdManager::getTipMessage()
 {
-	if (s_blockWhenWaitReturnValue)
+	if (s_blockMutex.isBlockWhenWaitReturnValue())
 	{
-		lazyInitPromise(ZOO_ERROR_MESSAGE);
-		std::future<Any> fut = s_promises[ZOO_ERROR_MESSAGE].second->get_future();
+		lazyInitPromise(ZOO_TIP_MESSAGE);
+		std::future<Any> fut = s_promises[ZOO_TIP_MESSAGE]->get_future();
 
 		// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
 		if (g_renderThreadID == std::this_thread::get_id())
@@ -283,27 +335,13 @@ string CmdManager::getErrorMessage()
 
 		Any temp = fut.get();
 		if (temp.has_value())
-			return any_cast<string>(temp);
+			return temp.to<string>();
 	}
 
-	if (s_retValue.getData().has_value())
-		return any_cast<string>(s_retValue.getData());
+	if (s_retValue.getData(ZOO_TIP_MESSAGE).has_value())
+		return s_retValue.getData(ZOO_TIP_MESSAGE).to<string>();
 
 	return "";
-}
-
-void CmdManager::cancelRetValueBlock()
-{
-	s_blockWhenWaitReturnValue = false;
-
-	string errTip = "";
-	if (s_retValue.getData().has_value())
-		errTip = any_cast<string>(s_retValue.getData());
-
-	setErrorMessage(errTip);
-
-	for (auto it = s_promises.begin(); it != s_promises.end(); ++it)
-		setReturnValue(it->first, s_retValue.getData(it->first));
 }
 
 void CmdManager::runCmd()
@@ -318,7 +356,7 @@ void CmdManager::runCmd()
 			s_interlock.beginExchanging();
 			SignalTrigger::trigger(*subcmd);
 			s_interlock.endExchanging();
-			cancelRetValueBlock();
+			releaseBlockAndRetValue();
 		}
 
 		_running = !g_inputAdapter->isDone();
@@ -331,13 +369,21 @@ void CmdManager::runCmd()
 	} while (_running);
 }
 
+void CmdManager::releaseBlockAndRetValue()
+{
+	s_blockMutex.releaseRetValue();
+	for (auto it = s_promises.begin(); it != s_promises.end(); ++it)
+		it->second->set_value(s_retValue.getData(it->first));
+	s_promises.clear();
+}
+
 void CmdManager::lazyInitPromise(const string& key)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
 	if (s_promises.find(key) == s_promises.end())
 	{
 		shared_ptr<std::promise<Any>> ptr(new std::promise<Any>());
-		s_promises[key] = std::make_pair(false, ptr);
+		s_promises[key] = ptr;
 	}
 }
 

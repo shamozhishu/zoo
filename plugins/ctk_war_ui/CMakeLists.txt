@@ -73,6 +73,7 @@ set(PLUGIN_UI_FORMS
 	DoFPropertyWgt.ui
 	ModelPropertyWgt.ui
 	CameraPropertyWgt.ui
+	EarthPropertyWgt.ui
 )
 
 # QRC Files which should be compiled into the plugin

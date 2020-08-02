@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <thread>
+#include <stdio.h>
+#include <direct.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
 
 static char* strtrim(char* s)
@@ -82,9 +83,9 @@ static void parsecmdline()
 			}
 			else if (nullptr != strstr(strtolower(pszCmdline), "err"))
 			{
-				const char* szErrMessage = zooCmd_ErrorMessage();
-				if (szErrMessage && strcmp(szErrMessage, "") != 0)
-					printf("error tip message: %s\n", szErrMessage);
+				const char* szTips = zooCmd_TipMessage();
+				if (szTips && strcmp(szTips, "") != 0)
+					printf("tip message: %s\n", szTips);
 			}
 		}
 	}
@@ -92,9 +93,6 @@ static void parsecmdline()
 
 int main(int argc, char* args[])
 {
-	if (!zooCmdL_Open())
-		return -1;
-
 	const char* datadir = nullptr;
 	if (argc > 1)
 		datadir = args[1];
@@ -109,7 +107,7 @@ int main(int argc, char* args[])
 	}
 
 	zooCmdL_Load();
-	if (!zooCmd_InitA("zooCmd_osg", datadir, 0, 0, 1))
+	if (!zooCmd_InitA("zooCmd_osg", datadir ? datadir : _getcwd(nullptr, 0), 0, 0, 1))
 	{
 		if (cmdset)
 			delete[] cmdset;
@@ -126,7 +124,5 @@ int main(int argc, char* args[])
 	zooCmd_Run();
 	cmdline.join();
 	zooCmd_Destroy();
-	zooCmdL_Close();
-
 	return 0;
 }

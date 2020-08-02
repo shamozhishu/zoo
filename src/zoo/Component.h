@@ -23,6 +23,7 @@ protected:
 	BitState _dirty;
 	ComponentImpl* _imp;
 public:
+	Component();
 	virtual ~Component();
 	Entity* getEntity() const { return _entity; }
 	const BitState& dirtyBit() const { return _dirty; }
@@ -131,11 +132,11 @@ public:
 	void clear();
 	bool load(const string& filename);
 	void save(const string& filename);
-	void addNull(const string& key);
+	void setNull(const string& key);
 	template<typename T>
-	void addValue(const string& key, const T& value)
+	void setValue(const string& key, const T& value)
 	{
-		addValue(key, value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
+		setValue(key, &value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
 	}
 	template<typename T>
 	void getValue(const string& key, T& value)
@@ -146,7 +147,7 @@ public:
 private:
 	Entity* fetch();
 	void discard(Entity* pEntity);
-	void addValue(const string& key, Any val, const char* typeName);
+	void setValue(const string& key, const void* val, const char* typeName);
 	void getValue(const string& key, void* val, const char* typeName);
 
 private:

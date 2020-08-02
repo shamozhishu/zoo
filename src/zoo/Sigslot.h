@@ -19,8 +19,8 @@ public:
 	PROPERTY_R(int, _sigid, SignalID)
 
 private:
-	mutable vector<class Slot*> _slotset;
 	UserData                    _userData;
+	mutable vector<class Slot*> _slotList;
 };
 
 class Slot
@@ -28,6 +28,22 @@ class Slot
 public:
 	virtual ~Slot() {}
 	virtual bool operator()(const Signal& sig) = 0;
+};
+
+class SlotLambda : public Slot
+{
+	friend class SignalTrigger;
+	SlotLambda(std::function<void()> lamb) : _lambda(lamb) {}
+	bool operator()(const Signal& sig)
+	{
+		if (!_lambda)
+			return false;
+		_lambda();
+		return true;
+	}
+
+private:
+	std::function<void()> _lambda;
 };
 
 class SlotFunction : public Slot
@@ -72,6 +88,7 @@ class _zooExport SignalTrigger
 {
 public:
 	static void trigger(const Signal& sig);
+	static void connect(const Signal& sig, std::function<void()> lamb);
 	static void connect(const Signal& sig, SlotFunction::SLOT_FUNCTION func);
 	static void disconnect(const Signal& sig, SlotFunction::SLOT_FUNCTION func);
 	template<typename T> static void connect(const Signal& sig, T* caller, typename SlotMethod<T>::SLOT_METHOD meth);
@@ -84,8 +101,8 @@ template<typename T>
 void SignalTrigger::connect(const Signal& sig, T* caller, typename SlotMethod<T>::SLOT_METHOD meth)
 {
 	ZOO_ASSERT(caller && meth);
-	vector<Slot*>::const_iterator it = sig._slotset.cbegin();
-	for (; it != sig._slotset.cend(); ++it)
+	vector<Slot*>::const_iterator it = sig._slotList.cbegin();
+	for (; it != sig._slotList.cend(); ++it)
 	{
 		SlotMethod<T>* item = dynamic_cast<SlotMethod<T>*>(*it);
 		if (NULL != item && caller == item->_caller && meth == item->_method)
@@ -94,21 +111,21 @@ void SignalTrigger::connect(const Signal& sig, T* caller, typename SlotMethod<T>
 			return;
 		}
 	}
-	sig._slotset.push_back(new SlotMethod<T>(caller, meth));
+	sig._slotList.push_back(new SlotMethod<T>(caller, meth));
 }
 
 template<typename T>
 void SignalTrigger::disconnect(const Signal& sig, T* caller, typename SlotMethod<T>::SLOT_METHOD meth)
 {
 	ZOO_ASSERT(caller && meth);
-	vector<Slot*>::const_iterator it = sig._slotset.cbegin();
-	for (; it != sig._slotset.cend(); ++it)
+	vector<Slot*>::const_iterator it = sig._slotList.cbegin();
+	for (; it != sig._slotList.cend(); ++it)
 	{
 		SlotMethod<T>* item = dynamic_cast<SlotMethod<T>*>(*it);
 		if (NULL != item && caller == item->_caller && meth == item->_method)
 		{
 			SAFE_DELETE(item);
-			sig._slotset.erase(it);
+			sig._slotList.erase(it);
 			break;
 		}
 	}

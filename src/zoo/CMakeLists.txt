@@ -22,14 +22,13 @@ set(ZOO_H
 	${PROJECT_INCLUDE}/Interlock.h
 	${PROJECT_INCLUDE}/Log.h
 	${PROJECT_INCLUDE}/Reflection.h
+	${PROJECT_INCLUDE}/ServiceLocator.h
 	${PROJECT_INCLUDE}/Sigslot.h
 	${PROJECT_INCLUDE}/Singleton.h
 	${PROJECT_INCLUDE}/Support.h
 	${PROJECT_INCLUDE}/Timer.h
 	${PROJECT_INCLUDE}/UserData.h
     ${PROJECT_INCLUDE}/Utils.h
-	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.h
-	${CMAKE_SOURCE_DIR}/src/cJSON/CJsonObject.h
 )
 
 set(ZOO_CPP
@@ -39,10 +38,16 @@ set(ZOO_CPP
 	${PROJECT_SRC}/DynLibManager.cpp
 	${PROJECT_SRC}/Log.cpp
 	${PROJECT_SRC}/Reflection.cpp
+	${PROJECT_SRC}/ServiceLocator.cpp
 	${PROJECT_SRC}/Sigslot.cpp
 	${PROJECT_SRC}/UserData.cpp
 	${PROJECT_SRC}/Utils.cpp
+)
+
+set(ZOO_JSON
+	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.h
 	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.c
+	${CMAKE_SOURCE_DIR}/src/cJSON/CJsonObject.h
 	${CMAKE_SOURCE_DIR}/src/cJSON/CJsonObject.cpp
 )
            
@@ -51,6 +56,7 @@ if(${BUILD_SHARED_LIBS} STREQUAL "On")
     	${OUT_NAME} SHARED 
     	${ZOO_H}
     	${ZOO_CPP}
+		${ZOO_JSON}
 		)
     ADD_DEFINITIONS(-DZOO_NONCLIENT_BUILD)
 else()
@@ -58,6 +64,7 @@ else()
     	${OUT_NAME} STATIC 
     	${ZOO_H}
     	${ZOO_CPP}
+		${ZOO_JSON}
     	)
     ADD_DEFINITIONS(-DZOO_NONCLIENT_BUILD_STATIC)
 endif()

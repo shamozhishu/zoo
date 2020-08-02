@@ -2,6 +2,11 @@
 #include "ZooCmdUI.h"
 #include <QSurfaceFormat>
 
+// Qt5ÖÐÎÄÂÒÂë
+#if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
+#pragma execution_character_set("utf-8")
+#endif
+
 ctkPluginContext* UIActivator::_pluginContext = nullptr;
 UIActivator::UIActivator()
 	: _ui(nullptr)

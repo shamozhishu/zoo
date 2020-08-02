@@ -10,14 +10,15 @@ CmdUsage* CmdUsage::instance()
 
 void CmdUsage::addCommandProcedureCall(const std::string& procedure, const std::string& explanation, const std::string& defaultValue)
 {
-	_commandProcedureCalls[procedure] = explanation;
-	_commandProcedureCallsDefaults[procedure] = defaultValue;
+	string num = string("[") + std::to_string(_commandProcedureCalls.size()) + "] ";
+	_commandProcedureCalls.push_back(std::make_pair(num + procedure, explanation));
+	_commandProcedureCallsDefaults[num + procedure] = defaultValue;
 }
 
-void CmdUsage::getFormattedString(std::string& str, const UsageMap& um, unsigned int widthOfOutput, bool showDefaults, const UsageMap& ud)
+void CmdUsage::getFormattedString(std::string& str, const UsageVec& um, unsigned int widthOfOutput, bool showDefaults, const UsageMap& ud)
 {
 	unsigned int maxNumCharsInCalls = 0;
-	CmdUsage::UsageMap::const_iterator citr;
+	CmdUsage::UsageVec::const_iterator citr;
 	for (citr = um.begin();
 		citr != um.end();
 		++citr)
@@ -164,7 +165,7 @@ void CmdUsage::getFormattedString(std::string& str, const UsageMap& um, unsigned
 	}
 }
 
-void CmdUsage::write(std::ostream& output, const CmdUsage::UsageMap& um, unsigned int widthOfOutput, bool showDefaults, const CmdUsage::UsageMap& ud)
+void CmdUsage::write(std::ostream& output, const CmdUsage::UsageVec& um, unsigned int widthOfOutput, bool showDefaults, const CmdUsage::UsageMap& ud)
 {
 	std::string str;
 	getFormattedString(str, um, widthOfOutput, showDefaults, ud);

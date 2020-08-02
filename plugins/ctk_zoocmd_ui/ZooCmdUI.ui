@@ -55,6 +55,7 @@
    </attribute>
    <addaction name="separator"/>
    <addaction name="action_setup"/>
+   <addaction name="action_clean"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -64,10 +65,22 @@
      <normaloff>:/images/Resources/images/cmd.png</normaloff>:/images/Resources/images/cmd.png</iconset>
    </property>
    <property name="text">
-    <string>设置</string>
+    <string>命令注册</string>
    </property>
    <property name="toolTip">
-    <string>设置</string>
+    <string>命令注册</string>
+   </property>
+  </action>
+  <action name="action_clean">
+   <property name="icon">
+    <iconset resource="zooCmdUI.qrc">
+     <normaloff>:/images/Resources/images/clean.png</normaloff>:/images/Resources/images/clean.png</iconset>
+   </property>
+   <property name="text">
+    <string>日志清理</string>
+   </property>
+   <property name="toolTip">
+    <string>日志清理</string>
    </property>
   </action>
  </widget>

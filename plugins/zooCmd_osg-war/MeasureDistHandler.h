@@ -1,14 +1,14 @@
-#ifndef __MEASURE_DISTANCE_HANDLER_H__
-#define __MEASURE_DISTANCE_HANDLER_H__
+#ifndef __MEASURE_DIST_HANDLER_H__
+#define __MEASURE_DIST_HANDLER_H__
 
-#include <zooCmd_osg/Support.h>
+#include <zooCmd_osg/OsgDevice.h>
 
-class WorldCmd;
-class MeasureDistanceHandler : public osgGA::GUIEventHandler
+class WarCmd;
+class MeasureDistHandler : public osgGA::GUIEventHandler
 {
 public:
-	MeasureDistanceHandler();
-	~MeasureDistanceHandler();
+	MeasureDistHandler(osgEarth::Util::EarthManipulator* manipulator);
+	~MeasureDistHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
 private:
@@ -21,6 +21,8 @@ private:
 	osg::Vec3d _endPoint;
 	osg::ref_ptr<osg::Geode> _lineStrip;
 	osg::ref_ptr<osg::Vec3dArray> _distPointSet;
+	osg::observer_ptr<osgEarth::MapNode> _mapNode;
+	osg::observer_ptr<osgEarth::Util::EarthManipulator> _manipulator;
 };
 
-#endif // __MEASURE_DISTANCE_HANDLER_H__
+#endif // __MEASURE_DIST_HANDLER_H__

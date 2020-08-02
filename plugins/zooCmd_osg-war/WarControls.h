@@ -1,7 +1,7 @@
-#ifndef __WORLD_CONTROLS_H__
-#define __WORLD_CONTROLS_H__
+#ifndef __WAR_CONTROLS_H__
+#define __WAR_CONTROLS_H__
 
-#include <zooCmd_osg/Support.h>
+#include <zooCmd_osg/OsgEarthSupport.h>
 
 enum LabelIndex
 {
@@ -11,12 +11,12 @@ enum LabelIndex
 	count_label_
 };
 
-class WorldControls
+class WarControls
 {
 public:
-	WorldControls();
-	~WorldControls();
-	static WorldControls* getIns();
+	WarControls();
+	~WarControls();
+	static WarControls* getIns();
 	static void destroy();
 	bool isHasLabelControl(LabelIndex idx) const;
 	void addLabelTextDisplay(const string& text, LabelIndex idx);
@@ -24,7 +24,8 @@ public:
 
 private:
 	osg::ref_ptr<osgEarth::Util::Controls::VBox> _vboxControl;
+	osg::ref_ptr<osgEarth::Util::Controls::ControlCanvas> _canvas;
 	osgEarth::Util::Controls::LabelControl* _labelControls[count_label_];
 };
 
-#endif // __WORLD_CONTROLS_H__
+#endif // __WAR_CONTROLS_H__

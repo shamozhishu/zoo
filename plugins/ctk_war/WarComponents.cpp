@@ -51,7 +51,7 @@ void Behavior::exec()
 
 void Behavior::serialize(Spawner* spawner)
 {
-	spawner->addValue("script", _scriptFile);
+	spawner->setValue("script", _scriptFile);
 }
 
 void Behavior::deserialize(Spawner* spawner)
@@ -82,7 +82,6 @@ DoF::DoF()
 	, _sy(1)
 	, _sz(1)
 {
-	_dirty.addState(dof_ | parent_);
 }
 
 DoF::~DoF()
@@ -101,27 +100,27 @@ DoF::~DoF()
 
 void DoF::serialize(Spawner* spawner)
 {
-	spawner->addValue("x", _x);
-	spawner->addValue("y", _y);
-	spawner->addValue("z", _z);
-	spawner->addValue("heading", _heading);
-	spawner->addValue("pitch", _pitch);
-	spawner->addValue("roll", _roll);
-	spawner->addValue("sx", _sx);
-	spawner->addValue("sy", _sy);
-	spawner->addValue("sz", _sz);
+	spawner->setValue("x", _x);
+	spawner->setValue("y", _y);
+	spawner->setValue("z", _z);
+	spawner->setValue("heading", _heading);
+	spawner->setValue("pitch", _pitch);
+	spawner->setValue("roll", _roll);
+	spawner->setValue("sx", _sx);
+	spawner->setValue("sy", _sy);
+	spawner->setValue("sz", _sz);
 
 	if (_parent)
 	{
 		_mountEntID = _parent->getEntity()->id();
 		_mountEntBreed = _parent->getEntity()->breed();
-		spawner->addValue("mount_entity_id", _mountEntID);
-		spawner->addValue("mount_entity_breed", _mountEntBreed);
+		spawner->setValue("mount_entity_id", _mountEntID);
+		spawner->setValue("mount_entity_breed", _mountEntBreed);
 	}
 	else
 	{
-		spawner->addNull("mount_entity_id");
-		spawner->addNull("mount_entity_breed");
+		spawner->setNull("mount_entity_id");
+		spawner->setNull("mount_entity_breed");
 	}
 }
 
@@ -278,13 +277,12 @@ ZOO_REFLEX_IMPLEMENT(Model);
 Model::Model()
 	: _visible(true)
 {
-	_dirty.addState(visible_ | modelFile_);
 }
 
 void Model::serialize(Spawner* spawner)
 {
-	spawner->addValue("visible", _visible);
-	spawner->addValue("model_file", _modelFile);
+	spawner->setValue("visible", _visible);
+	spawner->setValue("model_file", _modelFile);
 }
 
 void Model::deserialize(Spawner* spawner)
@@ -313,7 +311,7 @@ void Model::setModelFile(const string& modelFile)
 ZOO_REFLEX_IMPLEMENT(Sound);
 void Sound::serialize(Spawner* spawner)
 {
-	spawner->addValue("sound_file", _soundFile);
+	spawner->setValue("sound_file", _soundFile);
 }
 
 void Sound::deserialize(Spawner* spawner)
@@ -349,7 +347,7 @@ void Sound::setLoop(bool loop)
 ZOO_REFLEX_IMPLEMENT(Animator);
 void Animator::serialize(Spawner* spawner)
 {
-	spawner->addValue("traj_file", _trajFile);
+	spawner->setValue("traj_file", _trajFile);
 }
 
 void Animator::deserialize(Spawner* spawner)
@@ -374,16 +372,16 @@ Camera::Camera()
 
 void Camera::serialize(Spawner* spawner)
 {
-	spawner->addValue("bgcolor_red", _red);
-	spawner->addValue("bgcolor_green", _green);
-	spawner->addValue("bgcolor_blue", _blue);
-	spawner->addValue("bgcolor_alpha", _alpha);
-	spawner->addValue("ratio_left", _lRatio);
-	spawner->addValue("ratio_right", _rRatio);
-	spawner->addValue("ratio_bottom", _bRatio);
-	spawner->addValue("ratio_top", _tRatio);
-	spawner->addValue("track_entity_id", _trackEntID);
-	spawner->addValue("track_entity_breed", _trackEntBreed);
+	spawner->setValue("bgcolor_red", _red);
+	spawner->setValue("bgcolor_green", _green);
+	spawner->setValue("bgcolor_blue", _blue);
+	spawner->setValue("bgcolor_alpha", _alpha);
+	spawner->setValue("ratio_left", _lRatio);
+	spawner->setValue("ratio_right", _rRatio);
+	spawner->setValue("ratio_bottom", _bRatio);
+	spawner->setValue("ratio_top", _tRatio);
+	spawner->setValue("track_entity_id", _trackEntID);
+	spawner->setValue("track_entity_breed", _trackEntBreed);
 }
 
 void Camera::deserialize(Spawner* spawner)
@@ -437,21 +435,67 @@ void Environment::deserialize(Spawner* spawner)
 	
 }
 //////////////////////////////////////////////////////////////////////////
+ZOO_REFLEX_IMPLEMENT(Earth);
 Earth::Earth()
+	: _sunlightIntensity(0.0f)
 {
-
+	_dirty.eraseState(sunlightIntensity_);
+	for (int i = sun_; i < count_; ++i)
+		_skyVisibility[i] = true;
 }
+
 void Earth::serialize(Spawner* spawner)
 {
-
+	spawner->setValue("earth_file", _earthFile);
+	spawner->setValue("sun_visible", _skyVisibility[sun_]);
+	spawner->setValue("moon_visible", _skyVisibility[moon_]);
+	spawner->setValue("star_visible", _skyVisibility[star_]);
+	spawner->setValue("nebula_visible", _skyVisibility[nebula_]);
+	spawner->setValue("atmosphere_visible", _skyVisibility[atmosphere_]);
 }
 
 void Earth::deserialize(Spawner* spawner)
 {
-
+	spawner->getValue("earth_file", _earthFile);
+	spawner->getValue("sun_visible", _skyVisibility[sun_]);
+	spawner->getValue("moon_visible", _skyVisibility[moon_]);
+	spawner->getValue("star_visible", _skyVisibility[star_]);
+	spawner->getValue("nebula_visible", _skyVisibility[nebula_]);
+	spawner->getValue("atmosphere_visible", _skyVisibility[atmosphere_]);
 }
 
-void Earth::setEarthFile(const string& earthFile)
+void Earth::setSunVisible(bool visible)
 {
+	_skyVisibility[sun_] = visible;
+	_dirty.addState(sunVisible_);
+}
 
+void Earth::setMoonVisible(bool visible)
+{
+	_skyVisibility[moon_] = visible;
+	_dirty.addState(moonVisible_);
+}
+
+void Earth::setStarVisible(bool visible)
+{
+	_skyVisibility[star_] = visible;
+	_dirty.addState(starVisible_);
+}
+
+void Earth::setNebulaVisible(bool visible)
+{
+	_skyVisibility[nebula_] = visible;
+	_dirty.addState(nebulaVisible_);
+}
+
+void Earth::setAtmosphereVisible(bool visible)
+{
+	_skyVisibility[atmosphere_] = visible;
+	_dirty.addState(atmosphereVisible_);
+}
+
+void Earth::setSunlightIntensity(float intensity)
+{
+	_sunlightIntensity = intensity;
+	_dirty.addState(sunlightIntensity_);
 }

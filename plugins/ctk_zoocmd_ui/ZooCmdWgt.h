@@ -1,23 +1,25 @@
-#ifndef __ZOO_CMD_WIDGET_H__
-#define __ZOO_CMD_WIDGET_H__
+#ifndef __ZOO_CMD_WGT_H__
+#define __ZOO_CMD_WGT_H__
 
 #include <QtCore/QTimer>
 #include <QtCore/QString>
 #include <QtOpenGL/QGL>
 
-class QThread;
+class CmdThread;
 class QKeyEvent;
 class QInputEvent;
 class QMouseEvent;
 class QWheelEvent;
-class ZooCmdWidget : public QGLWidget
+
+class ZooCmdWgt : public QGLWidget
 {
 	Q_OBJECT
 public:
-	ZooCmdWidget(QString inputAdaName, QString datadir = "", bool mainThreadInit = true,
+	ZooCmdWgt(QString inputAdaName, QStringList cmdset, QString datadir = "", bool mainThreadInit = true,
 		QWidget* parent = Q_NULLPTR, const QGLWidget* shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-	~ZooCmdWidget();
+	~ZooCmdWgt();
 	void resgisterCmdset(QStringList cmdset);
+	bool isInitCmdCompleted() const;
 	bool isRegCmdCompleted() const;
 
 signals:
@@ -44,9 +46,9 @@ private:
 private:
 	bool _isInited;
 	bool _mainThreadInit;
-	QTimer   _frameTimer;
-	QThread* _initThread;
-	QThread* _regCmdThread;
+	QTimer _frameTimer;
+	CmdThread* _initThread;
+	CmdThread* _regCmdThread;
 };
 
-#endif // __ZOO_CMD_WIDGET_H__
+#endif // __ZOO_CMD_WGT_H__

@@ -17,13 +17,14 @@ public:
 	~CmdManager();
 	void start();
 	void refresh();
-	void initBuiltinCmd();
 	void block(bool isBlock);
+	void initBuiltinCmd();
 	bool addCmd(const string& cmd, Cmd* pCmd);
 	void removeCmd(const string& cmd);
+	vector<string> removeAllCmds();
 	bool sendCmd(const string& cmdline);
 	Cmd* findCmd(const string& cmdname);
-	InputAdapter* getInputAdapter() const;
+	void sendEvent(const string& topic, const UserData& props = nullptr);
 
 public:
 	static void waitExchanged();
@@ -31,16 +32,17 @@ public:
 public:
 	static bool setReturnValue(const string& key, const Any& retval);
 	static Any  getReturnValue(const string& key);
-	static bool setErrorMessage(const string& errMessage);
-	static string getErrorMessage();
-	static void cancelRetValueBlock();
+	static void setTipMessage(const string& tips);
+	static string getTipMessage();
 
 private:
 	void runCmd();
+	static void releaseBlockAndRetValue();
 	static void lazyInitPromise(const string& key);
 
 private:
 	bool _running;
+	bool _isBlock;
 	Cmd* _lastCmd;
 	string _lastCmdName;
 	thread* _cmdThread;

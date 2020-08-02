@@ -1,27 +1,25 @@
-#ifndef __ZOOCMD_OSG_INPUT_DEVICE_H__
-#define __ZOOCMD_OSG_INPUT_DEVICE_H__
+#ifndef __INPUT_DEVICE_H__
+#define __INPUT_DEVICE_H__
 
 #include <zoo/Reflection.h>
-#include <zooCmd_osg/Support.h>
 #include <zooCmd/InputAdapter.h>
+#include <zooCmd_osg/OsgDevice.h>
 
-namespace zooCmd_osg {
-
-class _zooCmd_OSG_Export InputDevice : public InputAdapter, public zoo::Type
+class InputDevice : public OsgDevice, public InputAdapter, public zoo::Type
 {
 	ZOO_REFLEX_DECLARE(InputDevice)
 public:
 	InputDevice();
 	~InputDevice();
-	static InputDevice* getIns();
 	osgViewer::CompositeViewer* getViewer() const;
-	osg::Group* getGroupNode(unsigned int idx = -1, bool createIfNot = true);
-	osgViewer::View* createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color = osg::Vec4(0, 0, 0, 0));
+	osgViewer::View* createView(string name, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color = osg::Vec4(0, 0, 0, 0));
+	osgViewer::View* getView(string name) const;
+	void destroyView(string name);
+	void destroyAllViews();
 	void resizeView(osgViewer::View* view, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop);
 
 public:
 	int  run();
-	bool init();
 	bool isDone();
 	void setDone(bool done);
 	void frame(double simulationTime);
@@ -40,14 +38,12 @@ protected:
 	void setKeyboardModifiers(unsigned int modkey);
 
 private:
+	map<string, osgViewer::View*>            _viewList;
 	bool                                     _osgInited;
 	osg::ref_ptr<osgViewer::GraphicsWindow>  _osgWinEmb;
 	float                                    _windowScale;
+	class OsgEarthContextImpl*               _contextImpl;
 	osg::ref_ptr<osgViewer::CompositeViewer> _compositeViewer;
-	static const int                         s_groupNodeCount = 100;
-	osg::ref_ptr<osg::Group>                 _groupNodes[s_groupNodeCount];
 };
 
-}
-
-#endif // __ZOOCMD_OSG_INPUT_DEVICE_H__
+#endif // __INPUT_DEVICE_H__

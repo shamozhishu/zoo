@@ -201,7 +201,7 @@ bool CmdParser::parseToken(const string& cmdline)
 		if (lIdx >= rIdx)
 			return false;
 
-		_cmdproc = cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1, dotIdx == 0 ? lIdx - dotIdx : lIdx - dotIdx - 1);
+		_cmdproc = zoo::trim(cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1, dotIdx == 0 ? lIdx - dotIdx : lIdx - dotIdx - 1));
 		lIdx += 1;
 		rIdx -= 1;
 		if (lIdx <= rIdx)
@@ -212,13 +212,13 @@ bool CmdParser::parseToken(const string& cmdline)
 	}
 	else
 	{
-		_cmdproc = cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1);
+		_cmdproc = zoo::trim(cmdline.substr(dotIdx == 0 ? 0 : dotIdx + 1));
 	}
 
 	if (dotIdx == 0)
-		_cmdname = "__BUILTIN__";
+		_cmdname = __BUILTIN__;
 	else
-		_cmdname = strToUpper(cmdline.substr(0, dotIdx));
+		_cmdname = strToLower(cmdline.substr(0, dotIdx));
 
 	return true;
 }
@@ -420,18 +420,18 @@ void CmdParser::reportRemainingCallsAsUnrecognized(ErrorSeverity severity)
 	if (_usage)
 	{
 		// parse the usage procedures to get all the procedure that the command parser can potential handle.
-		CmdUsage::UsageMap::const_iterator it = _usage->getCommandProcedureCalls().begin();
+		CmdUsage::UsageVec::const_iterator it = _usage->getCommandProcedureCalls().begin();
 		for (; it != _usage->getCommandProcedureCalls().end(); ++it)
 		{
 			const std::string& procedure = it->first;
-			std::string::size_type prevpos = 0, pos = 0;
+			std::string::size_type prevpos = procedure.find(" ") + 1, pos = 0;
 			if ((pos = procedure.find('(', prevpos)) != std::string::npos)
-				procedures.insert(strToUpper(std::string(procedure, prevpos, pos - prevpos)));
+				procedures.insert(strToLower(std::string(procedure, prevpos, pos - prevpos)));
 		}
 	}
 
 	// if have an procedure and haven't been previous querried for report as unrecognized.
-	if (procedures.find(strToUpper(_cmdproc)) == procedures.end())
+	if (procedures.find(strToLower(_cmdproc)) == procedures.end())
 		reportError(std::string("unrecognized command procedure ") + std::string(_cmdproc) + "()", severity);
 }
 
@@ -446,11 +446,8 @@ void CmdParser::writeErrorMessages(std::ostream& output, ErrorSeverity severity)
 
 bool CmdParser::readHelpType()
 {
-	getCmdUsage()->addCommandProcedureCall("h()", "Display all command procedure calls");
 	// if user request help write it out to cout.
-	if (read("h"))
-		return true;
-	return false;
+	return read("h");
 }
 
 }

@@ -18,10 +18,10 @@ using namespace zoo;
 namespace zooCmd {
 
 class Cmd;
+class Event;
 class CmdUsage;
 class CmdParser;
 class CmdManager;
-class BuiltinCmd;
 class InputAdapter;
 
 }

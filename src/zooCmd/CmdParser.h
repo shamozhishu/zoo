@@ -4,6 +4,8 @@
 #include <zooCmd/Support.h>
 #include <zooCmd/CmdUsage.h>
 
+#define __BUILTIN__ "BuiltinCmd"
+
 namespace zooCmd {
 
 class _zooCmdExport CmdParser

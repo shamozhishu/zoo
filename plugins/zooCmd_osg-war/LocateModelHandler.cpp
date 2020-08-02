@@ -1,24 +1,22 @@
 #include "LocateModelHandler.h"
-#include "WorldCmd.h"
 #include <zooCmd/CmdManager.h>
-#include <zooCmd_osg/InputDevice.h>
 
 using namespace osgEarth;
-using namespace zooCmd_osg;
 
-LocateModelHandler::LocateModelHandler(osg::Node* model, float height, float scale, bool repeat)
-	: _modelNode(model)
+LocateModelHandler::LocateModelHandler(osgEarth::MapNode* mapNode, osg::Node* model, float height, float scale, bool repeat)
+	: _mapNode(mapNode)
+	, _modelNode(model)
 	, _height(height)
 	, _scale(scale)
 	, _repeat(repeat)
 {
-	_nodePath.push_back(WorldCmd::getSingleton().getMapNode()->getTerrainEngine());
+	_nodePath.push_back(mapNode->getTerrainEngine());
 	_scaleTransform = new osg::MatrixTransform();
 	_scaleTransform->setMatrix(osg::Matrix::scale(_scale, _scale, _scale));
 	_locateTransform = new osg::MatrixTransform();
 	_locateTransform->addChild(_scaleTransform);
 	_scaleTransform->addChild(_modelNode);
-	InputDevice::getIns()->getGroupNode(0)->addChild(_locateTransform);
+	_mapNode->addChild(_locateTransform);
 }
 
 bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*)
@@ -29,7 +27,7 @@ bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 	if (ea.getButtonMask() == ea.RIGHT_MOUSE_BUTTON && ea.getEventType() == ea.DOUBLECLICK)
 	{
-		InputDevice::getIns()->getGroupNode(0)->removeChild(_locateTransform);
+		_mapNode->removeChild(_locateTransform);
 		zooCmd::CmdManager::getSingleton().block(false);
 		return true;
 	}
@@ -43,7 +41,7 @@ bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			_locateTransform = new osg::MatrixTransform();
 			_locateTransform->addChild(_scaleTransform);
 			_scaleTransform->addChild(_modelNode);
-			InputDevice::getIns()->getGroupNode(0)->addChild(_locateTransform);
+			_mapNode->addChild(_locateTransform);
 		}
 		else
 		{
@@ -61,7 +59,7 @@ bool LocateModelHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			osgUtil::LineSegmentIntersector::Intersection first = *(results.begin());
 			osg::Vec3d world = first.getWorldIntersectPoint();
 			GeoPoint mapPoint;
-			mapPoint.fromWorld(WorldCmd::getSingleton().getMapNode()->getMapSRS(), world);
+			mapPoint.fromWorld(_mapNode->getMapSRS(), world);
 			mapPoint.z() += _height;
 			osg::Matrix mat;
 			mapPoint.createLocalToWorld(mat);

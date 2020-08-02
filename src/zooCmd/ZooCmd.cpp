@@ -101,9 +101,9 @@ bool zooCmd_Register(const char* cmd)
 
 	DynLib* lib = nullptr;
 #ifdef _DEBUG
-	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + string(cmd) + "d");
+	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + strToLower(cmd) + "d");
 #else
-	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + string(cmd));
+	lib = CmdManager::getSingleton().load(string(s_inputAdapter) + "-" + strToLower(cmd));
 #endif
 	if (!lib)
 		return false;
@@ -129,11 +129,28 @@ bool zooCmd_Unregister(const char* cmd)
 	CmdManager::getSingleton().removeCmd(cmd);
 
 #ifdef _DEBUG
-	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + string(cmd) + "d");
+	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + strToLower(cmd) + "d");
 #else
-	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + string(cmd));
+	CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + strToLower(cmd));
 #endif
 	return true;
+}
+
+void zooCmd_UnregisterAll()
+{
+	if (s_isInited)
+	{
+		vector<string> cmdset = CmdManager::getSingleton().removeAllCmds();
+		auto len = cmdset.size();
+		for (auto i = 0; i < len; ++i)
+		{
+#ifdef _DEBUG
+			CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + cmdset[i] + "d");
+#else
+			CmdManager::getSingleton().unload(string(s_inputAdapter) + "-" + cmdset[i]);
+#endif
+		}
+	}
 }
 
 bool zooCmd_Send(const char* cmdline)
@@ -232,7 +249,7 @@ bool zooCmd_BoolValue(const char* variable, bool* value)
 	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
-		*value = any_cast<bool>(val);
+		*value = val.to<bool>();
 		return true;
 	}
 
@@ -244,7 +261,7 @@ bool zooCmd_IntValue(const char* variable, int* value)
 	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
-		*value = any_cast<int>(val);
+		*value = val.to<int>();
 		return true;
 	}
 
@@ -256,7 +273,7 @@ bool zooCmd_FloatValue(const char* variable, float* value)
 	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
-		*value = any_cast<float>(val);
+		*value = val.to<float>();
 		return true;
 	}
 
@@ -268,7 +285,7 @@ bool zooCmd_DoubleValue(const char* variable, double* value)
 	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
-		*value = any_cast<double>(val);
+		*value = val.to<double>();
 		return true;
 	}
 
@@ -281,18 +298,18 @@ const char* zooCmd_StringValue(const char* variable)
 	Any val = CmdManager::getReturnValue(variable);
 	if (val.has_value())
 	{
-		s_returnValue = any_cast<string>(val);
+		s_returnValue = val.to<string>();
 		return s_returnValue.c_str();
 	}
 
 	return "";
 }
 
-const char* zooCmd_ErrorMessage()
+const char* zooCmd_TipMessage()
 {
-	static std::string s_errorMessage;
-	s_errorMessage = CmdManager::getErrorMessage().c_str();
-	return s_errorMessage.c_str();
+	static std::string s_tipMessage;
+	s_tipMessage = CmdManager::getTipMessage().c_str();
+	return s_tipMessage.c_str();
 }
 
 void zooCmd_RemapKeyboard(zooCmd_Key key, int remapkey)

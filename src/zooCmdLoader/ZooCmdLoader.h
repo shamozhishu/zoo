@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-extern bool zooCmdL_Open();
-extern void zooCmdL_Close();
 extern bool zooCmdL_Load(void);
 extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 
@@ -15,6 +13,7 @@ extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 #define zooCmd_IsInited zooCmd_IsInited_Loader
 #define zooCmd_Register zooCmd_Register_Loader
 #define zooCmd_Unregister zooCmd_Unregister_Loader
+#define zooCmd_UnregisterAll zooCmd_UnregisterAll_Loader
 #define zooCmd_Send zooCmd_Send_Loader
 #define zooCmd_Run zooCmd_Run_Loader
 #define zooCmd_Tick zooCmd_Tick_Loader
@@ -36,8 +35,8 @@ extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 #define zooCmd_DoubleValue zooCmd_DoubleValue_Loader
 #define zooCmd_StringValue zooCmd_StringValue_Loader
 
-// Error message, record the error tip message of the most recently executed command.
-#define zooCmd_ErrorMessage zooCmd_ErrorMessage_Loader
+// Tip message, record the tip message of the most recently executed command.
+#define zooCmd_TipMessage zooCmd_TipMessage_Loader
 
 // Remap Keyboard.
 #define zooCmd_RemapKeyboard zooCmd_RemapKeyboard_Loader
@@ -121,6 +120,8 @@ typedef bool(*ZOOCMDREGISTERPROC)(const char* cmd);
 extern ZOOCMDREGISTERPROC zooCmd_Register_Loader;
 typedef bool(*ZOOCMDUNREGISTERPROC)(const char* cmd);
 extern ZOOCMDUNREGISTERPROC zooCmd_Unregister_Loader;
+typedef void(*ZOOCMDUNREGISTERALLPROC)();
+extern ZOOCMDUNREGISTERALLPROC zooCmd_UnregisterAll_Loader;
 typedef bool(*ZOOCMDSENDPROC)(const char* cmdline);
 extern ZOOCMDSENDPROC zooCmd_Send_Loader;
 typedef int(*ZOOCMDRUNPROC)();
@@ -157,8 +158,8 @@ typedef bool(*ZOOCMDDOUBLEVALUEPROC)(const char* variable, double* value);
 extern ZOOCMDDOUBLEVALUEPROC zooCmd_DoubleValue_Loader;
 typedef const char*(*ZOOCMDSTRINGVALUEPROC)(const char* variable);
 extern ZOOCMDSTRINGVALUEPROC zooCmd_StringValue_Loader;
-typedef const char*(*ZOOCMDERRORMESSAGEPROC)();
-extern ZOOCMDERRORMESSAGEPROC zooCmd_ErrorMessage_Loader;
+typedef const char*(*ZOOCMDTIPMESSAGEPROC)();
+extern ZOOCMDTIPMESSAGEPROC zooCmd_TipMessage_Loader;
 typedef void(*ZOOCMDREMAPKEYBOARDPROC)(zooCmd_Key key, int remapkey);
 extern ZOOCMDREMAPKEYBOARDPROC zooCmd_RemapKeyboard_Loader;
 

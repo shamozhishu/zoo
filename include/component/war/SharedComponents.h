@@ -172,7 +172,20 @@ public:
 
 class Earth : public Component { // tolua_export
 public:
+	enum
+	{
+		sunVisible_ = ESTATE_01,
+		moonVisible_ = ESTATE_02,
+		starVisible_ = ESTATE_03,
+		nebulaVisible_ = ESTATE_04,
+		atmosphereVisible_ = ESTATE_05,
+		sunlightIntensity_ = ESTATE_06
+	};
+
+	enum Sky { sun_, moon_, star_, nebula_, atmosphere_, count_ };
 	string _earthFile;
+	float _sunlightIntensity;
+	bool _skyVisibility[count_];
 	ZOO_REFLEX_DECLARE(Earth)
 
 public:
@@ -182,7 +195,12 @@ public:
 
 public:
 	// tolua_begin
-	void setEarthFile(const string& earthFile);
+	void setSunVisible(bool visible);
+	void setMoonVisible(bool visible);
+	void setStarVisible(bool visible);
+	void setNebulaVisible(bool visible);
+	void setAtmosphereVisible(bool visible);
+	void setSunlightIntensity(float intensity);
 };
 // tolua_end
 

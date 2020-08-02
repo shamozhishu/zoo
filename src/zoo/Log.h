@@ -8,7 +8,7 @@ namespace zoo {
 enum ELogLevel
 {
 	ELL_DEBUG = 0,
-	ELL_INFORMATION,
+	ELL_INFO,
 	ELL_WARNING,
 	ELL_ERROR
 };
@@ -16,8 +16,10 @@ enum ELogLevel
 class _zooExport Log
 {
 public:
+	typedef void(*Listener)(ELogLevel level, const char* logContent);
 	static void print(ELogLevel level, const char* szFormat, ...);
-	static void setLevel(ELogLevel level);
+	static void level(ELogLevel level);
+	static void listen(Listener listenFunc);
 };
 
 }

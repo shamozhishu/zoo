@@ -10,16 +10,14 @@ set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
 set(ZOO_CPP
 	${PROJECT_SRC}/main.cpp
 )
-           
+
 add_executable(
 	${OUT_NAME}
 	${ZOO_CPP}
 )
 
-target_link_libraries(
-	${OUT_NAME}
-	zooCmdLoader
-)
+Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 IF(Qt5Widgets_FOUND)
     SET(LIB_MOC_SRCS)
@@ -42,16 +40,12 @@ IF(Qt5Widgets_FOUND)
 		${OUT_NAME} 
 		${Qt5Core_LIBRARIES}
 		${Qt5Widgets_LIBRARIES}
-		zooCmdLoader
 		)							
 ELSE()
 	target_link_libraries(
 		${OUT_NAME} 
 		${QT_LIBRARIES}
-		zooCmdLoader
 		)
 ENDIF()
-
-Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

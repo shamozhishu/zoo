@@ -11,6 +11,7 @@ namespace Ui
 	class DoFPropertyWgt;
 	class ModelPropertyWgt;
 	class CameraPropertyWgt;
+	class EarthPropertyWgt;
 }
 
 class ComPropertyBoard;
@@ -19,7 +20,7 @@ class ComListWgt : public QWidget
 public:
 	ComListWgt(ComPropertyBoard* propBoard);
 	~ComListWgt();
-	void refreshComList(zoo::Entity* ent, bool bAddComponentBtn);
+	void refreshComList(zoo::Entity* ent, bool bAddComponentBtn, const QStringList& comlist);
 protected:
 	bool eventFilter(QObject *o, QEvent *e);
 private:
@@ -70,6 +71,17 @@ public:
 
 private:
 	Ui::CameraPropertyWgt* _ui;
+};
+
+class EarthPropertyWgt : public PropertyWgt
+{
+public:
+	EarthPropertyWgt(QWidget* parent);
+	~EarthPropertyWgt();
+	void setCom(zoo::Component* pCom);
+
+private:
+	Ui::EarthPropertyWgt* _ui;
 };
 
 #endif // __PROPERTY_WGTS_H__

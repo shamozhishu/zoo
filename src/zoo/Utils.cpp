@@ -70,6 +70,20 @@ string utf8ToAnsi(const string& str)
 	return w2a_(utf8ToUnicode(str));
 }
 
+string strToLower(string str)
+{
+	std::string strTmp = str;
+	std::transform(strTmp.begin(), strTmp.end(), strTmp.begin(), towlower);
+	return strTmp;
+}
+
+wstring strToLower(wstring str)
+{
+	std::wstring strTmp = str;
+	std::transform(strTmp.begin(), strTmp.end(), strTmp.begin(), towlower);
+	return strTmp;
+}
+
 string strToUpper(string str)
 {
 	std::string strTmp = str;

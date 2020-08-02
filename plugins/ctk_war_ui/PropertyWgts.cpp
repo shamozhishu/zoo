@@ -1,8 +1,8 @@
 #include "PropertyWgts.h"
 #include "UIActivator.h"
 #include <zoo/Utils.h>
-#include <QFileDialog>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <QColorDialog>
 #include <QStandardItemModel>
 #include "ComPropertyBoard.h"
@@ -10,13 +10,12 @@
 #include "ui_DoFPropertyWgt.h"
 #include "ui_ModelPropertyWgt.h"
 #include "ui_CameraPropertyWgt.h"
+#include "ui_EarthPropertyWgt.h"
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
 #endif
-
-extern const char* g_comTypeName[];
 
 ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 	: _ui(new Ui::ComListWgt)
@@ -56,7 +55,18 @@ ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 			{
 				zoo::Component* pCom = _operateEnt->addComponent(comName.toStdString(), comImpl.toStdString());
 				if (pCom)
-					_propBoard->showCom(comName, pCom);
+				{
+					if (pCom->getImp())
+					{
+						pCom->getImp()->awake();
+						_propBoard->showCom(comName, pCom);
+					}
+					else
+					{
+						_operateEnt->removeComponent(pCom);
+						QMessageBox::warning(this, tr("警告"), comName + tr("组件的实现不存在！"));
+					}
+				}
 			}
 			else
 			{
@@ -74,7 +84,7 @@ ComListWgt::~ComListWgt()
 	delete _ui;
 }
 
-void ComListWgt::refreshComList(zoo::Entity* ent, bool bAddComponentBtn)
+void ComListWgt::refreshComList(zoo::Entity* ent, bool bAddComponentBtn, const QStringList& comlist)
 {
 	if (!ent)
 		return;
@@ -83,14 +93,12 @@ void ComListWgt::refreshComList(zoo::Entity* ent, bool bAddComponentBtn)
 	_addComponentBtn = bAddComponentBtn;
 	QStringList strlist, addlist, removelist;
 
-	int i = 1;
-	while (g_comTypeName[i] != nullptr)
+	for (int i = 0; i < comlist.size(); ++i)
 	{
-		if (ent->getComponent(g_comTypeName[i]))
-			removelist << g_comTypeName[i];
+		if (ent->getComponent(comlist[i].toLocal8Bit().data()))
+			removelist << comlist[i];
 		else
-			addlist << g_comTypeName[i];
-		++i;
+			addlist << comlist[i];
 	}
 
 	if (bAddComponentBtn)
@@ -233,7 +241,7 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 	_ui->toolButton->setDefaultAction(_ui->modelPath);
 	connect(_ui->modelPath, &QAction::triggered, [this]
 	{
-		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *ive *flt)"));
+		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
 		if (!fileName.isEmpty())
 		{
 			_ui->lineEdit->setText(fileName);
@@ -347,7 +355,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 	{
 		Camera* pCam = (Camera*)_com;
 		QColor initclr = QColor(pCam->_red, pCam->_green, pCam->_blue, pCam->_alpha);
-		QColorDialog dlg(initclr);
+		QColorDialog dlg(initclr, this);
 		if (dlg.exec() == QDialog::Accepted)
 		{
 			QColor clr = dlg.currentColor();
@@ -382,4 +390,83 @@ void CameraPropertyWgt::setCom(zoo::Component* pCom)
 	_ui->pushButton_color->setStyleSheet(QString(tr("background-color:rgba(%1,%2,%3,%4)").arg(
 		QString::number(pCam->_red), QString::number(pCam->_green),
 		QString::number(pCam->_blue), QString::number(pCam->_alpha))));
+}
+
+EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
+	: PropertyWgt(parent)
+	, _ui(new Ui::EarthPropertyWgt)
+{
+	_ui->setupUi(this);
+	connect(_ui->toolButton, &QToolButton::clicked, [this]
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("Earth文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("地球(*.earth)"));
+		if (!fileName.isEmpty())
+		{
+			_ui->lineEdit->setText(fileName);
+			((Earth*)_com)->_earthFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			_com->getImp()->awake();
+			_com->getEntity()->notifyComponents();
+		}
+	});
+	connect(_ui->checkBox_sun, &QCheckBox::stateChanged, [this]
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_skyVisibility[Earth::sun_] = _ui->checkBox_sun->checkState() == Qt::Unchecked ? false : true;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::sunVisible_);
+	});
+	connect(_ui->checkBox_moon, &QCheckBox::stateChanged, [this]
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_skyVisibility[Earth::moon_] = _ui->checkBox_moon->checkState() == Qt::Unchecked ? false : true;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::moonVisible_);
+	});
+	connect(_ui->checkBox_star, &QCheckBox::stateChanged, [this]
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_skyVisibility[Earth::star_] = _ui->checkBox_star->checkState() == Qt::Unchecked ? false : true;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::starVisible_);
+	});
+	connect(_ui->checkBox_nebula, &QCheckBox::stateChanged, [this]
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_skyVisibility[Earth::nebula_] = _ui->checkBox_nebula->checkState() == Qt::Unchecked ? false : true;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::nebulaVisible_);
+	});
+	connect(_ui->checkBox_atmosphere, &QCheckBox::stateChanged, [this]
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_skyVisibility[Earth::atmosphere_] = _ui->checkBox_atmosphere->checkState() == Qt::Unchecked ? false : true;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::atmosphereVisible_);
+	});
+	connect(_ui->horizontalSlider, &QSlider::valueChanged, [this](int val)
+	{
+		Earth* pEarth = (Earth*)_com;
+		pEarth->_sunlightIntensity = val / 99.0f;
+		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::sunlightIntensity_);
+	});
+}
+
+EarthPropertyWgt::~EarthPropertyWgt()
+{
+	delete _ui;
+}
+
+void EarthPropertyWgt::setCom(zoo::Component* pCom)
+{
+	PropertyWgt::setCom(pCom);
+	Earth* pEarth = (Earth*)pCom;
+
+	_ui->lineEdit->setText(QString::fromLocal8Bit(pEarth->_earthFile.c_str()));
+	_ui->checkBox_sun->setCheckState(pEarth->_skyVisibility[Earth::sun_] ? Qt::Checked : Qt::Unchecked);
+	_ui->checkBox_moon->setCheckState(pEarth->_skyVisibility[Earth::moon_] ? Qt::Checked : Qt::Unchecked);
+	_ui->checkBox_star->setCheckState(pEarth->_skyVisibility[Earth::star_] ? Qt::Checked : Qt::Unchecked);
+	_ui->checkBox_nebula->setCheckState(pEarth->_skyVisibility[Earth::nebula_] ? Qt::Checked : Qt::Unchecked);
+	_ui->checkBox_atmosphere->setCheckState(pEarth->_skyVisibility[Earth::atmosphere_] ? Qt::Checked : Qt::Unchecked);
+
+	int pos = pEarth->_sunlightIntensity * 99;
+	if (pos < 0)
+		pos = 0;
+	if (pos > 99)
+		pos = 99;
+	_ui->horizontalSlider->setSliderPosition(pos);
 }

@@ -10,8 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 SET(PROJECT_INCLUDE ${CMAKE_SOURCE_DIR}/src/zooCmd)
 SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/src/zooCmd)
 
-set(ZOOCMD_H 
-	${PROJECT_INCLUDE}/BuiltinCmd.h
+set(ZOOCMD_H
 	${PROJECT_INCLUDE}/Cmd.h
 	${PROJECT_INCLUDE}/CmdManager.h
 	${PROJECT_INCLUDE}/CmdParser.h
@@ -22,7 +21,6 @@ set(ZOOCMD_H
 )
 
 set(ZOOCMD_CPP
-	${PROJECT_SRC}/BuiltinCmd.cpp
 	${PROJECT_SRC}/CmdManager.cpp
 	${PROJECT_SRC}/CmdParser.cpp
 	${PROJECT_SRC}/CmdUsage.cpp

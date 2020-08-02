@@ -44,12 +44,14 @@ set(PLUGIN_SRCS
 	UIActivator.h
 	SetupDlg.h
 	ZooCmdUI.h
-	ZooCmdWidget.h
+	ZooCmdWgt.h
+	LogPrintWgt.h
 
 	UIActivator.cpp
 	SetupDlg.cpp
 	ZooCmdUI.cpp
-	ZooCmdWidget.cpp
+	ZooCmdWgt.cpp
+	LogPrintWgt.cpp
 )
 
 # Files which should be processed by Qts moc
@@ -57,13 +59,15 @@ set(PLUGIN_MOC_SRCS
 	UIActivator.h
 	SetupDlg.h
 	ZooCmdUI.h
-	ZooCmdWidget.h
+	ZooCmdWgt.h
+	LogPrintWgt.h
 )
 
 # Qt Designer files which should be processed by Qts uic
 set(PLUGIN_UI_FORMS
 	ZooCmdUI.ui
 	SetupDlg.ui
+	LogPrintWgt.ui
 )
 
 # QRC Files which should be compiled into the plugin

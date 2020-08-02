@@ -1,4 +1,4 @@
-#include "ZooCmdWidget.h"
+#include "ZooCmdWgt.h"
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <vector>
 #include <string>
@@ -20,39 +20,15 @@
 #pragma execution_character_set("utf-8")
 #endif
 
-class ZooCmdInitThread : public QThread
+class CmdThread : public QThread
 {
 public:
-	ZooCmdInitThread(ZooCmdWidget* cmdWidget, QString inputAdaName, QString datadir = "")
-		: _zooCmdWidget(cmdWidget)
-		, _datadir(datadir)
-		, _inputAdaName(inputAdaName) {}
-
-	void init()
-	{
-		QScreen* screen = _zooCmdWidget->windowHandle() && _zooCmdWidget->windowHandle()->screen() ? _zooCmdWidget->windowHandle()->screen() : qApp->screens().front();
-		zooCmd_Destroy();
-		zooCmd_InitW(_inputAdaName.toStdString().c_str(), _datadir.toStdWString().c_str(), _zooCmdWidget->width(), _zooCmdWidget->height(), screen->devicePixelRatio());
-	}
-
-protected:
-	void run() override
-	{
-		init();
-	}
-
-private:
-	QString       _datadir;
-	QString       _inputAdaName;
-	ZooCmdWidget* _zooCmdWidget;
-};
-
-class ZooCmdRegCmdThread : public QThread
-{
-public:
-	ZooCmdRegCmdThread(ZooCmdWidget* cmdWidget) : _zooCmdWidget(cmdWidget), _completed(false) {}
+	CmdThread(ZooCmdWgt* cmdWidget) : _zooCmdWidget(cmdWidget), _completed(false) {}
+	CmdThread(ZooCmdWgt* cmdWidget, QStringList cmdset) : _zooCmdWidget(cmdWidget), _cmdset(cmdset), _completed(false) {}
+	virtual void init() { _completed = true; }
 	bool isCompleted() const { return _completed; }
 	QString getErrTip() const { return _errStr; }
+
 	void setCmdset(QStringList cmdset)
 	{
 		_completed = false;
@@ -60,7 +36,7 @@ public:
 		_errStr = "";
 	}
 
-	void init()
+	void regCmdset()
 	{
 		int len = _cmdset.size();
 		for (int i = 0; i < len; ++i)
@@ -74,7 +50,32 @@ public:
 			}
 		}
 
-		_completed = true;
+		if (_errStr != "")
+			_errStr = QString("¼ÓÔØ[") + _errStr + "]ÃüÁî²å¼þÊ§°Ü£¡";
+	}
+
+protected:
+	bool _completed;
+	QString _errStr;
+	QStringList _cmdset;
+	ZooCmdWgt* _zooCmdWidget;
+};
+
+class ZooCmdInitThread : public CmdThread
+{
+public:
+	ZooCmdInitThread(ZooCmdWgt* cmdWidget, QString inputAdaName, QStringList cmdset, QString datadir = "")
+		: CmdThread(cmdWidget, cmdset), _datadir(datadir) , _inputAdaName(inputAdaName) {}
+	void init()
+	{
+		QScreen* screen = _zooCmdWidget->windowHandle() && _zooCmdWidget->windowHandle()->screen() ? _zooCmdWidget->windowHandle()->screen() : qApp->screens().front();
+		zooCmd_Destroy();
+		if (zooCmd_InitW(_inputAdaName.toStdString().c_str(), _datadir.toStdWString().c_str(), _zooCmdWidget->width(), _zooCmdWidget->height(), screen->devicePixelRatio()))
+			regCmdset();
+		else
+			_errStr = tr("³õÊ¼»¯zooCmd¿ò¼ÜÊ§°Ü£¡");
+
+		CmdThread::init();
 	}
 
 protected:
@@ -84,20 +85,37 @@ protected:
 	}
 
 private:
-	bool _completed;
-	QString _errStr;
-	QStringList _cmdset;
-	ZooCmdWidget* _zooCmdWidget;
+	QString _datadir;
+	QString _inputAdaName;
 };
 
-ZooCmdWidget::ZooCmdWidget(QString inputAdaName, QString datadir /*= ""*/, bool mainThreadInit /*= true*/,
+class ZooCmdRegCmdThread : public CmdThread
+{
+public:
+	ZooCmdRegCmdThread(ZooCmdWgt* cmdWidget) : CmdThread(cmdWidget) {}
+	void init()
+	{
+		zooCmd_UnregisterAll();
+		regCmdset();
+		CmdThread::init();
+	}
+
+protected:
+	void run() override
+	{
+		init();
+	}
+};
+
+ZooCmdWgt::ZooCmdWgt(QString inputAdaName, QStringList cmdset, QString datadir /*= ""*/, bool mainThreadInit /*= true*/,
 	QWidget* parent /*= Q_NULLPTR*/, const QGLWidget* shareWidget /*= Q_NULLPTR*/, Qt::WindowFlags f /*= Qt::WindowFlags()*/)
 	: QGLWidget(parent, shareWidget, f)
-	, _initThread(new ZooCmdInitThread(this, inputAdaName, datadir))
+	, _initThread(new ZooCmdInitThread(this, inputAdaName, cmdset, datadir))
 	, _regCmdThread(new ZooCmdRegCmdThread(this))
 	, _mainThreadInit(mainThreadInit)
 	, _isInited(false)
 {
+	setMouseTracking(true);
 	setFocusPolicy(Qt::ClickFocus);
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	zooCmdL_Load();
@@ -149,7 +167,7 @@ ZooCmdWidget::ZooCmdWidget(QString inputAdaName, QString datadir /*= ""*/, bool 
 	zooCmd_RemapKeyboard(zooCmd_Key_Insert, Qt::Key_Insert);
 }
 
-ZooCmdWidget::~ZooCmdWidget()
+ZooCmdWgt::~ZooCmdWgt()
 {
 	while (_initThread->isRunning())
 		QThread::sleep(1);
@@ -162,20 +180,19 @@ ZooCmdWidget::~ZooCmdWidget()
 	zooCmd_Destroy();
 }
 
-void ZooCmdWidget::resgisterCmdset(QStringList cmdset)
+void ZooCmdWgt::resgisterCmdset(QStringList cmdset)
 {
-	ZooCmdRegCmdThread* pResgThread = (ZooCmdRegCmdThread*)_regCmdThread;
-	pResgThread->setCmdset(cmdset);
+	_regCmdThread->setCmdset(cmdset);
 	if (_mainThreadInit)
-		pResgThread->init();
+		_regCmdThread->init();
 	else
-		pResgThread->start();
+		_regCmdThread->start();
 
 	emit cmdRegistered();
 
-	QString errTip = pResgThread->getErrTip();
+	QString errTip = _regCmdThread->getErrTip();
 	if (errTip != "")
-		QMessageBox::warning(this, tr("¾¯¸æ"), QString("¼ÓÔØ[") + errTip + "]ÃüÁî²å¼þÊ§°Ü£¡");
+		QMessageBox::warning(this, tr("¾¯¸æ"), errTip);
 	else
 	{
 		QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
@@ -185,13 +202,17 @@ void ZooCmdWidget::resgisterCmdset(QStringList cmdset)
 	}
 }
 
-bool ZooCmdWidget::isRegCmdCompleted() const
+bool ZooCmdWgt::isInitCmdCompleted() const
 {
-	ZooCmdRegCmdThread* pResgThread = (ZooCmdRegCmdThread*)_regCmdThread;
-	return pResgThread->isCompleted();
+	return _initThread->isCompleted();
 }
 
-void ZooCmdWidget::initializeGL()
+bool ZooCmdWgt::isRegCmdCompleted() const
+{
+	return _regCmdThread->isCompleted();
+}
+
+void ZooCmdWgt::initializeGL()
 {
 	if (!_isInited)
 	{
@@ -203,24 +224,29 @@ void ZooCmdWidget::initializeGL()
 			_initThread->start();
 
 		emit inited();
+
+		QString errTip = _initThread->getErrTip();
+		if (errTip != "")
+			QMessageBox::warning(nullptr, tr("¾¯¸æ"), errTip);
+
 		connect(&_frameTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
 		_frameTimer.start(20);
 	}
 }
 
-void ZooCmdWidget::resizeGL(int w, int h)
+void ZooCmdWgt::resizeGL(int w, int h)
 {
 	QScreen* screen = windowHandle() && windowHandle()->screen() ? windowHandle()->screen() : qApp->screens().front();
 	zooCmd_Resize(w, h, screen->devicePixelRatio());
 }
 
-void ZooCmdWidget::paintGL()
+void ZooCmdWgt::paintGL()
 {
 	zooCmd_Tick();
 	zooCmd_Render();
 }
 
-void ZooCmdWidget::keyPressEvent(QKeyEvent* event)
+void ZooCmdWgt::keyPressEvent(QKeyEvent* event)
 {
 	if (event->isAutoRepeat())
 		event->ignore();
@@ -228,7 +254,7 @@ void ZooCmdWidget::keyPressEvent(QKeyEvent* event)
 		zooCmd_KeyPress(int(*(event->text().toLatin1().data())), getKeyboardModifiers(event));
 }
 
-void ZooCmdWidget::keyReleaseEvent(QKeyEvent* event)
+void ZooCmdWgt::keyReleaseEvent(QKeyEvent* event)
 {
 	if (event->isAutoRepeat())
 		event->ignore();
@@ -236,34 +262,34 @@ void ZooCmdWidget::keyReleaseEvent(QKeyEvent* event)
 		zooCmd_KeyRelease(int(*(event->text().toLatin1().data())), getKeyboardModifiers(event));
 }
 
-void ZooCmdWidget::mousePressEvent(QMouseEvent* event)
+void ZooCmdWgt::mousePressEvent(QMouseEvent* event)
 {
 	zooCmd_MousePress(event->x(), event->y(), getKeyboardModifiers(event), (zooCmd_MouseButton)getMouseButton(event));
 }
 
-void ZooCmdWidget::mouseReleaseEvent(QMouseEvent* event)
+void ZooCmdWgt::mouseReleaseEvent(QMouseEvent* event)
 {
 	zooCmd_MouseRelease(event->x(), event->y(), getKeyboardModifiers(event), (zooCmd_MouseButton)getMouseButton(event));
 }
 
-void ZooCmdWidget::mouseDoubleClickEvent(QMouseEvent* event)
+void ZooCmdWgt::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	zooCmd_MouseDoubleClick(event->x(), event->y(), getKeyboardModifiers(event), (zooCmd_MouseButton)getMouseButton(event));
 }
 
-void ZooCmdWidget::mouseMoveEvent(QMouseEvent* event)
+void ZooCmdWgt::mouseMoveEvent(QMouseEvent* event)
 {
 	zooCmd_MouseMove(event->x(), event->y(), getKeyboardModifiers(event));
 }
 
-void ZooCmdWidget::wheelEvent(QWheelEvent* event)
+void ZooCmdWgt::wheelEvent(QWheelEvent* event)
 {
 	zooCmd_Wheel(event->x(), event->y(), getKeyboardModifiers(event), (event->orientation() == Qt::Vertical
 		? (event->delta() > 0 ? zooCmd_Scroll_Up : zooCmd_Scroll_Down)
 		: (event->delta() > 0 ? zooCmd_Scroll_Left : zooCmd_Scroll_Right)));
 }
 
-unsigned int ZooCmdWidget::getMouseButton(QMouseEvent* event)
+unsigned int ZooCmdWgt::getMouseButton(QMouseEvent* event)
 {
 	zooCmd_MouseButton button = zooCmd_Button_No;
 	switch (event->button())
@@ -288,7 +314,7 @@ unsigned int ZooCmdWidget::getMouseButton(QMouseEvent* event)
 	return button;
 }
 
-unsigned int ZooCmdWidget::getKeyboardModifiers(QInputEvent* event)
+unsigned int ZooCmdWgt::getKeyboardModifiers(QInputEvent* event)
 {
 	unsigned int modkey = event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier);
 	unsigned int modkeymask = 0;

@@ -3,12 +3,25 @@
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QStandardItemModel>
+#include <QStyledItemDelegate>
 #include "ZooCmdUI.h"
 
 // Qt5ÖÐÎÄÂÒÂë
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
 #endif
+
+class NoFocusDelegate : public QStyledItemDelegate
+{
+public:
+	void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+	{
+		QStyleOptionViewItem itemOption(option);
+		if (itemOption.state & QStyle::State_HasFocus)
+			itemOption.state = itemOption.state ^ QStyle::State_HasFocus;
+		QStyledItemDelegate::paint(painter, itemOption, index);
+	}
+};
 
 SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 	: QDialog(parent)
@@ -84,8 +97,9 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 
 	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 	settings.beginGroup("ZOO_CMDSET");
-
 	QStringList cmdset = settings.value("activecmd").toStringList();
+	settings.endGroup();
+
 	if (rowCount > 0)
 	{
 		_model->setRowCount(rowCount);
@@ -111,14 +125,23 @@ SetupDlg::SetupDlg(QString inputAdaName, QWidget *parent /*= Q_NULLPTR*/)
 		ui.tableView_cmdset->setModel(_model);
 		ui.tableView_cmdset->setColumnWidth(0, 20);
 		ui.tableView_cmdset->setColumnWidth(1, 269);
-		ui.tableView_cmdset->setFocusPolicy(Qt::NoFocus);
+		ui.tableView_cmdset->setItemDelegate(new NoFocusDelegate());
 		ui.tableView_cmdset->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		ui.tableView_cmdset->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 		ui.tableView_cmdset->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
 	}
 
-	settings.endGroup();
 	setFixedSize(width(), height());
+	connect(ui.tableView_cmdset, &QTableView::doubleClicked, [this](const QModelIndex &index)
+	{
+		if (index.column() != 0)
+		{
+			QStandardItem* pStandardItem = _model->item(index.row());
+			Qt::CheckState checkSta = pStandardItem->checkState();
+			checkSta = checkSta == Qt::Unchecked ? Qt::Checked : Qt::Unchecked;
+			pStandardItem->setCheckState(checkSta);
+		}
+	});
 }
 
 QStringList SetupDlg::getCmdset() const

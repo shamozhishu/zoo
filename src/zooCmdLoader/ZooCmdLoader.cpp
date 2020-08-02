@@ -7,6 +7,7 @@ ZOOCMDINITWPROC zooCmd_InitW_Loader;
 ZOOCMDISINITEDPROC zooCmd_IsInited_Loader;
 ZOOCMDREGISTERPROC zooCmd_Register_Loader;
 ZOOCMDUNREGISTERPROC zooCmd_Unregister_Loader;
+ZOOCMDUNREGISTERALLPROC zooCmd_UnregisterAll_Loader;
 ZOOCMDSENDPROC zooCmd_Send_Loader;
 ZOOCMDRUNPROC zooCmd_Run_Loader;
 ZOOCMDTICKPROC zooCmd_Tick_Loader;
@@ -25,10 +26,29 @@ ZOOCMDINTVALUEPROC zooCmd_IntValue_Loader;
 ZOOCMDFLOATVALUEPROC zooCmd_FloatValue_Loader;
 ZOOCMDDOUBLEVALUEPROC zooCmd_DoubleValue_Loader;
 ZOOCMDSTRINGVALUEPROC zooCmd_StringValue_Loader;
-ZOOCMDERRORMESSAGEPROC zooCmd_ErrorMessage_Loader;
+ZOOCMDTIPMESSAGEPROC zooCmd_TipMessage_Loader;
 ZOOCMDREMAPKEYBOARDPROC zooCmd_RemapKeyboard_Loader;
 
-static HMODULE s_libZooCmd = NULL;
+struct tagLoader
+{
+	tagLoader() : _libZooCmd(NULL)
+	{
+#ifdef _DEBUG
+		_libZooCmd = LoadLibrary("zooCmdd.dll");
+#else
+		_libZooCmd = LoadLibrary("zooCmd.dll");
+#endif
+	}
+
+	~tagLoader()
+	{
+		if (_libZooCmd != NULL)
+			FreeLibrary(_libZooCmd);
+	}
+private:
+	HMODULE _libZooCmd;
+};
+
 static void* get_proc(HMODULE libZooCmd, const char *namez)
 {
 	void* result = NULL;
@@ -49,6 +69,7 @@ static void load_zoocmd(HMODULE libZooCmd, void*(*load)(HMODULE, const char*))
 	zooCmd_IsInited_Loader = (ZOOCMDISINITEDPROC)load(libZooCmd, "zooCmd_IsInited");
 	zooCmd_Register_Loader = (ZOOCMDREGISTERPROC)load(libZooCmd, "zooCmd_Register");
 	zooCmd_Unregister_Loader = (ZOOCMDUNREGISTERPROC)load(libZooCmd, "zooCmd_Unregister");
+	zooCmd_UnregisterAll_Loader = (ZOOCMDUNREGISTERALLPROC)load(libZooCmd, "zooCmd_UnregisterAll");
 	zooCmd_Send_Loader = (ZOOCMDSENDPROC)load(libZooCmd, "zooCmd_Send");
 	zooCmd_Run_Loader = (ZOOCMDRUNPROC)load(libZooCmd, "zooCmd_Run");
 	zooCmd_Tick_Loader = (ZOOCMDTICKPROC)load(libZooCmd, "zooCmd_Tick");
@@ -67,33 +88,13 @@ static void load_zoocmd(HMODULE libZooCmd, void*(*load)(HMODULE, const char*))
 	zooCmd_FloatValue_Loader = (ZOOCMDFLOATVALUEPROC)load(libZooCmd, "zooCmd_FloatValue");
 	zooCmd_DoubleValue_Loader = (ZOOCMDDOUBLEVALUEPROC)load(libZooCmd, "zooCmd_DoubleValue");
 	zooCmd_StringValue_Loader = (ZOOCMDSTRINGVALUEPROC)load(libZooCmd, "zooCmd_StringValue");
-	zooCmd_ErrorMessage_Loader = (ZOOCMDERRORMESSAGEPROC)load(libZooCmd, "zooCmd_ErrorMessage");
+	zooCmd_TipMessage_Loader = (ZOOCMDTIPMESSAGEPROC)load(libZooCmd, "zooCmd_TipMessage");
 	zooCmd_RemapKeyboard_Loader = (ZOOCMDREMAPKEYBOARDPROC)load(libZooCmd, "zooCmd_RemapKeyboard");
-}
-
-bool zooCmdL_Open()
-{
-	if (s_libZooCmd)
-		return true;
-#ifdef _DEBUG
-	s_libZooCmd = LoadLibrary("zooCmdd.dll");
-#else
-	s_libZooCmd = LoadLibrary("zooCmd.dll");
-#endif
-	return s_libZooCmd != NULL;
-}
-
-void zooCmdL_Close()
-{
-	if (s_libZooCmd != NULL)
-	{
-		FreeLibrary(s_libZooCmd);
-		s_libZooCmd = NULL;
-	}
 }
 
 bool zooCmdL_Load(void)
 {
+	static tagLoader loader;
 #ifdef _DEBUG
 	HMODULE libZooCmd = LoadLibrary("zooCmdd.dll");
 #else

@@ -21,6 +21,7 @@ void UIActivator::start(ctkPluginContext* context)
 	UIManagerService* service = UIActivator::getService<UIManagerService>();
 	if (service != Q_NULLPTR)
 	{
+		service->finishWindowLaunch(tr("Õ½³¡±à¼­Æ÷"));
 		ArmyListWgt* pArmyListWidget = new ArmyListWgt;
 		MenuToolButtons::create(service, MenuToolButtons::file_, pArmyListWidget);
 		MenuToolButtons::create(service, MenuToolButtons::edit_, pArmyListWidget);

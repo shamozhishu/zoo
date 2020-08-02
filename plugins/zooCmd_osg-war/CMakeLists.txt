@@ -1,11 +1,13 @@
 ﻿###########################################################################
 #                                                                         #
-#                               zooCmd_osg                                #
+#                              zooCmd_osg-war                             #
 #                                                                         #
 ###########################################################################
-set(OUT_NAME zooCmd_osg)
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
+set(OUT_NAME zooCmd_osg-war)
+
+set(PROJECT_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${PROJECT_INCLUDE})
 
 IF(WIN32 AND NOT ANDROID)
 	include_directories("${3RD_PARTY_DIR}/include")
@@ -26,42 +28,33 @@ else()
 	link_directories("${OSGEARTH_DIR}/lib")
 endif()
 
-SET(PROJECT_INCLUDE ${CMAKE_SOURCE_DIR}/src/zooCmd_osg)
-SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/src/zooCmd_osg)
-
-set(ZOOCMD_OSG_H 
-	${PROJECT_INCLUDE}/Support.h
-	${PROJECT_INCLUDE}/InputDevice.h
-	${PROJECT_INCLUDE}/SharedComponentImpls.h
+set(ZOOCMD_PLUGIN_LIB_H
+	${PROJECT_INCLUDE}/WarCmd.h
+	${PROJECT_INCLUDE}/WarControls.h
+	${PROJECT_INCLUDE}/LonLatDistHandler.h
+	${PROJECT_INCLUDE}/LocateModelHandler.h
+	${PROJECT_INCLUDE}/MeasureDistHandler.h
 )
 
-set(ZOOCMD_OSG_CPP
-	${PROJECT_SRC}/InputDevice.cpp
-	${PROJECT_SRC}/SharedComponentImpls.cpp
+set(ZOOCMD_PLUGIN_LIB_CPP
+	${PROJECT_SRC}/WarCmd.cpp
+	${PROJECT_SRC}/WarControls.cpp
+	${PROJECT_SRC}/LonLatDistHandler.cpp
+	${PROJECT_SRC}/LocateModelHandler.cpp
+	${PROJECT_SRC}/MeasureDistHandler.cpp
 )
-
-if(${BUILD_SHARED_LIBS} STREQUAL "On")
-    add_library(
+    
+add_library(
     	${OUT_NAME} SHARED 
-    	${ZOOCMD_OSG_H}
-    	${ZOOCMD_OSG_CPP}
-		)
-    ADD_DEFINITIONS(-DZOOCMD_OSG_NONCLIENT_BUILD)
-else()
-    add_library(
-    	${OUT_NAME} STATIC 
-    	${ZOOCMD_OSG_H}
-    	${ZOOCMD_OSG_CPP}
-    	)
-    ADD_DEFINITIONS(-DZOOCMD_OSG_NONCLIENT_BUILD_STATIC)
-endif()
-
-target_link_libraries(
-	${OUT_NAME}
-	zoo
-	zooCmd
+    	${ZOOCMD_PLUGIN_LIB_H}
+    	${ZOOCMD_PLUGIN_LIB_CPP}
 )
-	
-INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib)
+ADD_DEFINITIONS(-DNEED_OSGEARTH_LIBRARY)
+target_link_libraries(
+		${OUT_NAME}
+		zoo
+		zooCmd
+		zooCmd_osg
+)
+
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
-INSTALL(FILES ${ZOOCMD_OSG_H} DESTINATION include/zooCmd_osg)

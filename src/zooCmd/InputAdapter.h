@@ -10,7 +10,6 @@ class _zooCmdExport InputAdapter
 public:
 	virtual ~InputAdapter() {};
 	virtual int  run() = 0;
-	virtual bool init() = 0;
 	virtual bool isDone() = 0;
 	virtual void setDone(bool done) = 0;
 	virtual void frame(double simulationTime) = 0;

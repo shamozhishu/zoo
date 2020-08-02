@@ -2,5 +2,7 @@
     <qresource prefix="/images">
         <file>Resources/images/app.png</file>
         <file>Resources/images/cmd.png</file>
+        <file>Resources/images/log.png</file>
+        <file>Resources/images/clean.png</file>
     </qresource>
 </RCC>

@@ -1,12 +1,11 @@
-#include <zooCmd_osg/InputDevice.h>
+#include "InputDevice.h"
 #include <zoo/BitState.h>
 #include <zoo/Interlock.h>
 #include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
+#include "OsgEarthContextImpl.h"
 
-ZOO_REGISTER(zooCmd_osg::InputDevice)
-
-namespace zooCmd_osg {
+ZOO_REGISTER(InputDevice)
 
 class Viewers : public osgViewer::CompositeViewer
 {
@@ -50,15 +49,13 @@ InputDevice::InputDevice()
 	ds->setNvOptimusEnablement(1);
 	ds->setStereo(false);
 	_compositeViewer = new Viewers;
+	_contextImpl = new OsgEarthContextImpl;
 }
 
 InputDevice::~InputDevice()
 {
-}
-
-InputDevice* InputDevice::getIns()
-{
-	return dynamic_cast<InputDevice*>(CmdManager::getSingleton().getInputAdapter());
+	SAFE_DELETE(_contextImpl);
+	destroyAllViews();
 }
 
 osgViewer::CompositeViewer* InputDevice::getViewer() const
@@ -66,43 +63,14 @@ osgViewer::CompositeViewer* InputDevice::getViewer() const
 	return _compositeViewer.get();
 }
 
-osg::Group* InputDevice::getGroupNode(unsigned int idx /*= -1*/, bool createIfNot /*= true*/)
+osgViewer::View* InputDevice::createView(string name, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color /*= osg::Vec4(0, 0, 0, 0)*/)
 {
-	if (!createIfNot)
-	{
-		if (idx < s_groupNodeCount)
-			return _groupNodes[idx].get();
-		return nullptr;
-	}
+	osgViewer::View* view = getView(name);
+	if (view)
+		_compositeViewer->removeView(view);
 
-	if (idx < s_groupNodeCount)
-	{
-		if (!_groupNodes[idx].get())
-		{
-			osg::ref_ptr<osg::Group> ptr(new osg::Group);
-			_groupNodes[idx] = ptr;
-		}
-
-		return _groupNodes[idx].get();
-	}
-
-
-	for (unsigned int i = 0; i < s_groupNodeCount; ++i)
-	{
-		if (!_groupNodes[i].get())
-		{
-			osg::ref_ptr<osg::Group> ptr(new osg::Group);
-			_groupNodes[i] = ptr;
-			return _groupNodes[i].get();
-		}
-	}
-
-	return nullptr;
-}
-
-osgViewer::View* InputDevice::createView(float ratioLeft, float ratioRight, float ratioBottom, float ratioTop, const osg::Vec4& color /*= osg::Vec4(0, 0, 0, 0)*/)
-{
-	osgViewer::View* view = new osgViewer::View;
+	view = new osgViewer::View;
+	_viewList[name] = view;
 	_compositeViewer->addView(view);
 
 	if (_osgWinEmb)
@@ -116,6 +84,33 @@ osgViewer::View* InputDevice::createView(float ratioLeft, float ratioRight, floa
 	view->addEventHandler(new osgViewer::StatsHandler);
 	view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
 	return view;
+}
+
+osgViewer::View* InputDevice::getView(string name) const
+{
+	auto it = _viewList.find(name);
+	if (it != _viewList.end())
+		return it->second;
+	return nullptr;
+}
+
+void InputDevice::destroyView(string name)
+{
+	auto it = _viewList.find(name);
+	if (it != _viewList.end())
+	{
+		_compositeViewer->removeView(it->second);
+		_viewList.erase(it);
+	}
+}
+
+void InputDevice::destroyAllViews()
+{
+	auto it = _viewList.begin();
+	auto itEnd = _viewList.end();
+	for (; it != itEnd; ++it)
+		_compositeViewer->removeView(it->second);
+	_viewList.clear();
 }
 
 void InputDevice::resizeView(osgViewer::View* view, float ratioLeft, float ratioRight, float ratioBottom, float ratioTop)
@@ -156,26 +151,6 @@ int InputDevice::run()
 	return _compositeViewer->run();
 }
 
-bool InputDevice::init()
-{
-	if (_compositeViewer->getNumViews() == 0)
-	{
-		osgViewer::View* view = createView(0, 1, 0, 1);
-		osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
-		keyswitchManipulator->addMatrixManipulator('1', "Trackball", new osgGA::TrackballManipulator);
-		keyswitchManipulator->addMatrixManipulator('2', "Flight", new osgGA::FlightManipulator);
-		keyswitchManipulator->addMatrixManipulator('3', "Drive", new osgGA::DriveManipulator);
-		keyswitchManipulator->addMatrixManipulator('4', "Terrain", new osgGA::TerrainManipulator);
-		keyswitchManipulator->addMatrixManipulator('5', "Orbit", new osgGA::OrbitManipulator);
-		keyswitchManipulator->addMatrixManipulator('6', "FirstPerson", new osgGA::FirstPersonManipulator);
-		keyswitchManipulator->addMatrixManipulator('7', "Spherical", new osgGA::SphericalManipulator);
-		view->setCameraManipulator(keyswitchManipulator.get());
-	}
-
-	_compositeViewer->realize();
-	return true;
-}
-
 bool InputDevice::isDone()
 {
 	return _compositeViewer->done();
@@ -193,14 +168,20 @@ void InputDevice::frame(double simulationTime)
 
 void InputDevice::setup(int windowWidth, int windowHeight, float windowScale)
 {
+	osgViewer::View* pView = new osgViewer::View;
+	_compositeViewer->addView(pView);
+
 	if (windowWidth > 0 && windowHeight > 0)
 	{
 		_osgInited = true;
 		_windowScale = windowScale;
 		_osgWinEmb = new osgViewer::GraphicsWindowEmbedded(0, 0, windowWidth * windowScale, windowHeight * windowScale);
 		_osgWinEmb->getEventQueue()->syncWindowRectangleWithGraphicsContext();
+		pView->getCamera()->setGraphicsContext(_osgWinEmb);
+		pView->getCamera()->setClearColor(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
 		_compositeViewer->setReleaseContextAtEndOfFrameHint(false);
 		_compositeViewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+		resizeView(pView, 0, 1, 0, 1);
 	}
 
 	_compositeViewer->setKeyEventSetsDone(0);
@@ -357,6 +338,4 @@ void InputDevice::setKeyboardModifiers(unsigned int modkey)
 		mask |= osgGA::GUIEventAdapter::MODKEY_ALT;
 
 	_osgWinEmb->getEventQueue()->getCurrentEventState()->setModKeyMask(mask);
-}
-
 }

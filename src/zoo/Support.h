@@ -60,6 +60,7 @@ class Component;
 class ComponentImpl;
 class Signal;
 class SignalTrigger;
+class Service;
 class Interlock;
 class UserData;
 class DynLib;

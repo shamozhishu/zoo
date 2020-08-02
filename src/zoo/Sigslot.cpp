@@ -4,7 +4,7 @@ namespace zoo {
 
 bool SignalTrigger::hasSignal(const Signal& sig)
 {
-	return !sig._slotset.empty();
+	return !sig._slotList.empty();
 }
 
 Signal::Signal()
@@ -20,8 +20,8 @@ Signal::~Signal()
 
 void SignalTrigger::trigger(const Signal& sig)
 {
-	vector<Slot*>::const_iterator itSlot = sig._slotset.cbegin();
-	for (; itSlot != sig._slotset.cend(); ++itSlot)
+	vector<Slot*>::const_iterator itSlot = sig._slotList.cbegin();
+	for (; itSlot != sig._slotList.cend(); ++itSlot)
 	{
 		Slot* const &item = *itSlot;
 		if (item)
@@ -29,11 +29,16 @@ void SignalTrigger::trigger(const Signal& sig)
 	}
 }
 
+void SignalTrigger::connect(const Signal& sig, std::function<void()> lamb)
+{
+	sig._slotList.push_back(new SlotLambda(lamb));
+}
+
 void SignalTrigger::connect(const Signal& sig, SlotFunction::SLOT_FUNCTION func)
 {
 	ZOO_ASSERT(func);
-	vector<Slot*>::const_iterator it = sig._slotset.cbegin();
-	for (; it != sig._slotset.cend(); ++it)
+	vector<Slot*>::const_iterator it = sig._slotList.cbegin();
+	for (; it != sig._slotList.cend(); ++it)
 	{
 		SlotFunction* item = dynamic_cast<SlotFunction*>(*it);
 		if (NULL != item && func == item->_function)
@@ -42,20 +47,20 @@ void SignalTrigger::connect(const Signal& sig, SlotFunction::SLOT_FUNCTION func)
 			return;
 		}
 	}
-	sig._slotset.push_back(new SlotFunction(func));
+	sig._slotList.push_back(new SlotFunction(func));
 }
 
 void SignalTrigger::disconnect(const Signal& sig, SlotFunction::SLOT_FUNCTION func)
 {
 	ZOO_ASSERT(func);
-	vector<Slot*>::const_iterator it = sig._slotset.cbegin();
-	for (; it != sig._slotset.cend(); ++it)
+	vector<Slot*>::const_iterator it = sig._slotList.cbegin();
+	for (; it != sig._slotList.cend(); ++it)
 	{
 		SlotFunction* item = dynamic_cast<SlotFunction*>(*it);
 		if (NULL != item && func == item->_function)
 		{
 			SAFE_DELETE(item);
-			sig._slotset.erase(it);
+			sig._slotList.erase(it);
 			break;
 		}
 	}
@@ -63,10 +68,10 @@ void SignalTrigger::disconnect(const Signal& sig, SlotFunction::SLOT_FUNCTION fu
 
 void SignalTrigger::disconnect(const Signal& sig)
 {
-	vector<Slot*>::const_iterator it = sig._slotset.cbegin();
-	for (; it != sig._slotset.cend(); ++it)
+	vector<Slot*>::const_iterator it = sig._slotList.cbegin();
+	for (; it != sig._slotList.cend(); ++it)
 		delete *it;
-	sig._slotset.clear();
+	sig._slotList.clear();
 }
 
 }

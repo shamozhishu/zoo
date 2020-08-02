@@ -1,13 +1,11 @@
 ﻿###########################################################################
 #                                                                         #
-#                              zooCmd_osg-world                           #
+#                               zooCmd_osg                                #
 #                                                                         #
 ###########################################################################
-set(OUT_NAME zooCmd_osg-world)
-
-set(PROJECT_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR})
-set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${PROJECT_INCLUDE})
+set(OUT_NAME zooCmd_osg)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 IF(WIN32 AND NOT ANDROID)
 	include_directories("${3RD_PARTY_DIR}/include")
@@ -28,33 +26,41 @@ else()
 	link_directories("${OSGEARTH_DIR}/lib")
 endif()
 
-set(ZOOCMD_PLUGIN_LIB_H 
-	${PROJECT_INCLUDE}/LocateModelHandler.h
-	${PROJECT_INCLUDE}/LongitudeLatitudeHandler.h
-	${PROJECT_INCLUDE}/MeasureDistanceHandler.h
-	${PROJECT_INCLUDE}/WorldCmd.h
-	${PROJECT_INCLUDE}/WorldControls.h
+SET(PROJECT_INCLUDE ${CMAKE_SOURCE_DIR}/plugins/zooCmd_osg)
+SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/plugins/zooCmd_osg)
+
+set(ZOOCMD_OSG_H
+	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgDevice.h
+	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthContext.h
+	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthSupport.h
+	${PROJECT_INCLUDE}/InputDevice.h
+	${PROJECT_INCLUDE}/BuiltinCmd.h
+	${PROJECT_INCLUDE}/OsgComponentImpls.h
+	${PROJECT_INCLUDE}/OsgEarthContextImpl.h
+	${PROJECT_INCLUDE}/StarrySky.h
+	${PROJECT_INCLUDE}/NebulaNode.h
 )
 
-set(ZOOCMD_PLUGIN_LIB_CPP
-	${PROJECT_SRC}/LocateModelHandler.cpp
-	${PROJECT_SRC}/LongitudeLatitudeHandler.cpp
-	${PROJECT_SRC}/MeasureDistanceHandler.cpp
-	${PROJECT_SRC}/WorldCmd.cpp
-	${PROJECT_SRC}/WorldControls.cpp
+set(ZOOCMD_OSG_CPP
+	${PROJECT_SRC}/InputDevice.cpp
+	${PROJECT_SRC}/BuiltinCmd.cpp
+	${PROJECT_SRC}/OsgComponentImpls.cpp
+	${PROJECT_SRC}/OsgEarthContextImpl.cpp
+	${PROJECT_SRC}/StarrySky.cpp
+	${PROJECT_SRC}/NebulaNode.cpp
 )
-    
+
 add_library(
-    	${OUT_NAME} SHARED 
-    	${ZOOCMD_PLUGIN_LIB_H}
-    	${ZOOCMD_PLUGIN_LIB_CPP}
+    ${OUT_NAME} SHARED 
+    ${ZOOCMD_OSG_H}
+    ${ZOOCMD_OSG_CPP}
 )
 ADD_DEFINITIONS(-DNEED_OSGEARTH_LIBRARY)
+
 target_link_libraries(
-		${OUT_NAME}
-		zoo
-		zooCmd
-		zooCmd_osg
+	${OUT_NAME}
+	zoo
+	zooCmd
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

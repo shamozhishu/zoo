@@ -10,13 +10,16 @@
 #include <QMessageBox>
 #include <QProgressBar>
 #include "SetupDlg.h"
-#include "ZooCmdWidget.h"
+#include "ZooCmdWgt.h"
 #include "UIActivator.h"
+#include "LogPrintWgt.h"
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
 #endif
+
+#define CTK_ZOOCMD_UI_LOG_PRINT_WGT "ctk_zoocmd_ui_log_print_wgt"
 
 ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	: QMainWindow(parent)
@@ -25,6 +28,17 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	, _inputAdaName("zooCmd_osg")
 {
 	_ui.setupUi(this);
+
+#ifdef __ENABLE_LOG_WGT__
+	LogPrintWgt* pLogPrintWgt = new LogPrintWgt;
+	addWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT, tr("日志打印"), pLogPrintWgt,
+		QIcon(QPixmap(":/images/Resources/images/log.png")), Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+	connect(_ui.action_clean, SIGNAL(triggered()), pLogPrintWgt, SLOT(onCleanLog()));
+	_ui.action_clean->setVisible(true);
+#else
+	_ui.action_clean->setVisible(false);
+#endif
+
 	QLabel* label = new QLabel(tr(" 请输入命令："));
 	_ui.statusBar->addWidget(label);
 	_cmdlineEdit = new QLineEdit;
@@ -48,10 +62,10 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	settings.endGroup();
 
 	bool mainThreadInit = false;
-	_mainWidget = new ZooCmdWidget(_inputAdaName, datadir, mainThreadInit, this);
+	_mainWidget = new ZooCmdWgt(_inputAdaName, cmdset, datadir, mainThreadInit, this);
 	_ui.gridLayout_center->addWidget(_mainWidget);
 	setCentralWidget(_mainWidget);
-	connect(_mainWidget, &ZooCmdWidget::inited, [this, mainThreadInit]
+	connect(_mainWidget, &ZooCmdWgt::inited, [this, mainThreadInit]
 	{
 		if (!mainThreadInit)
 		{
@@ -61,7 +75,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 			int i = 0;
 			while (true)
 			{
-				if (zooCmd_IsInited())
+				if (_mainWidget->isInitCmdCompleted())
 				{
 					_progressBar->setValue(100);
 					_progressBar->setVisible(false);
@@ -78,7 +92,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 		_cmdlineEdit->setEnabled(true);
 	});
 
-	connect(_mainWidget, &ZooCmdWidget::cmdRegistered, [this, mainThreadInit]
+	connect(_mainWidget, &ZooCmdWgt::cmdRegistered, [this, mainThreadInit]
 	{
 		if (!mainThreadInit)
 		{
@@ -104,7 +118,18 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 
 		_cmdlineEdit->setEnabled(true);
 	});
+}
 
+ZooCmdUI::~ZooCmdUI()
+{
+#ifdef __ENABLE_LOG_WGT__
+	removeWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT);
+#endif
+}
+
+void ZooCmdUI::finishWindowLaunch(QString windowTitle)
+{
+	setWindowTitle(windowTitle);
 	showMaximized();
 }
 
@@ -117,6 +142,7 @@ void ZooCmdUI::addWidget(const QString& strId, const QString& strName, QWidget* 
 		addDockWidget(area, dock);
 		dock->setAllowedAreas(area | areas);
 		dock->setWidget(pWidget);
+		dock->setFeatures(QDockWidget::DockWidgetMovable);
 		QAction* pActionWnd = new QAction(icon, strName, this);
 		pActionWnd->setCheckable(true);
 		pActionWnd->setChecked(true);
@@ -228,24 +254,21 @@ void ZooCmdUI::keyPressEvent(QKeyEvent *event)
 
 void ZooCmdUI::onCmd()
 {
-	std::string cmdline = _cmdlineEdit->text().toStdString();
-	if (cmdline.find("exit") != -1 || !zooCmd_Send(cmdline.c_str()))
+	QString cmdline = _cmdlineEdit->text().trimmed();
+	if (cmdline.contains("exit", Qt::CaseInsensitive)|| !zooCmd_Send(cmdline.toLocal8Bit()))
 	{
-		QMessageBox::information(this, tr("提示"), tr("发送命令失败！"));
+		QMessageBox::warning(this, tr("警告"), QString::fromLocal8Bit(zooCmd_TipMessage()));
 		return;
 	}
 
-	const char* szMessage = zooCmd_ErrorMessage();
-	if (0 != strcmp(szMessage, ""))
-	{
-		QMessageBox::information(this, tr("提示"), tr(szMessage));
-		return;
-	}
+	const char* szTips = zooCmd_TipMessage();
+	if (0 != strcmp(szTips, ""))
+		QMessageBox::information(this, tr("提示"), QString::fromLocal8Bit(szTips));
 
-	QVector<QString>::iterator it = qFind(_cmdlines.begin(), _cmdlines.end(), cmdline.c_str());
+	QVector<QString>::iterator it = qFind(_cmdlines.begin(), _cmdlines.end(), cmdline);
 	if (it == _cmdlines.end())
 	{
-		_cmdlines.push_back(cmdline.c_str());
+		_cmdlines.push_back(cmdline);
 		_idx = _cmdlines.size() - 1;
 		return;
 	}
@@ -261,11 +284,15 @@ void ZooCmdUI::onSetup()
 	SetupDlg dlg(_inputAdaName);
 	if (dlg.exec() == QDialog::Accepted)
 	{
-		_cmdlineEdit->setEnabled(false);
 		QStringList cmdset = dlg.getCmdset();
 		if (cmdset.size() > 0)
+		{
+			_cmdlineEdit->setEnabled(false);
 			_mainWidget->resgisterCmdset(cmdset);
+		}
 		else
+		{
 			QMessageBox::warning(this, tr("警告"), tr("未选中任何命令模块！"));
+		}
 	}
 }

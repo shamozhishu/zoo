@@ -95,6 +95,7 @@ extern "C" {
 	_zooCmdExport bool zooCmd_IsInited();
 	_zooCmdExport bool zooCmd_Register(const char* cmd);
 	_zooCmdExport bool zooCmd_Unregister(const char* cmd);
+	_zooCmdExport void zooCmd_UnregisterAll();
 	_zooCmdExport bool zooCmd_Send(const char* cmdline);
 	_zooCmdExport int  zooCmd_Run();
 	_zooCmdExport void zooCmd_Tick();
@@ -116,8 +117,8 @@ extern "C" {
 	_zooCmdExport bool zooCmd_DoubleValue(const char* variable, double* value);
 	_zooCmdExport const char* zooCmd_StringValue(const char* variable);
 
-	// Error message, record the error tip message of the most recently executed command.
-	_zooCmdExport const char* zooCmd_ErrorMessage();
+	// Tip message, record the tip message of the most recently executed command.
+	_zooCmdExport const char* zooCmd_TipMessage();
 
 	// Remap Keyboard.
 	_zooCmdExport void zooCmd_RemapKeyboard(zooCmd_Key key, int remapkey);

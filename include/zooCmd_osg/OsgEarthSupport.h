@@ -1,5 +1,5 @@
-#ifndef __ZOOCMD_OSG_SUPPORT_H__
-#define __ZOOCMD_OSG_SUPPORT_H__
+#ifndef __OSG_EARTH_SUPPORT_H__
+#define __OSG_EARTH_SUPPORT_H__
 
 #ifdef _WIN32
 #define WIN32 1
@@ -100,16 +100,6 @@
 #endif
 #endif
 
-#if defined(ZOOCMD_OSG_NONCLIENT_BUILD)
-#	define _zooCmd_OSG_Export __declspec(dllexport)
-#else
-#	if defined(__MINGW32__)
-#		define _zooCmd_OSG_Export
-#	else
-#		define _zooCmd_OSG_Export __declspec(dllimport)
-#	endif
-#endif
-
 #ifdef OSG_USE_UTF8_FILENAME
 #define ZOO_USE_UTF8_FILENAME 1
 #endif
@@ -117,4 +107,4 @@
 #include <zooCmd/Support.h>
 using namespace zooCmd;
 
-#endif // __ZOOCMD_OSG_SUPPORT_H__
+#endif // __OSG_EARTH_SUPPORT_H__

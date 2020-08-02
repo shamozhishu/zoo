@@ -8,6 +8,7 @@ namespace zoo {
 class _zooExport UserData
 {
 public:
+	UserData(const Any& anything);
 	UserData(const UserData* pdata = nullptr);
 	UserData(const UserData& other);
 	UserData& swap(UserData& rhs)

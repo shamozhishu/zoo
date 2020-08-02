@@ -62,6 +62,17 @@ public:
 		_content = NULL;
 	}
 
+	template<typename ValueType>
+	ValueType to() const
+	{
+		const ValueType* result = (type() == typeid(ValueType)) ? &static_cast<holder<ValueType>*>(_content)->held : NULL;
+		if (!result)
+		{
+			ZOO_ASSERT(false && "Bad cast for Any!");
+		}
+		return *result;
+	}
+
 protected:
 	class placeholder
 	{
@@ -231,31 +242,6 @@ public:
 		return *this;
 	}
 };
-
-template<typename ValueType>
-ValueType* any_cast(Any* operand)
-{
-	return operand && (operand->type() == typeid(ValueType))
-		? &static_cast<Any::holder<ValueType>*>(operand->_content)->held
-		: NULL;
-}
-
-template<typename ValueType>
-const ValueType* any_cast(const Any* operand)
-{
-	return any_cast<ValueType>(const_cast<Any*>(operand));
-}
-
-template<typename ValueType>
-ValueType any_cast(const Any& operand)
-{
-	const ValueType* result = any_cast<ValueType>(&operand);
-	if (!result)
-	{
-		ZOO_ASSERT(false && "Bad cast!(any_cast)");
-	}
-	return *result;
-}
 
 }
 

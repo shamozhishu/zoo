@@ -1,14 +1,13 @@
-#include "WorldControls.h"
-#include "WorldCmd.h"
-#include <zooCmd/CmdManager.h>
-#include <zooCmd_osg/InputDevice.h>
+#include "WarControls.h"
+#include <zoo/ServiceLocator.h>
+#include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgEarth::Util::Controls;
-static WorldControls* s_worldControls = nullptr;
+static WarControls* s_worldControls = nullptr;
 
-WorldControls::WorldControls()
+WarControls::WarControls()
 {
-	ControlCanvas* canvas = ControlCanvas::getOrCreate(WorldCmd::getSingleton().getView());
+	_canvas = ControlCanvas::getOrCreate(ServiceLocator<OsgEarthContext>::getService()->getOpView());
 	_vboxControl = new VBox();
 	_vboxControl->setBorderColor(0, 0, 0, 0);
 	_vboxControl->setBackColor(0.6f, 0.5f, 0.4f, 0.5f);
@@ -16,38 +15,43 @@ WorldControls::WorldControls()
 	_vboxControl->setHorizAlign(Control::ALIGN_LEFT);
 	_vboxControl->setVertAlign(Control::ALIGN_TOP);
 	_vboxControl->setSize(500, 0);
-	canvas->addControl(_vboxControl.get());
+	_vboxControl->setVisible(false);
 
 	for (int i = lla_label_; i < count_label_; ++i)
 		_labelControls[i] = nullptr;
 }
 
-WorldControls::~WorldControls()
+WarControls::~WarControls()
 {
-	ControlCanvas* canvas = ControlCanvas::getOrCreate(WorldCmd::getSingleton().getView());
-	canvas->removeControl(_vboxControl.get());
+	_canvas->removeControl(_vboxControl.get());
+	if (_canvas->getNumParents() > 0)
+	{
+		auto node = _canvas->getParent(0);
+		if (node)
+			node->asGroup()->removeChild(_canvas.get());
+	}
 }
 
-WorldControls* WorldControls::getIns()
+WarControls* WarControls::getIns()
 {
 	if (!s_worldControls)
-		s_worldControls = new WorldControls();
+		s_worldControls = new WarControls();
 	return s_worldControls;
 }
 
-void WorldControls::destroy()
+void WarControls::destroy()
 {
 	SAFE_DELETE(s_worldControls);
 }
 
-bool WorldControls::isHasLabelControl(LabelIndex idx) const
+bool WarControls::isHasLabelControl(LabelIndex idx) const
 {
 	if (idx < count_label_)
 		return _labelControls[idx] != nullptr;
 	return false;
 }
 
-void WorldControls::addLabelTextDisplay(const string& text, LabelIndex idx)
+void WarControls::addLabelTextDisplay(const string& text, LabelIndex idx)
 {
 	if (idx < count_label_)
 	{
@@ -56,13 +60,15 @@ void WorldControls::addLabelTextDisplay(const string& text, LabelIndex idx)
 		else
 		{
 			_labelControls[idx] = _vboxControl->addControl(new LabelControl(text, osg::Vec4f(1.0f, 0.1f, 0.1f, 1.0f), 14));
+			if (!_vboxControl->visible())
+				_canvas->addControl(_vboxControl.get());
 			_vboxControl->setVisible(true);
 			_vboxControl->dirty();
 		}
 	}
 }
 
-void WorldControls::removeLabelTextDisplay(LabelIndex idx)
+void WarControls::removeLabelTextDisplay(LabelIndex idx)
 {
 	if (idx < count_label_ && _labelControls[idx])
 	{
@@ -84,6 +90,9 @@ void WorldControls::removeLabelTextDisplay(LabelIndex idx)
 		}
 
 		if (!isshow)
+		{
 			_vboxControl->setVisible(false);
+			_canvas->removeControl(_vboxControl.get());
+		}
 	}
 }

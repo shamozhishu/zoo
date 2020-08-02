@@ -127,6 +127,10 @@ _zooExport wstring utf8ToUnicode(const string& str);
 _zooExport string  ansiToUtf8(const string& str);
 _zooExport string  utf8ToAnsi(const string& str);
 
+/* ×Ö·û´®×ª»»ÎªÐ¡Ð´ */
+_zooExport string  strToLower(string str);
+_zooExport wstring strToLower(wstring str);
+
 /* ×Ö·û´®×ª»»Îª´óÐ´ */
 _zooExport string  strToUpper(string str);
 _zooExport wstring strToUpper(wstring str);
