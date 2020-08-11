@@ -2,7 +2,9 @@
 #include "ArmyListWgt.h"
 #include "MenuToolButtons.h"
 #include "ComPropertyBoard.h"
+#include <QMessageBox>
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <zooCmdLoader/ZooCmdLoader.h>
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
@@ -12,6 +14,7 @@
 ctkPluginContext* UIActivator::_pluginContext = nullptr;
 UIActivator::UIActivator()
 {
+	zooCmdL_Load();
 }
 
 void UIActivator::start(ctkPluginContext* context)
@@ -21,7 +24,8 @@ void UIActivator::start(ctkPluginContext* context)
 	UIManagerService* service = UIActivator::getService<UIManagerService>();
 	if (service != Q_NULLPTR)
 	{
-		service->finishWindowLaunch(tr("战场编辑器"));
+		service->finishWindowLaunch();
+		service->setWindowTitle(tr("战场编辑器"));
 		ArmyListWgt* pArmyListWidget = new ArmyListWgt;
 		MenuToolButtons::create(service, MenuToolButtons::file_, pArmyListWidget);
 		MenuToolButtons::create(service, MenuToolButtons::edit_, pArmyListWidget);
@@ -49,4 +53,17 @@ void UIActivator::stop(ctkPluginContext* context)
 	}
 
 	_pluginContext = nullptr;
+}
+
+void UIActivator::sendWarCmd(QString cmdline)
+{
+	if (!zooCmd_Send(cmdline.trimmed().toLocal8Bit()))
+	{
+		QMessageBox::warning(nullptr, tr("警告"), QString::fromLocal8Bit(zooCmd_TipMessage()));
+		return;
+	}
+
+	const char* szTips = zooCmd_TipMessage();
+	if (0 != strcmp(szTips, ""))
+		QMessageBox::information(nullptr, tr("提示"), QString::fromLocal8Bit(szTips));
 }

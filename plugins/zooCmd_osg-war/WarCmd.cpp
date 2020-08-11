@@ -42,10 +42,10 @@ void WarCmd::handle(const zooCmd::Event& evt)
 void WarCmd::help(CmdUsage* usage)
 {
 	usage->setDescription("war command: 战场场景编辑器的命令插件.");
-	usage->addCommandProcedureCall("lla(bool show)", "Display longitude, latitude and altitude information.");
-	usage->addCommandProcedureCall("fly(float longitude, float latitude, float distance)", "Set viewpoint to specified longitude, latitude and distance.");
-	usage->addCommandProcedureCall("dist()", "Ground measurement distance.");
-	usage->addCommandProcedureCall("locate(string model, float height, float scale, bool repeat)", "Ground placement model.");
+	usage->addCommandProcedureCall("lla(bool show)", "显示经度纬度和海拔");
+	usage->addCommandProcedureCall("fly(float longitude, float latitude, float distance)", "将视点转移到指定经度纬度和高度处");
+	usage->addCommandProcedureCall("dist()", "贴地测距");
+	usage->addCommandProcedureCall("locate(string model, float height, float scale, bool repeat)", "在地球上放置模型");
 }
 
 void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
@@ -130,7 +130,7 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 				if (!errorTipFunc(pView, pMapNode, pManipulator))
 					return;
 
-				osg::ref_ptr<MeasureDistHandler> measureDistanceHandler = new MeasureDistHandler(pManipulator);
+				osg::ref_ptr<MeasureDistHandler> measureDistanceHandler = new MeasureDistHandler(pMapNode, pManipulator);
 				pView->addEventHandler(measureDistanceHandler.get());
 				CmdManager::getSingleton().block(true);
 				WarControls::getIns()->removeLabelTextDisplay(dist_label_);
@@ -139,7 +139,7 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 			break;
 		}
 
-		string model;  float height, scale; bool repeat;
+		string model; float height, scale; bool repeat;
 		if (cmdarg.read("locate", model, height, scale, repeat))
 		{
 			SignalTrigger::connect(subcmd, [this, model, height, scale, repeat, errorTipFunc]
@@ -164,6 +164,5 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 			});
 			break;
 		}
-
 	} while (0);
 }

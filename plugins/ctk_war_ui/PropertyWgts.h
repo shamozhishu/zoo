@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QHBoxLayout>
-#include <component/war/SharedComponents.h>
+#include <component/war/WarComponents.h>
 
 namespace Ui
 {
@@ -12,8 +12,10 @@ namespace Ui
 	class ModelPropertyWgt;
 	class CameraPropertyWgt;
 	class EarthPropertyWgt;
+	class BehaviorPropertyWgt;
 }
 
+class UIManagerService;
 class ComPropertyBoard;
 class ComListWgt : public QWidget
 {
@@ -34,10 +36,12 @@ class PropertyWgt : public QWidget
 {
 public:
 	PropertyWgt(QWidget *parent);
-	virtual void setCom(zoo::Component* pCom);
+	QSize sizeHint() const;
+	virtual void resetCom(zoo::Component* pCom);
 
 protected:
 	zoo::Component* _com;
+	UIManagerService* _uiMgr;
 };
 
 class DoFPropertyWgt : public PropertyWgt
@@ -45,7 +49,7 @@ class DoFPropertyWgt : public PropertyWgt
 public:
 	DoFPropertyWgt(QWidget *parent);
 	~DoFPropertyWgt();
-	void setCom(zoo::Component* pCom);
+	void resetCom(zoo::Component* pCom);
 
 private:
 	Ui::DoFPropertyWgt* _ui;
@@ -56,7 +60,7 @@ class ModelPropertyWgt : public PropertyWgt
 public:
 	ModelPropertyWgt(QWidget* parent);
 	~ModelPropertyWgt();
-	void setCom(zoo::Component* pCom);
+	void resetCom(zoo::Component* pCom);
 
 private:
 	Ui::ModelPropertyWgt* _ui;
@@ -67,7 +71,7 @@ class CameraPropertyWgt : public PropertyWgt
 public:
 	CameraPropertyWgt(QWidget* parent);
 	~CameraPropertyWgt();
-	void setCom(zoo::Component* pCom);
+	void resetCom(zoo::Component* pCom);
 
 private:
 	Ui::CameraPropertyWgt* _ui;
@@ -78,10 +82,21 @@ class EarthPropertyWgt : public PropertyWgt
 public:
 	EarthPropertyWgt(QWidget* parent);
 	~EarthPropertyWgt();
-	void setCom(zoo::Component* pCom);
+	void resetCom(zoo::Component* pCom);
 
 private:
 	Ui::EarthPropertyWgt* _ui;
+};
+
+class BehaviorPropertyWgt : public PropertyWgt
+{
+public:
+	BehaviorPropertyWgt(QWidget* parent);
+	~BehaviorPropertyWgt();
+	void resetCom(zoo::Component* pCom);
+
+private:
+	Ui::BehaviorPropertyWgt* _ui;
 };
 
 #endif // __PROPERTY_WGTS_H__

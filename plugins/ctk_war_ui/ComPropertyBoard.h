@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <component/war/SharedComponents.h>
+#include <component/war/WarComponents.h>
 
 class PropertyWgt;
 class ComPropertyBoard : public QWidget

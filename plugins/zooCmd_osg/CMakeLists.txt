@@ -31,23 +31,28 @@ SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/plugins/zooCmd_osg)
 
 set(ZOOCMD_OSG_H
 	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgDevice.h
+	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthUtils.h
 	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthContext.h
 	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthSupport.h
 	${PROJECT_INCLUDE}/InputDevice.h
 	${PROJECT_INCLUDE}/BuiltinCmd.h
 	${PROJECT_INCLUDE}/OsgComponentImpls.h
+	${PROJECT_INCLUDE}/OsgEarthUtilsImpl.h
 	${PROJECT_INCLUDE}/OsgEarthContextImpl.h
 	${PROJECT_INCLUDE}/StarrySky.h
 	${PROJECT_INCLUDE}/NebulaNode.h
+	${PROJECT_INCLUDE}/CameraManipulatorManager.h
 )
 
 set(ZOOCMD_OSG_CPP
 	${PROJECT_SRC}/InputDevice.cpp
 	${PROJECT_SRC}/BuiltinCmd.cpp
 	${PROJECT_SRC}/OsgComponentImpls.cpp
+	${PROJECT_SRC}/OsgEarthUtilsImpl.cpp
 	${PROJECT_SRC}/OsgEarthContextImpl.cpp
 	${PROJECT_SRC}/StarrySky.cpp
 	${PROJECT_SRC}/NebulaNode.cpp
+	${PROJECT_SRC}/CameraManipulatorManager.cpp
 )
 
 add_library(

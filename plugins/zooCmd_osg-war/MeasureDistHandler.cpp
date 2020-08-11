@@ -4,16 +4,24 @@
 
 using namespace osgEarth;
 
-MeasureDistHandler::MeasureDistHandler(osgEarth::Util::EarthManipulator* manipulator)
+MeasureDistHandler::MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator)
 	: _totalDistance(0)
+	, _mapNode(mapNode)
 	, _manipulator(manipulator)
 {
-	_mapNode = dynamic_cast<osgEarth::MapNode*>(manipulator->getNode());
 	_lineStrip = new osg::Geode();
 	_lineStrip->getOrCreateStateSet()->setAttribute(new osg::LineWidth(5.0f), osg::StateAttribute::ON);
 	_lineStrip->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+	_lineStrip->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 	_lineStrip->getOrCreateStateSet()->setRenderBinDetails(11, "RenderBin");
 	_mapNode->addChild(_lineStrip);
+
+	Viewpoint vp = _manipulator->getViewpoint();
+	if (vp.range() > 100000)
+	{
+		vp.range() = 80000;
+		_manipulator->setViewpoint(vp, 2);
+	}
 }
 
 MeasureDistHandler::~MeasureDistHandler()
@@ -30,7 +38,7 @@ bool MeasureDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	if (ea.getButtonMask() == ea.RIGHT_MOUSE_BUTTON && ea.getEventType() == ea.DOUBLECLICK)
 	{
 		_distPointSet = nullptr;
-		zooCmd::CmdManager::getSingleton().block(false);
+		CmdManager::getSingleton().block(false);
 		return true;
 	}
 

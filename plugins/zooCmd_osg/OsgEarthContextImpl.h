@@ -6,6 +6,7 @@
 class OsgEarthContextImpl : public OsgEarthContext
 {
 public:
+	osg::Group* getRootNode();
 	osgViewer::View* getOpView();
 	void setOpView(osgViewer::View* view);
 	osgEarth::MapNode* getOpMapNode();
@@ -14,6 +15,7 @@ public:
 	void setOpManipulator(osgEarth::Util::EarthManipulator* manipulator);
 
 private:
+	osg::ref_ptr<osg::Group> _root;
 	osg::ref_ptr<osgViewer::View> _view;
 	osg::ref_ptr<osgEarth::MapNode> _mapNode;
 	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;

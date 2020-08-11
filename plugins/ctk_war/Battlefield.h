@@ -18,7 +18,7 @@ public:
 	void enter();
 	void save();
 	void exit();
-	void refresh();
+	void stepping();
 	void addBehavior(Behavior* behavior);
 	void removeBehavior(Behavior* behavior);
 
@@ -28,7 +28,6 @@ public:
 	Entity* getArmy(int id, int breed);
 	void destroyArmy(int id, int breed);
 };
-
 // tolua_end
 
 #endif // __BATTLEFIELD_H__

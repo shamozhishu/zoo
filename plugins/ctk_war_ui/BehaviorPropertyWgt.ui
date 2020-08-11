@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BehaviorPropertyWgt</class>
+ <widget class="QWidget" name="BehaviorPropertyWgt">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>231</width>
+    <height>74</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Behavior</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="placeholderText">
+           <string>请选择脚本文件</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButton_open">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ctk_war_ui.qrc">
+            <normaloff>:/images/Resources/images/open_file.png</normaloff>:/images/Resources/images/open_file.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButton_edit">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ctk_war_ui.qrc">
+            <normaloff>:/images/Resources/images/edit_file.png</normaloff>:/images/Resources/images/edit_file.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="ctk_war_ui.qrc"/>
+ </resources>
+ <connections/>
+</ui>

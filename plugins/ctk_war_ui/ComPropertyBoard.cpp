@@ -16,6 +16,7 @@
 enum ComType
 {
 	dof_,
+	behavior_,
 	camera_,
 	earth_,
 	model_,
@@ -25,7 +26,7 @@ enum ComType
 	environment_
 };
 
-static const char* s_comTypeName[] = { "DoF", "Camera", "Earth", "Model", "Sound", "Animator", "Collider", "Environment", nullptr };
+static const char* s_comTypeName[] = { "DoF", "Behavior", "Camera", "Earth", "Model", "Sound", "Animator", "Collider", "Environment", nullptr };
 
 static QHash<QString, ComType> s_comsTypeMap;
 ComPropertyBoard::ComPropertyBoard()
@@ -61,12 +62,12 @@ ComPropertyBoard::ComPropertyBoard()
 			QStringList comlist;
 			if (_curSelEnt->isSpawner())
 			{
-				comlist << s_comTypeName[earth_] << s_comTypeName[model_] << s_comTypeName[sound_]
+				comlist << s_comTypeName[behavior_] << s_comTypeName[earth_] << s_comTypeName[model_] << s_comTypeName[sound_]
 					<< s_comTypeName[animator_] << s_comTypeName[collider_] << s_comTypeName[environment_];
 			}
 			else
 			{
-				comlist << s_comTypeName[camera_] << s_comTypeName[model_] << s_comTypeName[sound_]
+				comlist << s_comTypeName[behavior_] << s_comTypeName[camera_] << s_comTypeName[model_] << s_comTypeName[sound_]
 					<< s_comTypeName[animator_] << s_comTypeName[collider_] << s_comTypeName[environment_];
 			}
 
@@ -128,6 +129,9 @@ void ComPropertyBoard::showCom(QString comTypeName, zoo::Component* pCom)
 		case earth_:
 			pWgt = new EarthPropertyWgt(this);
 			break;
+		case behavior_:
+			pWgt = new BehaviorPropertyWgt(this);
+			break;
 		default:
 			return;
 		}
@@ -137,7 +141,7 @@ void ComPropertyBoard::showCom(QString comTypeName, zoo::Component* pCom)
 		_rootLayout->insertWidget(cnt - 2, pWgt);
 	}
 
-	pWgt->setCom(pCom);
+	pWgt->resetCom(pCom);
 	pWgt->setVisible(true);
 }
 

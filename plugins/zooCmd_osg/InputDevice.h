@@ -42,7 +42,8 @@ private:
 	bool                                     _osgInited;
 	osg::ref_ptr<osgViewer::GraphicsWindow>  _osgWinEmb;
 	float                                    _windowScale;
-	class OsgEarthContextImpl*               _contextImpl;
+	class OsgEarthUtilsImpl*                 _osgUtilsImpl;
+	class OsgEarthContextImpl*               _osgContextImpl;
 	osg::ref_ptr<osgViewer::CompositeViewer> _compositeViewer;
 };
 

@@ -2,7 +2,8 @@
 #define __OSG_COMPONENTIMPLS_H__
 
 #include <zooCmd_osg/OsgEarthSupport.h>
-#include <component/war/SharedComponents.h>
+#include <component/war/WarComponents.h>
+#include "CameraManipulatorManager.h"
 
 class DoFImpl : public ComponentImpl
 {
@@ -19,7 +20,8 @@ private:
 	void changeParent(DoF* dof);
 
 public:
-	osg::ref_ptr<osg::MatrixTransform> _transform;
+	osg::ref_ptr<osg::MatrixTransform> _transLocal;
+	osg::ref_ptr<osg::MatrixTransform> _transWorld;
 };
 
 class ModelImpl : public ComponentImpl
@@ -44,14 +46,13 @@ public:
 	~CameraImpl();
 	void awake();
 	void update();
-	void setTracker(osgGA::CameraManipulator* pTracker);
 
 private:
-	void setTrackNode(osg::Node* node);
-	void onSetTrackEnt(const UserData& userdata);
+	void trackingEnt();
 
 public:
 	osg::ref_ptr<osgViewer::View> _view;
+	osg::ref_ptr<CameraManipulatorManager> _manipulatorMgr;
 };
 
 class EnvironmentImpl : public ComponentImpl

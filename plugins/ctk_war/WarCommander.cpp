@@ -71,7 +71,7 @@ void WarCommander::saveCurBattlefield()
 {
 	if (!_currentBattlefield)
 	{
-		zoo_error("当前没有要保存的战场");
+		zoo_warning("当前没有要保存的战场");
 		return;
 	}
 
@@ -86,5 +86,5 @@ Battlefield* WarCommander::getCurBattlefield()
 void WarCommander::tick()
 {
 	if (_currentBattlefield)
-		_currentBattlefield->refresh();
+		_currentBattlefield->stepping();
 }

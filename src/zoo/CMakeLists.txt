@@ -21,6 +21,7 @@ set(ZOO_H
 	${PROJECT_INCLUDE}/DynLibManager.h
 	${PROJECT_INCLUDE}/Interlock.h
 	${PROJECT_INCLUDE}/Log.h
+	${PROJECT_INCLUDE}/Math.h
 	${PROJECT_INCLUDE}/Reflection.h
 	${PROJECT_INCLUDE}/ServiceLocator.h
 	${PROJECT_INCLUDE}/Sigslot.h

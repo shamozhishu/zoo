@@ -7,7 +7,7 @@ class WarCmd;
 class MeasureDistHandler : public osgGA::GUIEventHandler
 {
 public:
-	MeasureDistHandler(osgEarth::Util::EarthManipulator* manipulator);
+	MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator);
 	~MeasureDistHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 

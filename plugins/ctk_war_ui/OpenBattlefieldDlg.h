@@ -15,9 +15,11 @@ public:
 	OpenBattlefieldDlg();
 	~OpenBattlefieldDlg();
 	int getCurBattlefieldID() const;
+	QString getCurBattlefieldFile() const;
 
 private:
 	int _curBattlefieldID;
+	QString _curBattlefieldFile;
 	Ui::OpenBattlefieldDlg* _ui;
 };
 

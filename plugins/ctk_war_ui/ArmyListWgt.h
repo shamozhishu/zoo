@@ -1,8 +1,8 @@
 #ifndef __ARMY_LIST_WGT_H__
 #define __ARMY_LIST_WGT_H__
 
-#include <QWidget>
-#include <component/war/SharedComponents.h>
+#include <QTreeWidget>
+#include <component/war/WarComponents.h>
 
 namespace Ui
 {
@@ -10,12 +10,35 @@ namespace Ui
 }
 
 class ArmyTreeItem;
+class ArmyTreeWgt : public QTreeWidget
+{
+	Q_OBJECT
+public:
+	ArmyTreeWgt(QWidget* parent = Q_NULLPTR);
+
+protected:
+	void mousePressEvent(QMouseEvent* ev);
+	void mouseMoveEvent(QMouseEvent* ev);
+	void dragMoveEvent(QDragEnterEvent* ev);
+	void dragLeaveEvent(QDragEnterEvent* ev);
+	void dropEvent(QDropEvent* ev);
+
+private Q_SLOTS:
+	void onTreeWgtItemPressed(QTreeWidgetItem* item, int column);
+
+private:
+	QMenu* _rightClickMenu;
+	QPoint _beginDragPoint;
+	ArmyTreeItem* _newParentItem;
+};
+
 class ArmyListWgt : public QWidget
 {
 	Q_OBJECT
 public:
 	ArmyListWgt();
 	~ArmyListWgt();
+	QSize sizeHint() const;
 
 Q_SIGNALS:
 	void createItem(zoo::Entity* ent);
@@ -33,6 +56,7 @@ private:
 	Ui::ArmyListWgt* _ui;
 	zoo::Spawner* _spawner;
 	ArmyTreeItem* _rootItem;
+	friend class ArmyTreeWgt;
 };
 
 #endif // __ARMY_LIST_WGT_H__

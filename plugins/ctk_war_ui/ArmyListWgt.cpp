@@ -3,6 +3,10 @@
 #include "ui_ArmyListWgt.h"
 #include <QTreeWidgetItem>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QDrag>
+#include <QMenu>
+#include <QMouseEvent>
 #include <ctk_service/war/WarService.h>
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include "ComPropertyBoard.h"
@@ -19,14 +23,17 @@ public:
 	ArmyTreeItem(zoo::Entity* ent, QTreeWidget* parent)
 		: QTreeWidgetItem(parent)
 		, _ent(ent)
+		, _uiMgr(UIActivator::getService<UIManagerService>())
 	{
 		setText(0, QString::fromLocal8Bit(ent->desc().c_str()));
 
+		bool changed = false;
 		_doF = ent->getComponent<DoF>();
 		if (!_doF)
 		{
 			_doF = ent->addComponent<DoF>("DoFImpl");
 			_doF->getImp()->awake();
+			changed = true;
 		}
 
 		_mainCam = ent->getComponent<Camera>();
@@ -34,13 +41,18 @@ public:
 		{
 			_mainCam = ent->addComponent<Camera>("CameraImpl");
 			_mainCam->getImp()->awake();
+			changed = true;
 		}
+
+		if (changed)
+			_uiMgr->starWindowTitle();
 	}
 
 	ArmyTreeItem(zoo::Entity* ent, ArmyTreeItem* parent)
 		: QTreeWidgetItem(parent)
 		, _ent(ent)
 		, _mainCam(nullptr)
+		, _uiMgr(UIActivator::getService<UIManagerService>())
 	{
 		setText(0, QString::fromLocal8Bit(ent->desc().c_str()));
 		setFlags(flags() | Qt::ItemIsEditable);
@@ -51,13 +63,17 @@ public:
 			_doF = ent->addComponent<DoF>("DoFImpl");
 			_doF->getImp()->awake();
 			setParent(parent->_doF);
+			_uiMgr->starWindowTitle();
 		}
 	}
 
 	~ArmyTreeItem()
 	{
 		if (_ent)
+		{
 			_ent->getSpawner()->remove(_ent, true);
+			_uiMgr->starWindowTitle();
+		}
 	}
 
 	zoo::Entity* getEnt()
@@ -65,7 +81,6 @@ public:
 		return _ent;
 	}
 
-private:
 	void setParent(DoF* parent)
 	{
 		if (_doF->_parent == parent)
@@ -83,14 +98,166 @@ private:
 		if (parent)
 			parent->_children.push_back(_doF);
 
-		const_cast<BitState&>(_doF->dirtyBit()).addState(DoF::parent_);
+		const_cast<BitState&>(_doF->dirtyBit()).addState(DoF::Parent_);
+		_uiMgr->starWindowTitle();
 	}
 
 private:
 	DoF* _doF;
 	Camera* _mainCam;
 	zoo::Entity* _ent;
+	UIManagerService* _uiMgr;
 };
+
+ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
+	: _rightClickMenu(nullptr)
+	, _newParentItem(nullptr)
+{
+	_rightClickMenu = new QMenu(this);
+	QAction* pAct = new QAction(tr("删除"), this);
+	_rightClickMenu->addAction(pAct);
+	connect(pAct, &QAction::triggered, [this]
+	{
+		ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(currentItem());
+		if (pItem)
+		{
+			removeItemWidget(pItem, 0);
+			delete pItem;
+		}
+	});
+
+	connect(this, SIGNAL(itemPressed(QTreeWidgetItem*, int)), this, SLOT(onTreeWgtItemPressed(QTreeWidgetItem*, int)));
+	connect(this, &QTreeWidget::currentItemChanged, [this](QTreeWidgetItem *current, QTreeWidgetItem *previous)
+	{
+		UIManagerService* service = UIActivator::getService<UIManagerService>();
+		ComPropertyBoard* pPropBoard = dynamic_cast<ComPropertyBoard*>(service->getWidget(CTK_WAR_UI_PROPERTY_BOARD));
+		if (pPropBoard)
+		{
+			ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(current);
+			if (pItem && pItem->getEnt())
+			{
+				pItem->setExpanded(true);
+				if (pItem->parent())
+					pItem->parent()->setExpanded(true);
+
+				zoo::Entity* pEnt = pItem->getEnt();
+				pPropBoard->showCurEntComs(pEnt);
+				QString strId = pEnt->id() == -1 ? "null" : QString::number(pEnt->id());
+				QString strBreed = pEnt->breed() == -1 ? "null" : QString::number(pEnt->breed());
+				QString strDesc = pEnt->desc() == "" ? "null" : QString::fromLocal8Bit(pEnt->desc().c_str());
+				setHeaderLabels(QStringList() << QString(tr("编号：%1    类别：%2    描述：%3").arg(strId, strBreed, strDesc)));
+			}
+			else
+			{
+				pPropBoard->showCurEntComs(nullptr);
+				setHeaderLabels(QStringList() << tr("编号：null    类别：null    描述：null"));
+			}
+
+			if (_newParentItem && previous)
+			{
+				previous->setExpanded(true);
+				if (previous->parent())
+					previous->parent()->setExpanded(true);
+
+				ArmyTreeItem* pChildItem = dynamic_cast<ArmyTreeItem*>(previous);
+				if (pChildItem)
+					pChildItem->setParent(_newParentItem->getEnt()->getComponent<DoF>());
+			}
+		}
+	});
+
+	connect(this, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item, int column)
+	{
+		ArmyTreeItem* pItem = (ArmyTreeItem*)item;
+		if (pItem && pItem->getEnt())
+		{
+			UIActivator::sendWarCmd(QString("focus(%1,%2,%3)").arg(
+				pItem->getEnt()->id()).arg(pItem->getEnt()->breed()).arg(pItem->getEnt()->getSpawner()->id()));
+		}
+	});
+
+	connect(this, &QTreeWidget::itemChanged, [this](QTreeWidgetItem *item, int column)
+	{
+		ArmyTreeItem* pItem = (ArmyTreeItem*)item;
+		if (pItem && pItem->getEnt())
+		{
+			if (pItem->text(0).isEmpty())
+				pItem->setText(0, QString::fromLocal8Bit(pItem->getEnt()->desc().c_str()));
+			else
+			{
+				string strOldDesc = pItem->getEnt()->desc();
+				string strNewDesc = pItem->text(0).toLocal8Bit();
+				if (strOldDesc != strNewDesc)
+				{
+					pItem->getEnt()->desc() = strNewDesc;
+					UIActivator::getService<UIManagerService>()->starWindowTitle();
+				}
+			}
+		}
+	});
+}
+
+void ArmyTreeWgt::mousePressEvent(QMouseEvent* ev)
+{
+	if (ev->button() == Qt::LeftButton)
+		_beginDragPoint = ev->pos();
+	QTreeWidget::mousePressEvent(ev);
+}
+
+void ArmyTreeWgt::mouseMoveEvent(QMouseEvent* ev)
+{
+	if (ev->buttons() & Qt::LeftButton)
+	{
+		int dragDistance = QPoint(0, ev->pos().ry() - _beginDragPoint.ry()).manhattanLength();
+		if (dragDistance > QApplication::startDragDistance())
+		{
+		}
+	}
+	QTreeWidget::mouseMoveEvent(ev);
+}
+
+void ArmyTreeWgt::dragMoveEvent(QDragEnterEvent* ev)
+{
+	ArmyTreeWgt* source = qobject_cast<ArmyTreeWgt*>(ev->source());
+	if (source && source == this && itemAt(ev->pos()))
+	{
+		ev->setDropAction(Qt::MoveAction);
+		ev->accept();
+	}
+}
+
+void ArmyTreeWgt::dragLeaveEvent(QDragEnterEvent* ev)
+{
+	ArmyTreeWgt* source = qobject_cast<ArmyTreeWgt*>(ev->source());
+	if (source && source == this && itemAt(ev->pos()))
+	{
+		ev->setDropAction(Qt::MoveAction);
+		ev->accept();
+	}
+}
+
+void ArmyTreeWgt::dropEvent(QDropEvent* ev)
+{
+	ArmyTreeWgt* source = qobject_cast<ArmyTreeWgt*>(ev->source());
+	if (source && source == this)
+	{
+		ev->setDropAction(Qt::MoveAction);
+		_newParentItem = dynamic_cast<ArmyTreeItem*>(itemAt(ev->pos()));
+		if (!_newParentItem)
+			return;
+	}
+	QTreeWidget::dropEvent(ev);
+	_newParentItem = nullptr;
+}
+
+void ArmyTreeWgt::onTreeWgtItemPressed(QTreeWidgetItem* item, int column)
+{
+	ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(item);
+	if (!pItem || pItem == ((ArmyListWgt*)parent())->_rootItem)
+		return;
+	if (qApp->mouseButtons() == Qt::RightButton)
+		_rightClickMenu->exec(QCursor::pos());
+}
 
 ArmyListWgt::ArmyListWgt()
 	: _ui(new Ui::ArmyListWgt)
@@ -98,16 +265,15 @@ ArmyListWgt::ArmyListWgt()
 	, _rootItem(nullptr)
 {
 	_ui->setupUi(this);
-	setFixedWidth(300);
+	_ui->treeWidget->setHeaderLabels(QStringList() << tr("编号：null    类别：null    描述：null"));
 	connect(this, SIGNAL(createItem(zoo::Entity*)), this, SLOT(onCreate(zoo::Entity*)));
 
 	QIntValidator* pIntValidator = new QIntValidator;
 	pIntValidator->setRange(0, 9999);
 	_ui->lineEdit_id->setValidator(pIntValidator);
 	_ui->lineEdit_breed->setValidator(pIntValidator);
-	_ui->treeWidget->setHeaderLabels(QStringList() << tr("编号：null    种类：null"));
 
-	connect(_ui->pushButton_create, &QPushButton::clicked, [this]
+	connect(_ui->toolButton, &QPushButton::clicked, [this]
 	{
 		if (!_spawner || !_rootItem)
 		{
@@ -123,7 +289,7 @@ ArmyListWgt::ArmyListWgt()
 
 		if (_ui->lineEdit_breed->text() == "")
 		{
-			QMessageBox::warning(this, tr("警告"), tr("实体种类不能为空！"));
+			QMessageBox::warning(this, tr("警告"), tr("实体类别不能为空！"));
 			return;
 		}
 
@@ -145,68 +311,16 @@ ArmyListWgt::ArmyListWgt()
 		ent->desc() = _ui->lineEdit_desc->text().toLocal8Bit();
 		emit createItem(ent);
 	});
-
-	connect(_ui->pushButton_destroy, &QPushButton::clicked, [this]
-	{
-		ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(_ui->treeWidget->currentItem());
-		if (pItem && pItem != _rootItem)
-		{
-			_ui->treeWidget->removeItemWidget(pItem, 0);
-			delete pItem;
-		}
-	});
-
-	connect(_ui->treeWidget, &QTreeWidget::currentItemChanged, [this](QTreeWidgetItem *current, QTreeWidgetItem *previous)
-	{
-		UIManagerService* service = UIActivator::getService<UIManagerService>();
-		ComPropertyBoard* pPropBoard = dynamic_cast<ComPropertyBoard*>(service->getWidget(CTK_WAR_UI_PROPERTY_BOARD));
-		if (pPropBoard)
-		{
-			ArmyTreeItem* pItem = (ArmyTreeItem*)current;
-			if (pItem && pItem->getEnt())
-			{
-				zoo::Entity* pEnt = pItem->getEnt();
-				pPropBoard->showCurEntComs(pEnt);
-				QString strId = pEnt->id() == -1 ? "null" : QString::number(pEnt->id());
-				QString strBreed = pEnt->breed() == -1 ? "null" : QString::number(pEnt->breed());
-				_ui->treeWidget->setHeaderLabels(QStringList() << QString(tr("编号：%1    种类：%2").arg(strId, strBreed)));
-			}
-			else
-			{
-				pPropBoard->showCurEntComs(nullptr);
-				_ui->treeWidget->setHeaderLabels(QStringList() << tr("编号：null    种类：null"));
-			}
-		}
-	});
-
-	connect(_ui->treeWidget, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item, int column)
-	{
-		ArmyTreeItem* pItem = (ArmyTreeItem*)item;
-		if (pItem && pItem->getEnt())
-		{
-			Camera* pCam = pItem->getEnt()->getSpawner()->getComponent<Camera>();
-			pCam->_trackEntID = pItem->getEnt()->id();
-			pCam->_trackEntBreed = pItem->getEnt()->breed();
-			const_cast<BitState&>(pCam->dirtyBit()).addState(Camera::trackEnt_);
-		}
-	});
-
-	connect(_ui->treeWidget, &QTreeWidget::itemChanged, [this](QTreeWidgetItem *item, int column)
-	{
-		ArmyTreeItem* pItem = (ArmyTreeItem*)item;
-		if (pItem && pItem->getEnt())
-		{
-			if (pItem->text(0).isEmpty())
-				pItem->setText(0, QString::fromLocal8Bit(pItem->getEnt()->desc().c_str()));
-			else
-				pItem->getEnt()->desc() = pItem->text(0).toLocal8Bit();
-		}
-	});
 }
 
 ArmyListWgt::~ArmyListWgt()
 {
 	delete _ui;
+}
+
+QSize ArmyListWgt::sizeHint() const
+{
+	return QSize(300, -1); // 在这里定义dock的初始大小
 }
 
 void ArmyListWgt::onOpen()
@@ -221,6 +335,13 @@ void ArmyListWgt::onOpen()
 			return;
 		}
 
+		QString curscenefile = dlg.getCurBattlefieldFile();
+		if (curscenefile.isEmpty())
+		{
+			QMessageBox::warning(this, tr("警告"), tr("场景文件不存在！"));
+			return;
+		}
+
 		WarService* service = UIActivator::getService<WarService>();
 		if (service != Q_NULLPTR)
 		{
@@ -231,14 +352,22 @@ void ArmyListWgt::onOpen()
 			_spawner = Spawner::find(curid);
 			generateItemTree(_spawner, nullptr);
 		}
+
+		UIManagerService* uiMgr = UIActivator::getService<UIManagerService>();
+		if (uiMgr)
+			uiMgr->setWindowTitle(tr("战场编辑器 - ") + QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + curscenefile);
 	}
 }
 
 void ArmyListWgt::onSave()
 {
 	WarService* service = UIActivator::getService<WarService>();
-	if (service != Q_NULLPTR)
+	UIManagerService* uiMgr = UIActivator::getService<UIManagerService>();
+	if (service && uiMgr)
+	{
 		service->saveScene();
+		uiMgr->unstarWindowTitle();
+	}
 }
 
 void ArmyListWgt::onSim(bool checked)

@@ -15,19 +15,18 @@ public:
 	virtual void deserialize(Spawner* spawner) = 0;
 };
 
-class _zooExport Component : public Serializer, public Type
+struct _zooExport Component : public Serializer, public Type
 {
-	friend class Entity;
-	Entity* _entity;
-protected:
-	BitState _dirty;
-	ComponentImpl* _imp;
-public:
 	Component();
 	virtual ~Component();
 	Entity* getEntity() const { return _entity; }
 	const BitState& dirtyBit() const { return _dirty; }
 	ComponentImpl* getImp() const { return _imp; }
+protected:
+	Entity* _entity;
+	BitState _dirty;
+	ComponentImpl* _imp;
+	friend class Entity;
 };
 
 class _zooExport ComponentImpl : public Type

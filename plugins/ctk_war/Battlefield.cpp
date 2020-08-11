@@ -9,9 +9,9 @@ Battlefield::Battlefield(int id, TableCSV* table)
 	, _table(table)
 {
 	_spawner = Spawner::create(id, table->item2str(id, "description"));
-	_SimStates[ready_].init(table->item2str(id, "ready"));
-	_SimStates[running_].init(table->item2str(id, "running"));
-	_SimStates[paused_].init(table->item2str(id, "paused"));
+	_simStates[ready_].init(table->item2str(id, "ready"));
+	_simStates[running_].init(table->item2str(id, "running"));
+	_simStates[paused_].init(table->item2str(id, "paused"));
 }
 
 Battlefield::~Battlefield()
@@ -38,14 +38,14 @@ void Battlefield::exit()
 	_spawner->clear();
 }
 
-void Battlefield::refresh()
+void Battlefield::stepping()
 {
 	auto it = _behaviors.begin();
 	auto itEnd = _behaviors.end();
 	for (; it != itEnd; ++it)
 		(*it)->exec();
 
-	WarSimulator::refresh();
+	WarSimulator::stepping();
 	_spawner->updateAll();
 }
 

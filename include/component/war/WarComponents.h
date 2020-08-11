@@ -1,30 +1,46 @@
-#ifndef __SHARED_COMPONENTS_H__
-#define __SHARED_COMPONENTS_H__
+#ifndef __WAR_COMPONENTS_H__
+#define __WAR_COMPONENTS_H__
 
 #include <zoo/Component.h>
 
 using namespace zoo;
 
-class DoF : public Component { // tolua_export
+struct Behavior : public Component {
+	string _scriptFile;
+	bool _scriptInited;
+private:
+	bool _scriptValid;
+	class LuaScript* _script;
+	ZOO_REFLEX_DECLARE(Behavior)
+
 public:
+	Behavior();
+	~Behavior();
+	void exec();
+	void reset();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+};
+
+struct AI : public Component {
+	AI();
+	~AI();
+};
+
+struct DoF : public Component { // tolua_export
 	enum
 	{
-		dof_ = ESTATE_01,
-		parent_ = ESTATE_02
+		Dof_ = ESTATE_01,
+		Parent_ = ESTATE_02
 	};
 
-	double _x;
-	double _y;
-	double _z;
-	float _heading;
-	float _pitch;
-	float _roll;
-	float _sx;
-	float _sy;
-	float _sz;
+	double _x, _y, _z;
+	float _sx, _sy, _sz;
+	float _heading, _pitch, _roll;
 	DoF* _parent;
 	int _mountEntID;
 	int _mountEntBreed;
+	bool _lonLatHeight;
 	vector<DoF*> _children;
 	ZOO_REFLEX_DECLARE(DoF)
 
@@ -34,40 +50,31 @@ public:
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
 
-private:
-	void onSetParent(const UserData& userdata);
-
 public:
 	// tolua_begin
-	void setPosX(double x);
+	bool isLLH() const;
+	void setPos(double x, double y, double z, bool lon_lat_height = false);
 	double getPosX() const;
-	void setPosY(double y);
 	double getPosY() const;
-	void setPosZ(double z);
 	double getPosZ() const;
-	void setHeading(double h);
+	void setRot(float h, float p, float r);
 	float getHeading() const;
-	void setPitch(double p);
 	float getPitch() const;
-	void setRoll(double r);
 	float getRoll() const;
-	void setScaleX(double x);
+	void setScale(float sx, float sy, float sz);
 	float getScaleX() const;
-	void setScaleY(double y);
 	float getScaleY() const;
-	void setScaleZ(double z);
 	float getScaleZ() const;
 	void setParent(DoF* parent);
 	DoF* getParent() const;
 };
 // tolua_end
 
-class Model : public Component { // tolua_export
-public:
+struct Model : public Component { // tolua_export
 	enum
 	{
-		visible_ = ESTATE_01,
-		modelFile_ = ESTATE_02
+		Visible_ = ESTATE_01,
+		ModelFile_ = ESTATE_02
 	};
 
 	bool _visible;
@@ -87,8 +94,7 @@ public:
 };
 // tolua_end
 
-class Sound : public Component { // tolua_export
-public:
+struct Sound : public Component { // tolua_export
 	bool _isPlay;
 	bool _isLoop;
 	string _soundFile;
@@ -108,8 +114,7 @@ public:
 };
 // tolua_end
 
-class Animator : public Component { // tolua_export
-public:
+struct Animator : public Component { // tolua_export
 	string _trajFile;
 	ZOO_REFLEX_DECLARE(Animator)
 
@@ -122,7 +127,7 @@ public:
 };
 // tolua_end
 
-class Collider : public Component { // tolua_export
+struct Collider : public Component { // tolua_export
 
 
 public:
@@ -130,15 +135,30 @@ public:
 };
 // tolua_end
 
-class Camera : public Component { // tolua_export
-public:
+struct Camera : public Component { // tolua_export
 	enum
 	{
-		trackEnt_ = ESTATE_01,
-		bgcolour_ = ESTATE_02,
-		viewport_ = ESTATE_03
+		Bgcolour_ = ESTATE_01,
+		Viewport_ = ESTATE_02,
+		TrackEnt_ = ESTATE_03,
+		Manipulator_ = ESTATE_04
 	};
 
+	enum
+	{
+		Earth_ = 0,
+		NodeTracker_,
+		Trackball_,
+		Flight_,
+		Drive_,
+		Terrain_,
+		Orbit_,
+		FirstPerson_,
+		Spherical_,
+		Custom_
+	};
+
+	int _manipulatorKey;
 	int _trackEntID, _trackEntBreed;
 	int _red, _green, _blue, _alpha;
 	float _lRatio, _rRatio, _bRatio, _tRatio;
@@ -151,13 +171,14 @@ public:
 
 public:
 	// tolua_begin
+	void setManipulator(int key);
 	void setTrackEnt(int id, int breed);
 	void setBgColor(int r, int g, int b, int a = 255);
 	void setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio);
 };
 // tolua_end
 
-class Environment : public Component { // tolua_export
+struct Environment : public Component { // tolua_export
 	ZOO_REFLEX_DECLARE(Environment)
 
 public:
@@ -170,16 +191,15 @@ public:
 };
 // tolua_end
 
-class Earth : public Component { // tolua_export
-public:
+struct Earth : public Component { // tolua_export
 	enum
 	{
-		sunVisible_ = ESTATE_01,
-		moonVisible_ = ESTATE_02,
-		starVisible_ = ESTATE_03,
-		nebulaVisible_ = ESTATE_04,
-		atmosphereVisible_ = ESTATE_05,
-		sunlightIntensity_ = ESTATE_06
+		SunVisible_ = ESTATE_01,
+		MoonVisible_ = ESTATE_02,
+		StarVisible_ = ESTATE_03,
+		NebulaVisible_ = ESTATE_04,
+		AtmosphereVisible_ = ESTATE_05,
+		SunlightIntensity_ = ESTATE_06
 	};
 
 	enum Sky { sun_, moon_, star_, nebula_, atmosphere_, count_ };
@@ -204,4 +224,4 @@ public:
 };
 // tolua_end
 
-#endif // __SHARED_COMPONENTS_H__
+#endif // __WAR_COMPONENTS_H__

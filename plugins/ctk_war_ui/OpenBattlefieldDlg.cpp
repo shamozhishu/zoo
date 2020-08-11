@@ -41,14 +41,17 @@ OpenBattlefieldDlg::OpenBattlefieldDlg()
 		len = sortedKeys.size();
 		for (int i = 0; i < len; ++i)
 		{
-			QTableWidgetItem* pItem = pItem = new QTableWidgetItem(QString::fromLocal8Bit(sortedKeys[i].c_str()));
+			QTableWidgetItem* pItem = new QTableWidgetItem(QString::fromLocal8Bit(sortedKeys[i].c_str()));
 			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
+			pItem->setTextAlignment(Qt::AlignCenter);
 			_ui->tableWidget->setItem(i, 0, pItem);
 			pItem = new QTableWidgetItem(QString::fromLocal8Bit(pBattlefieldTable->item2str(sortedKeys[i].c_str(), "description")));
 			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
+			pItem->setTextAlignment(Qt::AlignCenter);
 			_ui->tableWidget->setItem(i, 1, pItem);
 			pItem = new QTableWidgetItem(QString::fromLocal8Bit(pBattlefieldTable->item2str(sortedKeys[i].c_str(), "scene_file")));
 			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
+			pItem->setTextAlignment(Qt::AlignCenter);
 			_ui->tableWidget->setItem(i, 2, pItem);
 		}
 	}
@@ -56,6 +59,7 @@ OpenBattlefieldDlg::OpenBattlefieldDlg()
 	connect(_ui->okButton, &QPushButton::clicked, [this]
 	{
 		_curBattlefieldID = _ui->tableWidget->item(_ui->tableWidget->currentRow(), 0)->data(Qt::DisplayRole).toInt();
+		_curBattlefieldFile = _ui->tableWidget->item(_ui->tableWidget->currentRow(), 2)->data(Qt::DisplayRole).toString();
 	});
 }
 
@@ -67,4 +71,9 @@ OpenBattlefieldDlg::~OpenBattlefieldDlg()
 int OpenBattlefieldDlg::getCurBattlefieldID() const
 {
 	return _curBattlefieldID;
+}
+
+QString OpenBattlefieldDlg::getCurBattlefieldFile() const
+{
+	return _curBattlefieldFile;
 }

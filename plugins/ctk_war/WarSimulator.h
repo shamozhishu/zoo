@@ -14,23 +14,22 @@ public:
 	SimState();
 	~SimState();
 	bool init(string scriptFile);
-	SimState* handle(ESimState simState);
-	void refresh();
+	void stepping();
 	void enter();
 	void exit();
 };
 
 class WarSimulator
-{
-	friend class SimState;
-	SimState* _state;
+{	
 public:
 	WarSimulator();
-	virtual void refresh();
-	virtual void handle(ESimState simState);
+	virtual void stepping();
+	void transition(ESimState simState);
 
 protected:
-	static SimState _SimStates[count_];
+	friend class SimState;
+	SimState* _currentState;
+	static SimState _simStates[count_];
 };
 
 #endif // __WAR_SIMULATOR_H__

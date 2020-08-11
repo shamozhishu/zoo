@@ -1,5 +1,12 @@
 #include "OsgEarthContextImpl.h"
 
+osg::Group* OsgEarthContextImpl::getRootNode()
+{
+	if (!_root)
+		_root = new osg::Group;
+	return _root;
+}
+
 osgViewer::View* OsgEarthContextImpl::getOpView()
 {
 	return _view.get();

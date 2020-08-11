@@ -15,7 +15,10 @@ class ZooCmdUI : public QMainWindow, public UIManagerService
 public:
 	ZooCmdUI(QWidget *parent = Q_NULLPTR);
 	~ZooCmdUI();
-	void finishWindowLaunch(QString windowTitle);
+	void setWindowTitle(QString windowTitle);
+	void starWindowTitle();
+	void unstarWindowTitle();
+	void finishWindowLaunch();
 	void addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area, Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas);
 	void removeWidget(const QString& strId);
 	QWidget* getWidget(const QString& strId);

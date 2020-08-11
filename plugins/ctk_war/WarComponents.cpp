@@ -1,4 +1,4 @@
-#include "WarComponents.h"
+#include <component/war/WarComponents.h>
 #include "LuaScript.h"
 #include <zoo/Utils.h>
 #include "WarCommander.h"
@@ -49,6 +49,11 @@ void Behavior::exec()
 		_script->executeGlobalFunction("Update");
 }
 
+void Behavior::reset()
+{
+	_scriptInited = false;
+}
+
 void Behavior::serialize(Spawner* spawner)
 {
 	spawner->setValue("script", _scriptFile);
@@ -72,6 +77,7 @@ DoF::DoF()
 	: _parent(nullptr)
 	, _mountEntID(-1)
 	, _mountEntBreed(-1)
+	, _lonLatHeight(false)
 	, _x(0)
 	, _y(0)
 	, _z(0)
@@ -109,6 +115,7 @@ void DoF::serialize(Spawner* spawner)
 	spawner->setValue("sx", _sx);
 	spawner->setValue("sy", _sy);
 	spawner->setValue("sz", _sz);
+	spawner->setValue("lon_lat_height", _lonLatHeight);
 
 	if (_parent)
 	{
@@ -135,24 +142,34 @@ void DoF::deserialize(Spawner* spawner)
 	spawner->getValue("sx", _sx);
 	spawner->getValue("sy", _sy);
 	spawner->getValue("sz", _sz);
+	spawner->getValue("lon_lat_height", _lonLatHeight);
 	spawner->getValue("mount_entity_id", _mountEntID);
 	spawner->getValue("mount_entity_breed", _mountEntBreed);
-	SignalTrigger::connect(*getEntity()->getSpawner(), this, &DoF::onSetParent);
-}
 
-void DoF::onSetParent(const UserData& userdata)
-{
-	Entity* pEnt = getEntity()->getSpawner()->gain(_mountEntID, _mountEntBreed);
-	if (pEnt)
+	SignalTrigger::connect(*getEntity()->getSpawner(), [this]
 	{
-		setParent(pEnt->getComponent<DoF>());
-	}
+		Entity* pEnt = getEntity()->getSpawner()->gain(_mountEntID, _mountEntBreed);
+		if (pEnt)
+			setParent(pEnt->getComponent<DoF>());
+	});
 }
 
-void DoF::setPosX(double x)
+bool DoF::isLLH() const
+{
+	return _lonLatHeight;
+}
+
+void DoF::setPos(double x, double y, double z, bool lon_lat_height /*= false*/)
 {
 	_x = x;
-	_dirty.addState(dof_);
+	_y = y;
+	_z = z;
+	_dirty.addState(Dof_);
+	if (_lonLatHeight != lon_lat_height)
+	{
+		_lonLatHeight = lon_lat_height;
+		_dirty.addState(Parent_);
+	}
 }
 
 double DoF::getPosX() const
@@ -160,21 +177,9 @@ double DoF::getPosX() const
 	return _x;
 }
 
-void DoF::setPosY(double y)
-{
-	_y = y;
-	_dirty.addState(dof_);
-}
-
 double DoF::getPosY() const
 {
 	return _y;
-}
-
-void DoF::setPosZ(double z)
-{
-	_z = z;
-	_dirty.addState(dof_);
 }
 
 double DoF::getPosZ() const
@@ -182,10 +187,12 @@ double DoF::getPosZ() const
 	return _z;
 }
 
-void DoF::setHeading(double h)
+void DoF::setRot(float h, float p, float r)
 {
 	_heading = h;
-	_dirty.addState(dof_);
+	_pitch = p;
+	_roll = r;
+	_dirty.addState(Dof_);
 }
 
 float DoF::getHeading() const
@@ -193,21 +200,9 @@ float DoF::getHeading() const
 	return _heading;
 }
 
-void DoF::setPitch(double p)
-{
-	_pitch = p;
-	_dirty.addState(dof_);
-}
-
 float DoF::getPitch() const
 {
 	return _pitch;
-}
-
-void DoF::setRoll(double r)
-{
-	_roll = r;
-	_dirty.addState(dof_);
 }
 
 float DoF::getRoll() const
@@ -215,10 +210,12 @@ float DoF::getRoll() const
 	return _roll;
 }
 
-void DoF::setScaleX(double x)
+void DoF::setScale(float sx, float sy, float sz)
 {
-	_sx = x;
-	_dirty.addState(dof_);
+	_sx = sx;
+	_sy = sy;
+	_sz = sz;
+	_dirty.addState(Dof_);
 }
 
 float DoF::getScaleX() const
@@ -226,21 +223,9 @@ float DoF::getScaleX() const
 	return _sx;
 }
 
-void DoF::setScaleY(double y)
-{
-	_sy = y;
-	_dirty.addState(dof_);
-}
-
 float DoF::getScaleY() const
 {
 	return _sy;
-}
-
-void DoF::setScaleZ(double z)
-{
-	_sz = z;
-	_dirty.addState(dof_);
 }
 
 float DoF::getScaleZ() const
@@ -265,7 +250,7 @@ void DoF::setParent(DoF* parent)
 	if (parent)
 		parent->_children.push_back(this);
 
-	_dirty.addState(parent_);
+	_dirty.addState(Parent_);
 }
 
 DoF* DoF::getParent() const
@@ -299,13 +284,13 @@ bool Model::isVisible() const
 void Model::setVisible(bool visible)
 {
 	_visible = visible;
-	_dirty.addState(visible_);
+	_dirty.addState(Visible_);
 }
 
 void Model::setModelFile(const string& modelFile)
 {
 	_modelFile = modelFile;
-	_dirty.addState(modelFile_);
+	_dirty.addState(ModelFile_);
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Sound);
@@ -359,6 +344,7 @@ ZOO_REFLEX_IMPLEMENT(Camera);
 Camera::Camera()
 	: _trackEntID(-1)
 	, _trackEntBreed(-1)
+	, _manipulatorKey(Earth_)
 	, _lRatio(0)
 	, _rRatio(1)
 	, _bRatio(0)
@@ -380,6 +366,7 @@ void Camera::serialize(Spawner* spawner)
 	spawner->setValue("ratio_right", _rRatio);
 	spawner->setValue("ratio_bottom", _bRatio);
 	spawner->setValue("ratio_top", _tRatio);
+	spawner->setValue("manipulator", _manipulatorKey);
 	spawner->setValue("track_entity_id", _trackEntID);
 	spawner->setValue("track_entity_breed", _trackEntBreed);
 }
@@ -394,21 +381,34 @@ void Camera::deserialize(Spawner* spawner)
 	spawner->getValue("ratio_right", _rRatio);
 	spawner->getValue("ratio_bottom", _bRatio);
 	spawner->getValue("ratio_top", _tRatio);
+	spawner->getValue("manipulator", _manipulatorKey);
 	spawner->getValue("track_entity_id", _trackEntID);
 	spawner->getValue("track_entity_breed", _trackEntBreed);
+}
+
+void Camera::setManipulator(int key)
+{
+	if (key < Earth_)
+		key = Earth_;
+
+	if (_manipulatorKey != key)
+	{
+		_manipulatorKey = key;
+		_dirty.addState(Manipulator_);
+	}
 }
 
 void Camera::setTrackEnt(int id, int breed)
 {
 	_trackEntID = id;
 	_trackEntBreed = breed;
-	_dirty.addState(trackEnt_);
+	_dirty.addState(TrackEnt_);
 }
 
 void Camera::setBgColor(int r, int g, int b, int a /*= 255*/)
 {
 	_red = r; _green = g; _blue = b; _alpha = a;
-	_dirty.addState(bgcolour_);
+	_dirty.addState(Bgcolour_);
 }
 
 void Camera::setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio)
@@ -417,7 +417,7 @@ void Camera::setViewport(float leftRatio, float rightRatio, float bottomRatio, f
 	_rRatio = rightRatio;
 	_bRatio = bottomRatio;
 	_tRatio = topRatio;
-	_dirty.addState(viewport_);
+	_dirty.addState(Viewport_);
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Environment);
@@ -439,7 +439,7 @@ ZOO_REFLEX_IMPLEMENT(Earth);
 Earth::Earth()
 	: _sunlightIntensity(0.0f)
 {
-	_dirty.eraseState(sunlightIntensity_);
+	_dirty.eraseState(SunlightIntensity_);
 	for (int i = sun_; i < count_; ++i)
 		_skyVisibility[i] = true;
 }
@@ -467,35 +467,35 @@ void Earth::deserialize(Spawner* spawner)
 void Earth::setSunVisible(bool visible)
 {
 	_skyVisibility[sun_] = visible;
-	_dirty.addState(sunVisible_);
+	_dirty.addState(SunVisible_);
 }
 
 void Earth::setMoonVisible(bool visible)
 {
 	_skyVisibility[moon_] = visible;
-	_dirty.addState(moonVisible_);
+	_dirty.addState(MoonVisible_);
 }
 
 void Earth::setStarVisible(bool visible)
 {
 	_skyVisibility[star_] = visible;
-	_dirty.addState(starVisible_);
+	_dirty.addState(StarVisible_);
 }
 
 void Earth::setNebulaVisible(bool visible)
 {
 	_skyVisibility[nebula_] = visible;
-	_dirty.addState(nebulaVisible_);
+	_dirty.addState(NebulaVisible_);
 }
 
 void Earth::setAtmosphereVisible(bool visible)
 {
 	_skyVisibility[atmosphere_] = visible;
-	_dirty.addState(atmosphereVisible_);
+	_dirty.addState(AtmosphereVisible_);
 }
 
 void Earth::setSunlightIntensity(float intensity)
 {
 	_sunlightIntensity = intensity;
-	_dirty.addState(sunlightIntensity_);
+	_dirty.addState(SunlightIntensity_);
 }

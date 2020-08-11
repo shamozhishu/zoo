@@ -127,9 +127,27 @@ ZooCmdUI::~ZooCmdUI()
 #endif
 }
 
-void ZooCmdUI::finishWindowLaunch(QString windowTitle)
+void ZooCmdUI::setWindowTitle(QString windowTitle)
 {
-	setWindowTitle(windowTitle);
+	QMainWindow::setWindowTitle(windowTitle);
+}
+
+void ZooCmdUI::starWindowTitle()
+{
+	QString title = QMainWindow::windowTitle();
+	if (title.size() > 0 && title.right(1) != tr("*"))
+		QMainWindow::setWindowTitle(title + tr("*"));
+}
+
+void ZooCmdUI::unstarWindowTitle()
+{
+	QString title = QMainWindow::windowTitle();
+	if (title.size() > 0 && title.right(1) == tr("*"))
+		QMainWindow::setWindowTitle(title.left(title.size() - 1));
+}
+
+void ZooCmdUI::finishWindowLaunch()
+{
 	showMaximized();
 }
 
@@ -255,7 +273,7 @@ void ZooCmdUI::keyPressEvent(QKeyEvent *event)
 void ZooCmdUI::onCmd()
 {
 	QString cmdline = _cmdlineEdit->text().trimmed();
-	if (cmdline.contains("exit", Qt::CaseInsensitive)|| !zooCmd_Send(cmdline.toLocal8Bit()))
+	if (!zooCmd_Send(cmdline.toLocal8Bit()))
 	{
 		QMessageBox::warning(this, tr("¾¯¸æ"), QString::fromLocal8Bit(zooCmd_TipMessage()));
 		return;

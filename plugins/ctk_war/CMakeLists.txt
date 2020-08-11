@@ -46,21 +46,21 @@ endif()
 file(WRITE ${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp)
 
 set(PLUGIN_SRCS
+	${CMAKE_SOURCE_DIR}/include/component/war/WarComponents.h
 	Battlefield.h
 	InstanceReleaser.h
 	LuaScript.h
 	WarActivator.h
 	WarCommander.h
-	WarComponents.h
 	WarServiceImpl.h
 	WarSimulator.h
 
+	WarComponents.cpp
 	Battlefield.cpp
 	InstanceReleaser.cpp
 	LuaScript.cpp
 	WarActivator.cpp
 	WarCommander.cpp
-	WarComponents.cpp
 	WarServiceImpl.cpp
 	WarSimulator.cpp
 	
@@ -106,7 +106,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 	PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different
 	"${CMAKE_CURRENT_SOURCE_DIR}/ToLuaWar.pkg" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
-	"${CMAKE_SOURCE_DIR}/include/component/war/SharedComponents.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
+	"${CMAKE_SOURCE_DIR}/include/component/war/WarComponents.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Battlefield.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
 	COMMAND tolua++ -n ToLuaWar
 	-o "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp" "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.pkg"

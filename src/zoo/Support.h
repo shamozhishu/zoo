@@ -56,7 +56,7 @@ class Block;
 class Timer;
 class Entity;
 class Spawner;
-class Component;
+struct Component;
 class ComponentImpl;
 class Signal;
 class SignalTrigger;

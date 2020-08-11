@@ -1,9 +1,13 @@
 #include "PropertyWgts.h"
 #include "UIActivator.h"
+#include <zoo/Math.h>
 #include <zoo/Utils.h>
+#include <zoo/ServiceLocator.h>
+#include <zooCmd_osg/OsgEarthUtils.h>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QDesktopServices>
 #include <QStandardItemModel>
 #include "ComPropertyBoard.h"
 #include "ui_ComListWgt.h"
@@ -11,11 +15,16 @@
 #include "ui_ModelPropertyWgt.h"
 #include "ui_CameraPropertyWgt.h"
 #include "ui_EarthPropertyWgt.h"
+#include "ui_BehaviorPropertyWgt.h"
+#include <ctk_service/zoocmd_ui/UIManagerService.h>
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
 #endif
+
+#define COM_CAST(TYPE) ((TYPE*)_com)
+#define BEHAVIOR_COMPONENT_NAME "Behavior"
 
 ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 	: _ui(new Ui::ComListWgt)
@@ -42,36 +51,46 @@ ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 	_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("组件")));
 	_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("实现")));
 
-	connect(_ui->tableWidget, &QTableWidget::itemDoubleClicked, [this](QTableWidgetItem *item)
+	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
+	connect(_ui->tableWidget, &QTableWidget::itemDoubleClicked, [this, pUIMgr](QTableWidgetItem *item)
 	{
-		if (item->column() != 0)
+		if (item->flags().testFlag(Qt::ItemIsEditable))
 			return;
 
 		if (_operateEnt)
 		{
-			QString comName = item->data(Qt::DisplayRole).toString();
+			QString comName = _ui->tableWidget->item(item->row(), 0)->data(Qt::DisplayRole).toString();
 			QString comImpl = _ui->tableWidget->item(item->row(), 1)->data(Qt::DisplayRole).toString();
-			if (_addComponentBtn)
+			if (_addComponentBtn) // 添加组件
 			{
 				zoo::Component* pCom = _operateEnt->addComponent(comName.toStdString(), comImpl.toStdString());
 				if (pCom)
 				{
+					_propBoard->showCom(comName, pCom);
 					if (pCom->getImp())
 					{
 						pCom->getImp()->awake();
-						_propBoard->showCom(comName, pCom);
+						pCom->getEntity()->notifyComponents();
+						pUIMgr->starWindowTitle();
 					}
-					else
+					else if (comName != BEHAVIOR_COMPONENT_NAME)
 					{
 						_operateEnt->removeComponent(pCom);
-						QMessageBox::warning(this, tr("警告"), comName + tr("组件的实现不存在！"));
+						QMessageBox::warning(this, tr("警告"), comName + tr("组件实现不存在！"));
 					}
+					else
+						pUIMgr->starWindowTitle();
+				}
+				else
+				{
+					QMessageBox::warning(this, tr("警告"), comName + tr("组件不存在！"));
 				}
 			}
-			else
+			else // 移除组件
 			{
 				_operateEnt->removeComponent(comName.toStdString());
 				_propBoard->hideCom(comName);
+				pUIMgr->starWindowTitle();
 			}
 
 			hide();
@@ -120,7 +139,13 @@ void ComListWgt::refreshComList(zoo::Entity* ent, bool bAddComponentBtn, const Q
 		QTableWidgetItem* pItem = new QTableWidgetItem(strlist[i]);
 		pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
 		_ui->tableWidget->setItem(i, 0, pItem);
-		pItem = new QTableWidgetItem(strlist[i] + "Impl");
+		if (strlist[i] == BEHAVIOR_COMPONENT_NAME)
+		{
+			pItem = new QTableWidgetItem();
+			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
+		}
+		else
+			pItem = new QTableWidgetItem(strlist[i] + "Impl");
 		_ui->tableWidget->setItem(i, 1, pItem);
 	}
 }
@@ -136,9 +161,15 @@ PropertyWgt::PropertyWgt(QWidget *parent)
 	: QWidget(parent)
 	, _com(nullptr)
 {
+	_uiMgr = UIActivator::getService<UIManagerService>();
 }
 
-void PropertyWgt::setCom(zoo::Component* pCom)
+QSize PropertyWgt::sizeHint() const
+{
+	return QSize(300, -1); // 在这里定义dock的初始大小
+}
+
+void PropertyWgt::resetCom(zoo::Component* pCom)
 {
 	_com = pCom;
 }
@@ -160,50 +191,162 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 	_ui->lineEdit_scaley->setValidator(pDoubleValidator);
 	_ui->lineEdit_scalez->setValidator(pDoubleValidator);
 
-	connect(_ui->lineEdit_posx, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_posx, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_x = _ui->lineEdit_posx->text().toDouble();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		double tmp = _ui->lineEdit_posx->text().toDouble();
+		if (!zoo::equals(COM_CAST(DoF)->_x, tmp))
+		{
+			COM_CAST(DoF)->_x = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_posy, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_posy, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_y = _ui->lineEdit_posy->text().toDouble();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		double tmp = _ui->lineEdit_posy->text().toDouble();
+		if (!zoo::equals(COM_CAST(DoF)->_y, tmp))
+		{
+			COM_CAST(DoF)->_y = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_posz, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_posz, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_z = _ui->lineEdit_posz->text().toDouble();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		double tmp = _ui->lineEdit_posz->text().toDouble();
+		if (!zoo::equals(COM_CAST(DoF)->_z, tmp))
+		{
+			COM_CAST(DoF)->_z = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_rotx, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_rotx, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_pitch = _ui->lineEdit_rotx->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_rotx->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_pitch, tmp))
+		{
+			COM_CAST(DoF)->_pitch = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_roty, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_roty, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_roll = _ui->lineEdit_roty->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_roty->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_roll, tmp))
+		{
+			COM_CAST(DoF)->_roll = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_rotz, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_rotz, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_heading = _ui->lineEdit_rotz->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_rotz->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_heading, tmp))
+		{
+			COM_CAST(DoF)->_heading = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_scalex, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_scalex, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_sx = _ui->lineEdit_scalex->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_scalex->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_sx, tmp))
+		{
+			COM_CAST(DoF)->_sx = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_scaley, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_scaley, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_sy = _ui->lineEdit_scaley->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_scaley->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_sy, tmp))
+		{
+			COM_CAST(DoF)->_sy = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
 	});
-	connect(_ui->lineEdit_scalez, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	connect(_ui->lineEdit_scalez, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
-		((DoF*)_com)->_sz = _ui->lineEdit_scalez->text().toFloat();
-		const_cast<BitState&>(_com->dirtyBit()).addState(DoF::dof_);
+		float tmp = _ui->lineEdit_scalez->text().toFloat();
+		if (!zoo::equals(COM_CAST(DoF)->_sz, tmp))
+		{
+			COM_CAST(DoF)->_sz = tmp;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->doubleSpinBox_lon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
+	{
+		if (!zoo::equals(COM_CAST(DoF)->_x, val))
+		{
+			COM_CAST(DoF)->_x = val;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->doubleSpinBox_lat, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
+	{
+		if (!zoo::equals(COM_CAST(DoF)->_y, val))
+		{
+			COM_CAST(DoF)->_y = val;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->doubleSpinBox_height, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
+	{
+		if (!zoo::equals(COM_CAST(DoF)->_z, val))
+		{
+			COM_CAST(DoF)->_z = val;
+			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->radioButton, static_cast<void(QRadioButton::*)(bool)>(&QRadioButton::toggled), [this](bool checked)
+	{
+		DoF* pDoF = COM_CAST(DoF);
+		if (pDoF->_lonLatHeight == checked)
+			return;
+
+		_uiMgr->starWindowTitle();
+		pDoF->_lonLatHeight = checked;
+		_ui->stackedWidget->setCurrentIndex(checked ? 1 : 0);
+		if (checked)
+		{
+			double lon, lat, height;
+			if (zoo::ServiceLocator<OsgEarthUtils>::getService()->convertXYZToLatLongHeight(pDoF->_x, pDoF->_y, pDoF->_z, lat, lon, height))
+			{
+				_ui->doubleSpinBox_lon->setValue(lon);
+				_ui->doubleSpinBox_lat->setValue(lat);
+				_ui->doubleSpinBox_height->setValue(height);
+				pDoF->_x = lon;
+				pDoF->_y = lat;
+				pDoF->_z = height;
+				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Parent_);
+			}
+		}
+		else
+		{
+			double X, Y, Z;
+			if (zoo::ServiceLocator<OsgEarthUtils>::getService()->convertLatLongHeightToXYZ(pDoF->_y, pDoF->_x, pDoF->_z, X, Y, Z))
+			{
+				_ui->lineEdit_posx->setText(QString::number(X));
+				_ui->lineEdit_posy->setText(QString::number(Y));
+				_ui->lineEdit_posz->setText(QString::number(Z));
+				pDoF->_x = X;
+				pDoF->_y = Y;
+				pDoF->_z = Z;
+				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Parent_);
+			}
+		}
 	});
 }
 
@@ -212,19 +355,45 @@ DoFPropertyWgt::~DoFPropertyWgt()
 	delete _ui;
 }
 
-void DoFPropertyWgt::setCom(zoo::Component* pCom)
+void DoFPropertyWgt::resetCom(zoo::Component* pCom)
 {
-	PropertyWgt::setCom(pCom);
-	DoF* pDoF = (DoF*)pCom;
-	_ui->lineEdit_posx->setText(QString::number(pDoF->_x));
-	_ui->lineEdit_posy->setText(QString::number(pDoF->_y));
-	_ui->lineEdit_posz->setText(QString::number(pDoF->_z));
+	PropertyWgt::resetCom(pCom);
+	DoF* pDoF = COM_CAST(DoF);
 	_ui->lineEdit_rotx->setText(QString::number(pDoF->_pitch));
 	_ui->lineEdit_roty->setText(QString::number(pDoF->_roll));
 	_ui->lineEdit_rotz->setText(QString::number(pDoF->_heading));
 	_ui->lineEdit_scalex->setText(QString::number(pDoF->_sx));
 	_ui->lineEdit_scaley->setText(QString::number(pDoF->_sy));
 	_ui->lineEdit_scalez->setText(QString::number(pDoF->_sz));
+
+	do 
+	{
+		DoF* pParent = pCom->getEntity()->getComponent<DoF>()->_parent;
+		if (!pCom->getEntity()->getSpawner()->getComponent<Earth>() ||
+			(pParent && !pParent->getEntity()->isSpawner()))
+		{
+			_ui->radioButton->hide();
+		}
+		else
+		{
+			_ui->radioButton->show();
+			_ui->radioButton->setChecked(pDoF->_lonLatHeight ? Qt::Checked : Qt::Unchecked);
+			if (pDoF->_lonLatHeight)
+			{
+				_ui->stackedWidget->setCurrentIndex(1);
+				_ui->doubleSpinBox_lon->setValue(pDoF->_x);
+				_ui->doubleSpinBox_lat->setValue(pDoF->_y);
+				_ui->doubleSpinBox_height->setValue(pDoF->_z);
+				break;
+			}
+		}
+
+		_ui->stackedWidget->setCurrentIndex(0);
+		_ui->lineEdit_posx->setText(QString::number(pDoF->_x));
+		_ui->lineEdit_posy->setText(QString::number(pDoF->_y));
+		_ui->lineEdit_posz->setText(QString::number(pDoF->_z));
+
+	} while (0);
 }
 
 ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
@@ -234,8 +403,13 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 	_ui->setupUi(this);
 	connect(_ui->checkBox, &QCheckBox::stateChanged, [this](int boxState)
 	{
-		((Model*)_com)->_visible = (boxState == Qt::Checked ? true : false);
-		const_cast<BitState&>(_com->dirtyBit()).addState(Model::visible_);
+		bool isShow = (boxState == Qt::Checked ? true : false);
+		if (COM_CAST(Model)->_visible != isShow)
+		{
+			COM_CAST(Model)->_visible = isShow;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Model::Visible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 
 	_ui->toolButton->setDefaultAction(_ui->modelPath);
@@ -245,9 +419,10 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 		if (!fileName.isEmpty())
 		{
 			_ui->lineEdit->setText(fileName);
-			((Model*)_com)->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			COM_CAST(Model)->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
 			_com->getImp()->awake();
 			_com->getEntity()->notifyComponents();
+			_uiMgr->starWindowTitle();
 		}
 	});
 }
@@ -257,10 +432,10 @@ ModelPropertyWgt::~ModelPropertyWgt()
 	delete _ui;
 }
 
-void ModelPropertyWgt::setCom(zoo::Component* pCom)
+void ModelPropertyWgt::resetCom(zoo::Component* pCom)
 {
-	PropertyWgt::setCom(pCom);
-	Model* pModel = (Model*)pCom;
+	PropertyWgt::resetCom(pCom);
+	Model* pModel = COM_CAST(Model);
 	_ui->checkBox->setCheckState(pModel->_visible ? Qt::Checked : Qt::Unchecked);
 	if (pModel->_modelFile == "")
 		_ui->lineEdit->setText("");
@@ -281,6 +456,11 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 	_ui->lineEdit_bottom->setValidator(pValidator);
 	_ui->lineEdit_top->setValidator(pValidator);
 
+	QStringList manipulatorType;
+	manipulatorType << tr("地球") << tr("节点跟踪器") << tr("轨迹球") << tr("飞行") << tr("驾驶")
+		<< tr("地形") << tr("轨道") << tr("第一人称视角") << tr("球面") << tr("定制");
+	_ui->comboBox->addItems(manipulatorType);
+
 	QString leftPercentSS = _ui->lineEdit_left->styleSheet();
 	QString rightPercentSS = _ui->lineEdit_right->styleSheet();
 	QString bottomPercentSS = _ui->lineEdit_bottom->styleSheet();
@@ -298,9 +478,14 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		}
 		else
 		{
-			_ui->lineEdit_left->setStyleSheet(leftPercentSS);
-			((Camera*)_com)->_lRatio = leftPercent / 100.0f;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::viewport_);
+			float tmp = leftPercent / 100.0f;
+			if (!zoo::equals(COM_CAST(Camera)->_lRatio, tmp))
+			{
+				_ui->lineEdit_left->setStyleSheet(leftPercentSS);
+				COM_CAST(Camera)->_lRatio = tmp;
+				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_uiMgr->starWindowTitle();
+			}
 		}
 	});
 	connect(_ui->lineEdit_right, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this, rightPercentSS]()
@@ -314,9 +499,14 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		}
 		else
 		{
-			_ui->lineEdit_right->setStyleSheet(rightPercentSS);
-			((Camera*)_com)->_rRatio = rightPercent / 100.0f;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::viewport_);
+			float tmp = rightPercent / 100.0f;
+			if (!zoo::equals(COM_CAST(Camera)->_rRatio, tmp))
+			{
+				_ui->lineEdit_right->setStyleSheet(rightPercentSS);
+				COM_CAST(Camera)->_rRatio = tmp;
+				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_uiMgr->starWindowTitle();
+			}
 		}
 	});
 	connect(_ui->lineEdit_bottom, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this, bottomPercentSS]()
@@ -330,9 +520,14 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		}
 		else
 		{
-			_ui->lineEdit_bottom->setStyleSheet(bottomPercentSS);
-			((Camera*)_com)->_bRatio = bottomPercent / 100.0f;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::viewport_);
+			float tmp = bottomPercent / 100.0f;
+			if (!zoo::equals(COM_CAST(Camera)->_bRatio, tmp))
+			{
+				_ui->lineEdit_bottom->setStyleSheet(bottomPercentSS);
+				COM_CAST(Camera)->_bRatio = tmp;
+				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_uiMgr->starWindowTitle();
+			}
 		}
 	});
 	connect(_ui->lineEdit_top, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this, topPercentSS]()
@@ -346,14 +541,19 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		}
 		else
 		{
-			_ui->lineEdit_top->setStyleSheet(topPercentSS);
-			((Camera*)_com)->_tRatio = topPercent / 100.0f;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::viewport_);
+			float tmp = topPercent / 100.0f;
+			if (!zoo::equals(COM_CAST(Camera)->_tRatio, tmp))
+			{
+				_ui->lineEdit_top->setStyleSheet(topPercentSS);
+				COM_CAST(Camera)->_tRatio = tmp;
+				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_uiMgr->starWindowTitle();
+			}
 		}
 	});
 	connect(_ui->pushButton_color, &QPushButton::clicked, [this, bgColorSS]()
 	{
-		Camera* pCam = (Camera*)_com;
+		Camera* pCam = COM_CAST(Camera);
 		QColor initclr = QColor(pCam->_red, pCam->_green, pCam->_blue, pCam->_alpha);
 		QColorDialog dlg(initclr, this);
 		if (dlg.exec() == QDialog::Accepted)
@@ -365,11 +565,21 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 				pCam->_green = clr.green();
 				pCam->_blue = clr.blue();
 				pCam->_alpha = clr.alpha();
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::bgcolour_);
+				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Bgcolour_);
 				_ui->pushButton_color->setStyleSheet(QString(tr("background-color:rgba(%1,%2,%3,%4)").arg(
 					QString::number(pCam->_red), QString::number(pCam->_green),
 					QString::number(pCam->_blue), QString::number(pCam->_alpha))));
+				_uiMgr->starWindowTitle();
 			}
+		}
+	});
+	connect(_ui->comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index)
+	{
+		if (COM_CAST(Camera)->_manipulatorKey != index)
+		{
+			COM_CAST(Camera)->_manipulatorKey = index;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Manipulator_);
+			_uiMgr->starWindowTitle();
 		}
 	});
 }
@@ -379,10 +589,11 @@ CameraPropertyWgt::~CameraPropertyWgt()
 	delete _ui;
 }
 
-void CameraPropertyWgt::setCom(zoo::Component* pCom)
+void CameraPropertyWgt::resetCom(zoo::Component* pCom)
 {
-	PropertyWgt::setCom(pCom);
-	Camera* pCam = (Camera*)pCom;
+	PropertyWgt::resetCom(pCom);
+	Camera* pCam = COM_CAST(Camera);
+	_ui->comboBox->setCurrentIndex(pCam->_manipulatorKey);
 	_ui->lineEdit_left->setText(QString::number(pCam->_lRatio * 100.0f));
 	_ui->lineEdit_right->setText(QString::number(pCam->_rRatio * 100.0f));
 	_ui->lineEdit_bottom->setText(QString::number(pCam->_bRatio * 100.0f));
@@ -403,46 +614,71 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (!fileName.isEmpty())
 		{
 			_ui->lineEdit->setText(fileName);
-			((Earth*)_com)->_earthFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			COM_CAST(Earth)->_earthFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
 			_com->getImp()->awake();
 			_com->getEntity()->notifyComponents();
+			_uiMgr->starWindowTitle();
 		}
 	});
 	connect(_ui->checkBox_sun, &QCheckBox::stateChanged, [this]
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_skyVisibility[Earth::sun_] = _ui->checkBox_sun->checkState() == Qt::Unchecked ? false : true;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::sunVisible_);
+		bool isVisibility = _ui->checkBox_sun->checkState() == Qt::Unchecked ? false : true;
+		if (COM_CAST(Earth)->_skyVisibility[Earth::sun_] != isVisibility)
+		{
+			COM_CAST(Earth)->_skyVisibility[Earth::sun_] = isVisibility;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::SunVisible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 	connect(_ui->checkBox_moon, &QCheckBox::stateChanged, [this]
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_skyVisibility[Earth::moon_] = _ui->checkBox_moon->checkState() == Qt::Unchecked ? false : true;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::moonVisible_);
+		bool isVisibility = _ui->checkBox_moon->checkState() == Qt::Unchecked ? false : true;
+		if (COM_CAST(Earth)->_skyVisibility[Earth::moon_] != isVisibility)
+		{
+			COM_CAST(Earth)->_skyVisibility[Earth::moon_] = isVisibility;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::MoonVisible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 	connect(_ui->checkBox_star, &QCheckBox::stateChanged, [this]
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_skyVisibility[Earth::star_] = _ui->checkBox_star->checkState() == Qt::Unchecked ? false : true;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::starVisible_);
+		bool isVisibility = _ui->checkBox_star->checkState() == Qt::Unchecked ? false : true;
+		if (COM_CAST(Earth)->_skyVisibility[Earth::star_] != isVisibility)
+		{
+			COM_CAST(Earth)->_skyVisibility[Earth::star_] = isVisibility;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::StarVisible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 	connect(_ui->checkBox_nebula, &QCheckBox::stateChanged, [this]
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_skyVisibility[Earth::nebula_] = _ui->checkBox_nebula->checkState() == Qt::Unchecked ? false : true;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::nebulaVisible_);
+		bool isVisibility = _ui->checkBox_nebula->checkState() == Qt::Unchecked ? false : true;
+		if (COM_CAST(Earth)->_skyVisibility[Earth::nebula_] != isVisibility)
+		{
+			COM_CAST(Earth)->_skyVisibility[Earth::nebula_] = isVisibility;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::NebulaVisible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 	connect(_ui->checkBox_atmosphere, &QCheckBox::stateChanged, [this]
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_skyVisibility[Earth::atmosphere_] = _ui->checkBox_atmosphere->checkState() == Qt::Unchecked ? false : true;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::atmosphereVisible_);
+		bool isVisibility = _ui->checkBox_atmosphere->checkState() == Qt::Unchecked ? false : true;
+		if (COM_CAST(Earth)->_skyVisibility[Earth::atmosphere_] != isVisibility)
+		{
+			COM_CAST(Earth)->_skyVisibility[Earth::atmosphere_] = isVisibility;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::AtmosphereVisible_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 	connect(_ui->horizontalSlider, &QSlider::valueChanged, [this](int val)
 	{
-		Earth* pEarth = (Earth*)_com;
-		pEarth->_sunlightIntensity = val / 99.0f;
-		const_cast<BitState&>(_com->dirtyBit()).addState(Earth::sunlightIntensity_);
+		float intensity = (float)val / _ui->horizontalSlider->maximum();
+		if (!zoo::equals(COM_CAST(Earth)->_sunlightIntensity, intensity))
+		{
+			COM_CAST(Earth)->_sunlightIntensity = intensity;
+			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::SunlightIntensity_);
+			_uiMgr->starWindowTitle();
+		}
 	});
 }
 
@@ -451,22 +687,64 @@ EarthPropertyWgt::~EarthPropertyWgt()
 	delete _ui;
 }
 
-void EarthPropertyWgt::setCom(zoo::Component* pCom)
+void EarthPropertyWgt::resetCom(zoo::Component* pCom)
 {
-	PropertyWgt::setCom(pCom);
-	Earth* pEarth = (Earth*)pCom;
+	PropertyWgt::resetCom(pCom);
+	Earth* pEarth = COM_CAST(Earth);
+	if (pEarth->_earthFile == "")
+		_ui->lineEdit->setText("");
+	else
+		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + pEarth->_earthFile).c_str()));
 
-	_ui->lineEdit->setText(QString::fromLocal8Bit(pEarth->_earthFile.c_str()));
 	_ui->checkBox_sun->setCheckState(pEarth->_skyVisibility[Earth::sun_] ? Qt::Checked : Qt::Unchecked);
 	_ui->checkBox_moon->setCheckState(pEarth->_skyVisibility[Earth::moon_] ? Qt::Checked : Qt::Unchecked);
 	_ui->checkBox_star->setCheckState(pEarth->_skyVisibility[Earth::star_] ? Qt::Checked : Qt::Unchecked);
 	_ui->checkBox_nebula->setCheckState(pEarth->_skyVisibility[Earth::nebula_] ? Qt::Checked : Qt::Unchecked);
 	_ui->checkBox_atmosphere->setCheckState(pEarth->_skyVisibility[Earth::atmosphere_] ? Qt::Checked : Qt::Unchecked);
 
-	int pos = pEarth->_sunlightIntensity * 99;
-	if (pos < 0)
-		pos = 0;
-	if (pos > 99)
-		pos = 99;
+	int pos = pEarth->_sunlightIntensity * _ui->horizontalSlider->maximum();
+	if (pos < _ui->horizontalSlider->minimum())
+		pos = _ui->horizontalSlider->minimum();
+	if (pos > _ui->horizontalSlider->maximum())
+		pos = _ui->horizontalSlider->maximum();
 	_ui->horizontalSlider->setSliderPosition(pos);
+}
+
+BehaviorPropertyWgt::BehaviorPropertyWgt(QWidget* parent)
+	: PropertyWgt(parent)
+	, _ui(new Ui::BehaviorPropertyWgt)
+{
+	_ui->setupUi(this);
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this]
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("脚本文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("脚本(*.lua)"));
+		if (!fileName.isEmpty())
+		{
+			_ui->lineEdit->setText(fileName);
+			COM_CAST(Behavior)->_scriptFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			COM_CAST(Behavior)->_scriptInited = false;
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->toolButton_edit, &QToolButton::clicked, [this]
+	{
+		QString filename = _ui->lineEdit->text();
+		if (!filename.isEmpty())
+			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+	});
+}
+
+BehaviorPropertyWgt::~BehaviorPropertyWgt()
+{
+	delete _ui;
+}
+
+void BehaviorPropertyWgt::resetCom(zoo::Component* pCom)
+{
+	PropertyWgt::resetCom(pCom);
+	Behavior* pBehavior = COM_CAST(Behavior);
+	if (pBehavior->_scriptFile == "")
+		_ui->lineEdit->setText("");
+	else
+		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + pBehavior->_scriptFile).c_str()));
 }

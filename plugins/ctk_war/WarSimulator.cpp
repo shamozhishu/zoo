@@ -20,18 +20,10 @@ bool SimState::init(string scriptFile)
 	return _scriptValid;
 }
 
-SimState* SimState::handle(ESimState simState)
+void SimState::stepping()
 {
 	if (_scriptValid)
-		_script->executeGlobalFunction("Handle");
-
-	return &WarSimulator::_SimStates[simState];
-}
-
-void SimState::refresh()
-{
-	if (_scriptValid)
-		_script->executeGlobalFunction("Refresh");
+		_script->executeGlobalFunction("Stepping");
 }
 
 void SimState::enter()
@@ -46,26 +38,23 @@ void SimState::exit()
 		_script->executeGlobalFunction("Exit");
 }
 
-SimState WarSimulator::_SimStates[count_];
+SimState WarSimulator::_simStates[count_];
 WarSimulator::WarSimulator()
-	: _state(nullptr)
+	: _currentState(nullptr)
 {
 }
 
-void WarSimulator::refresh()
+void WarSimulator::stepping()
 {
-	if (_state)
-		_state->refresh();
+	if (_currentState)
+		_currentState->stepping();
 }
 
-void WarSimulator::handle(ESimState simState)
+void WarSimulator::transition(ESimState simState)
 {
-	if (_state)
-	{
-		_state->exit();
-		_state = _state->handle(simState);
-	}
-
-	if (_state)
-		_state->enter();
+	if (_currentState)
+		_currentState->exit();
+	_currentState = &WarSimulator::_simStates[simState];
+	if (_currentState)
+		_currentState->enter();
 }

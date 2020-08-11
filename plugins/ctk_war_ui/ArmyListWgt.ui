@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>317</height>
+    <width>482</width>
+    <height>258</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,52 +19,15 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QTreeWidget" name="treeWidget">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="editTriggers">
-      <set>QAbstractItemView::EditKeyPressed</set>
-     </property>
-     <property name="expandsOnDoubleClick">
-      <bool>false</bool>
-     </property>
-     <attribute name="headerVisible">
-      <bool>true</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string notr="true">1</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string/>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>编号：</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QLineEdit" name="lineEdit_id">
           <property name="sizePolicy">
@@ -73,18 +36,8 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>种类：</string>
+          <property name="placeholderText">
+           <string>编号</string>
           </property>
          </widget>
         </item>
@@ -96,56 +49,72 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="pushButton_create">
-        <property name="text">
-         <string>创建</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>描述：</string>
+          <property name="placeholderText">
+           <string>类别</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLineEdit" name="lineEdit_desc">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="placeholderText">
+           <string>描述</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButton">
+          <property name="toolTip">
+           <string>创建实体</string>
+          </property>
+          <property name="text">
+           <string>+</string>
+          </property>
+          <property name="autoRaise">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
        </layout>
       </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="pushButton_destroy">
-        <property name="text">
-         <string>销毁</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="ArmyTreeWgt" name="treeWidget">
+     <property name="editTriggers">
+      <set>QAbstractItemView::EditKeyPressed</set>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::InternalMove</enum>
+     </property>
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ArmyTreeWgt</class>
+   <extends>QTreeWidget</extends>
+   <header>ArmyListWgt.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

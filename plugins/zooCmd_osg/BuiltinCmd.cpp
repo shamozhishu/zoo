@@ -1,6 +1,8 @@
 #include "BuiltinCmd.h"
 #include "InputDevice.h"
+#include <zoo/Component.h>
 #include <zooCmd/CmdManager.h>
+#include "OsgComponentImpls.h"
 
 using namespace zooCmd;
 
@@ -8,15 +10,16 @@ ZOO_REFLEX_IMPLEMENT(BuiltinCmd);
 
 void BuiltinCmd::help(CmdUsage* usage)
 {
-	usage->setDescription("built-in commands: encapsulation of many basic functions.");
-	usage->addCommandProcedureCall("home(string view_name)", "摄像机[view_name]复位");
-	usage->addCommandProcedureCall("exit()", "End main loop.");
-	usage->addCommandProcedureCall("bool(bool b) // bool& b", "Test bool return value.");
-	usage->addCommandProcedureCall("int(int i) // int& i", "Test int return value.");
-	usage->addCommandProcedureCall("float(float f) // float& f", "Test float return value.");
-	usage->addCommandProcedureCall("double(double d) // double& d", "Test double return value.");
-	usage->addCommandProcedureCall("string(string str) // string& str", "Test string return value.");
-	usage->addCommandProcedureCall("tips(string tip)", "Test tip message.");
+	usage->setDescription("内建命令: 许多基本功能的封装");
+	usage->addCommandProcedureCall("home(string view_name)", "摄像机复位");
+	usage->addCommandProcedureCall("focus(int ent_id, int ent_breed, int scene_id)", "将焦点设置到参数索引到的实体");
+	usage->addCommandProcedureCall("exit()", "退出程序");
+	usage->addCommandProcedureCall("bool(bool b) // bool& b", "测试布尔返回值");
+	usage->addCommandProcedureCall("int(int i) // int& i", "测试整型数返回值");
+	usage->addCommandProcedureCall("float(float f) // float& f", "测试单精度浮点数返回值");
+	usage->addCommandProcedureCall("double(double d) // double& d", "测试双精度浮点数返回值");
+	usage->addCommandProcedureCall("string(string str) // string& str", "测试字符串返回值");
+	usage->addCommandProcedureCall("tips(string tip)", "测试提示信息");
 }
 
 void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
@@ -40,11 +43,43 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 			break;
 		}
 
+		int id, breed, sceneId;
+		if (cmdarg.read("focus", id, breed, sceneId))
+		{
+			SignalTrigger::connect(subcmd, [id, breed, sceneId]
+			{
+				Spawner* pSpawner = Spawner::find(sceneId);
+				if (!pSpawner)
+				{
+					CmdManager::setTipMessage("场景[" + std::to_string(sceneId) + "]不存在！");
+					return;
+				}
+
+				Entity* pEnt = pSpawner->gain(id, breed);
+				if (!pEnt)
+				{
+					CmdManager::setTipMessage("实体[" + std::to_string(id) + ":" + std::to_string(breed) + "]不存在！");
+					return;
+				}
+
+				if (pEnt->isSpawner())
+				{
+					pSpawner->getComponentImpl<CameraImpl>()->_manipulatorMgr->home(2);
+					return;
+				}
+
+				osg::Node* pFocusNode = pEnt->getComponentImpl<DoFImpl>()->_transWorld;
+				pSpawner->getComponentImpl<CameraImpl>()->_manipulatorMgr->focus(pSpawner->getComponent<Camera>()->_manipulatorKey, pFocusNode);
+			});
+			break;
+		}
+
 		if (cmdarg.read("exit"))
 		{
 			SignalTrigger::connect(subcmd, []
 			{
 				ServiceLocator<OsgDevice>::getService()->as<InputAdapter>()->setDone(true);
+				exit(0);
 			});
 			break;
 		}

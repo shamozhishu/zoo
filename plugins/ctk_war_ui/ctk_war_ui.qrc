@@ -8,5 +8,7 @@
         <file>Resources/images/entparam.png</file>
         <file>Resources/images/comlist.png</file>
         <file>Resources/images/modelpath.png</file>
+        <file>Resources/images/edit_file.png</file>
+        <file>Resources/images/open_file.png</file>
     </qresource>
 </RCC>

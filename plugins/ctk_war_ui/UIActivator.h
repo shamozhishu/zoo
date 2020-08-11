@@ -41,6 +41,8 @@ public:
 		return nullptr;
 	}
 
+	static void sendWarCmd(QString cmdline);
+
 private:
 	static ctkPluginContext* _pluginContext;
 };

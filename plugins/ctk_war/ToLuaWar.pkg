@@ -1,2 +1,2 @@
-$cfile "SharedComponents.h"
+$cfile "WarComponents.h"
 $cfile "Battlefield.h"

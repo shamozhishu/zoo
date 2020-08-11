@@ -4,6 +4,7 @@
 #include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
 #include "OsgEarthContextImpl.h"
+#include "OsgEarthUtilsImpl.h"
 
 ZOO_REGISTER(InputDevice)
 
@@ -49,12 +50,14 @@ InputDevice::InputDevice()
 	ds->setNvOptimusEnablement(1);
 	ds->setStereo(false);
 	_compositeViewer = new Viewers;
-	_contextImpl = new OsgEarthContextImpl;
+	_osgContextImpl = new OsgEarthContextImpl;
+	_osgUtilsImpl = new OsgEarthUtilsImpl;
 }
 
 InputDevice::~InputDevice()
 {
-	SAFE_DELETE(_contextImpl);
+	SAFE_DELETE(_osgUtilsImpl);
+	SAFE_DELETE(_osgContextImpl);
 	destroyAllViews();
 }
 
