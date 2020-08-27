@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QToolButton>
 #include <QDockWidget>
 #include <QMessageBox>
 #include <QProgressBar>
@@ -29,21 +30,28 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 {
 	_ui.setupUi(this);
 
-#ifdef __ENABLE_LOG_WGT__
-	LogPrintWgt* pLogPrintWgt = new LogPrintWgt;
-	addWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT, tr("日志打印"), pLogPrintWgt,
-		QIcon(QPixmap(":/images/Resources/images/log.png")), Qt::BottomDockWidgetArea, Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
-	connect(_ui.action_clean, SIGNAL(triggered()), pLogPrintWgt, SLOT(onCleanLog()));
-	_ui.action_clean->setVisible(true);
-#else
-	_ui.action_clean->setVisible(false);
-#endif
-
 	QLabel* label = new QLabel(tr(" 请输入命令："));
 	_ui.statusBar->addWidget(label);
 	_cmdlineEdit = new QLineEdit;
 	_ui.statusBar->addWidget(_cmdlineEdit);
 	_cmdlineEdit->setFixedWidth(500);
+	QToolButton* toolBtn = new QToolButton;
+	_ui.statusBar->addWidget(toolBtn);
+	toolBtn->setAutoRaise(true);
+	toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/cmd.png")));
+	connect(toolBtn, SIGNAL(clicked()), this, SLOT(onSetup()));
+#ifdef _DEBUG
+	QDockWidget* pLogPrintDock = addWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT, tr("日志打印"), new LogPrintWgt(this), QIcon(), Qt::BottomDockWidgetArea,
+		Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea, false, false, false);
+	toolBtn = new QToolButton;
+	_ui.statusBar->addWidget(toolBtn);
+	toolBtn->setAutoRaise(true);
+	toolBtn->setCheckable(true);
+	toolBtn->setChecked(false);
+	toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/log.png")));
+	connect(toolBtn, &QToolButton::clicked, [pLogPrintDock](bool checked)
+	{ pLogPrintDock->setVisible(checked); });
+#endif
 	_progressBar = new QProgressBar;
 	_ui.statusBar->addWidget(_progressBar);
 	_progressBar->setMinimum(0);
@@ -53,7 +61,6 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	_progressBar->setTextVisible(false);
 
 	connect(_cmdlineEdit, SIGNAL(returnPressed()), this, SLOT(onCmd()));
-	connect(_ui.action_setup, SIGNAL(triggered()), this, SLOT(onSetup()));
 
 	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 	settings.beginGroup("ZOO_CMDSET");
@@ -63,6 +70,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 
 	bool mainThreadInit = false;
 	_mainWidget = new ZooCmdWgt(_inputAdaName, cmdset, datadir, mainThreadInit, this);
+	UIActivator::getPluginContext()->registerService<Win32Service>(_mainWidget);
 	_ui.gridLayout_center->addWidget(_mainWidget);
 	setCentralWidget(_mainWidget);
 	connect(_mainWidget, &ZooCmdWgt::inited, [this, mainThreadInit]
@@ -122,7 +130,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 
 ZooCmdUI::~ZooCmdUI()
 {
-#ifdef __ENABLE_LOG_WGT__
+#ifdef _DEBUG
 	removeWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT);
 #endif
 }
@@ -151,90 +159,88 @@ void ZooCmdUI::finishWindowLaunch()
 	showMaximized();
 }
 
-void ZooCmdUI::addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area, Qt::DockWidgetAreas areas /*= Qt::AllDockWidgetAreas*/)
+QDockWidget* ZooCmdUI::addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+	Qt::DockWidgetAreas areas /*= Qt::AllDockWidgetAreas*/, bool isShow /*= true*/, bool hasToolBtn /*= true*/, bool hasSeparator /*= false*/)
 {
-	QDockWidget* dock = _dockWgts.value(strId);
+	QDockWidget* dock = _dockWgts.value(strId).first;
 	if (!dock)
 	{
 		dock = new QDockWidget(strName);
 		addDockWidget(area, dock);
 		dock->setAllowedAreas(area | areas);
 		dock->setWidget(pWidget);
+		dock->setVisible(isShow);
 		dock->setFeatures(QDockWidget::DockWidgetMovable);
-		QAction* pActionWnd = new QAction(icon, strName, this);
-		pActionWnd->setCheckable(true);
-		pActionWnd->setChecked(true);
-		_ui.mainToolBar->addAction(pActionWnd);
-		connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(setVisible(bool)));
-		_dockWgts.insert(strId, dock);
+		if (hasToolBtn)
+		{
+			QAction* pActionWnd = new QAction(icon, strName, this);
+			pActionWnd->setCheckable(true);
+			pActionWnd->setChecked(isShow);
+			_ui.mainToolBar->addAction(pActionWnd);
+			connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(setVisible(bool)));
+			_dockWgts.insert(strId, qMakePair(dock, pActionWnd));
+			if (hasSeparator)
+				_ui.mainToolBar->addSeparator();
+		}
 	}
+
+	return dock;
 }
 
 void ZooCmdUI::removeWidget(const QString& strId)
 {
-	QDockWidget* dock = _dockWgts.value(strId);
+	QDockWidget* dock = _dockWgts.value(strId).first;
 	if (dock)
 	{
 		delete dock->widget();
 		removeDockWidget(dock);
 		dock->deleteLater();
 		_dockWgts.remove(strId);
+		_ui.mainToolBar->removeAction(_dockWgts.value(strId).second);
 	}
 }
 
 QWidget* ZooCmdUI::getWidget(const QString& strId)
 {
-	QDockWidget* dock = _dockWgts.value(strId);
+	QDockWidget* dock = _dockWgts.value(strId).first;
 	if (dock)
 		return dock->widget();
 	return nullptr;
 }
 
-void ZooCmdUI::addMenu(const QString &strId, QMenu* pSubMenu)
+void ZooCmdUI::addMenu(const QString &strId, QMenu* pSubMenu, bool hasToolButton /*= true*/)
 {
-	QMenu* subMenu = _subMenus.value(strId);
+	QMenu* subMenu = _subMenus.value(strId).first;
 	if (!subMenu && pSubMenu)
 	{
 		_ui.menuBar->addMenu(pSubMenu);
-		_subMenus.insert(strId, pSubMenu);
+		_subMenus.insert(strId, qMakePair(pSubMenu, hasToolButton));
+		if (hasToolButton)
+		{
+			_ui.mainToolBar->addActions(pSubMenu->actions());
+			_ui.mainToolBar->addSeparator();
+		}
 	}
 }
 
 void ZooCmdUI::removeMenu(const QString& strId)
 {
-	QMenu* subMenu = _subMenus.value(strId);
+	QMenu* subMenu = _subMenus.value(strId).first;
 	if (subMenu)
 	{
-		subMenu->deleteLater();
-		_subMenus.remove(strId);
-	}
-}
-
-void ZooCmdUI::addToolButton(const QString &strId, QActionGroup* pActionGroup)
-{
-	QActionGroup* actGroup = _actionItems.value(strId);
-	if (!actGroup && pActionGroup)
-	{
-		_ui.mainToolBar->addActions(pActionGroup->actions());
-		_actionItems.insert(strId, pActionGroup);
-	}
-}
-
-void ZooCmdUI::removeToolButton(const QString& strId)
-{
-	QActionGroup* actGroup = _actionItems.value(strId);
-	if (actGroup)
-	{
-		QList<QAction*> acts = actGroup->actions();
-		auto it = acts.begin();
-		for (; it != acts.end(); ++it)
+		if (_subMenus.value(strId).second)
 		{
-			QAction* pAct = *it;
-			_ui.mainToolBar->removeAction(pAct);
-			pAct->deleteLater();
+			QList<QAction*> acts = subMenu->actions();
+			auto it = acts.begin();
+			for (; it != acts.end(); ++it)
+			{
+				QAction* pAct = *it;
+				_ui.mainToolBar->removeAction(pAct);
+			}
 		}
 
-		_actionItems.remove(strId);
+		_subMenus.remove(strId);
+		subMenu->deleteLater();
 	}
 }
 

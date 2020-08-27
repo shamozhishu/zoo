@@ -13,6 +13,7 @@ namespace Ui
 	class CameraPropertyWgt;
 	class EarthPropertyWgt;
 	class BehaviorPropertyWgt;
+	class EnvirPropertyWgt;
 }
 
 class UIManagerService;
@@ -97,6 +98,17 @@ public:
 
 private:
 	Ui::BehaviorPropertyWgt* _ui;
+};
+
+class EnvirPropertyWgt : public PropertyWgt
+{
+public:
+	EnvirPropertyWgt(QWidget* parent);
+	~EnvirPropertyWgt();
+	void resetCom(zoo::Component* pCom);
+
+private:
+	Ui::EnvirPropertyWgt* _ui;
 };
 
 #endif // __PROPERTY_WGTS_H__

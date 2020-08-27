@@ -32,6 +32,11 @@ IF(WIN32 AND NOT ANDROID)
 	include_directories("${3RD_PARTY_DIR}/include")
 	link_directories("${3RD_PARTY_DIR}/lib")
 	include(Find3rdPartyDependencies)
+	
+	FIND_PATH(DIRECTINPUT_INCLUDE_DIR dinput.h)
+	FIND_LIBRARY(DIRECTINPUT_LIBRARY dinput8.lib)
+	FIND_LIBRARY(DIRECTINPUT_GUID_LIBRARY dxguid.lib)
+	include_directories(${DIRECTINPUT_INCLUDE_DIR})
 else()
 	FIND_PACKAGE(CTK)
 	include_directories(
@@ -48,21 +53,21 @@ file(WRITE ${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp)
 set(PLUGIN_SRCS
 	${CMAKE_SOURCE_DIR}/include/component/war/WarComponents.h
 	Battlefield.h
-	InstanceReleaser.h
 	LuaScript.h
 	WarActivator.h
 	WarCommander.h
 	WarServiceImpl.h
 	WarSimulator.h
+	LuaExportClass.h
 
 	WarComponents.cpp
 	Battlefield.cpp
-	InstanceReleaser.cpp
 	LuaScript.cpp
 	WarActivator.cpp
 	WarCommander.cpp
 	WarServiceImpl.cpp
 	WarSimulator.cpp
+	LuaExportClass.cpp
 	
 	ToLuaWar.cpp
 	ToLuaWar.pkg
@@ -99,6 +104,8 @@ ctkMacroBuildPlugin(
 	zooCmdLoader
 	debug ${LUA_LIBRARY_DEBUG} optimized ${LUA_LIBRARY}
 	debug libtolua++d optimized libtolua++
+	${DIRECTINPUT_LIBRARY}
+	${DIRECTINPUT_GUID_LIBRARY}
 )
 
 if (WIN32)
@@ -108,6 +115,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 	"${CMAKE_CURRENT_SOURCE_DIR}/ToLuaWar.pkg" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
 	"${CMAKE_SOURCE_DIR}/include/component/war/WarComponents.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Battlefield.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
+	"${CMAKE_CURRENT_SOURCE_DIR}/LuaExportClass.h" "${CMAKE_BINARY_DIR}/plugins/ctk_war"
 	COMMAND tolua++ -n ToLuaWar
 	-o "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp" "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.pkg"
 )

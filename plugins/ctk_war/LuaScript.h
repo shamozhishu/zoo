@@ -30,8 +30,7 @@ public:
 	bool pushFunctionByHandler(int nHandler);
 	void setVariable(const char* varName, const char* varType, void* pData);
 
-	static void clearScriptFileName2ContentCache();
-
+	static void clearScriptFileName2ContentCache(const string& filename = ""); // 【filename == ""】则清理整个缓存
 protected:
 	lua_State* _state;
 };

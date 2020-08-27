@@ -8,8 +8,8 @@
  * Modify history:
  ******************************************************************************/
 
-#ifndef CJSONOBJECT_H_
-#define CJSONOBJECT_H_
+#ifndef JSONOBJECT_H_
+#define JSONOBJECT_H_
 
 #include <stdio.h>
 #include <stddef.h>
@@ -28,17 +28,17 @@ extern "C" {
 }
 #endif
 
-class CJsonObject
+class JsonObject
 {
 public: // method of ordinary json object or json array
-    CJsonObject();
-    CJsonObject(const std::string& strJson);
-    CJsonObject(const CJsonObject* pJsonObject);
-    CJsonObject(const CJsonObject& oJsonObject);
-    virtual ~CJsonObject();
+    JsonObject();
+    JsonObject(const std::string& strJson);
+    JsonObject(const JsonObject* pJsonObject);
+    JsonObject(const JsonObject& oJsonObject);
+    virtual ~JsonObject();
 
-    CJsonObject& operator=(const CJsonObject& oJsonObject);
-    bool operator==(const CJsonObject& oJsonObject) const;
+    JsonObject& operator=(const JsonObject& oJsonObject);
+    bool operator==(const JsonObject& oJsonObject) const;
     bool Parse(const std::string& strJson);
     void Clear();
     bool IsEmpty() const;
@@ -55,9 +55,9 @@ public: // method of ordinary json object
     bool AddEmptySubArray(const std::string& strKey);
     bool GetKey(std::string& strKey);
     void ResetTraversing();
-    CJsonObject& operator[](const std::string& strKey);
+    JsonObject& operator[](const std::string& strKey);
     std::string operator()(const std::string& strKey) const;
-    bool Get(const std::string& strKey, CJsonObject& oJsonObject) const;
+    bool Get(const std::string& strKey, JsonObject& oJsonObject) const;
     bool Get(const std::string& strKey, std::string& strValue) const;
     bool Get(const std::string& strKey, int32& iValue) const;
     bool Get(const std::string& strKey, uint32& uiValue) const;
@@ -67,7 +67,7 @@ public: // method of ordinary json object
     bool Get(const std::string& strKey, float& fValue) const;
     bool Get(const std::string& strKey, double& dValue) const;
     bool IsNull(const std::string& strKey) const;
-    bool Add(const std::string& strKey, const CJsonObject& oJsonObject);
+    bool Add(const std::string& strKey, const JsonObject& oJsonObject);
     bool Add(const std::string& strKey, const std::string& strValue);
     bool Add(const std::string& strKey, int32 iValue);
     bool Add(const std::string& strKey, uint32 uiValue);
@@ -78,7 +78,7 @@ public: // method of ordinary json object
     bool Add(const std::string& strKey, double dValue);
     bool AddNull(const std::string& strKey); // add null like this: "key": null
     bool Delete(const std::string& strKey);
-    bool Replace(const std::string& strKey, const CJsonObject& oJsonObject);
+    bool Replace(const std::string& strKey, const JsonObject& oJsonObject);
     bool Replace(const std::string& strKey, const std::string& strValue);
     bool Replace(const std::string& strKey, int32 iValue);
     bool Replace(const std::string& strKey, uint32 uiValue);
@@ -91,9 +91,9 @@ public: // method of ordinary json object
 
 public: // method of json array
     int GetArraySize();
-    CJsonObject& operator[](unsigned int uiWhich);
+    JsonObject& operator[](unsigned int uiWhich);
     std::string operator()(unsigned int uiWhich) const;
-    bool Get(int iWhich, CJsonObject& oJsonObject) const;
+    bool Get(int iWhich, JsonObject& oJsonObject) const;
     bool Get(int iWhich, std::string& strValue) const;
     bool Get(int iWhich, int32& iValue) const;
     bool Get(int iWhich, uint32& uiValue) const;
@@ -103,7 +103,7 @@ public: // method of json array
     bool Get(int iWhich, float& fValue) const;
     bool Get(int iWhich, double& dValue) const;
     bool IsNull(int iWhich) const;
-    bool Add(const CJsonObject& oJsonObject);
+    bool Add(const JsonObject& oJsonObject);
     bool Add(const std::string& strValue);
     bool Add(int32 iValue);
     bool Add(uint32 uiValue);
@@ -113,7 +113,7 @@ public: // method of json array
     bool Add(float fValue);
     bool Add(double dValue);
     bool AddNull(); // add a null value
-    bool AddAsFirst(const CJsonObject& oJsonObject);
+    bool AddAsFirst(const JsonObject& oJsonObject);
     bool AddAsFirst(const std::string& strValue);
     bool AddAsFirst(int32 iValue);
     bool AddAsFirst(uint32 uiValue);
@@ -124,7 +124,7 @@ public: // method of json array
     bool AddAsFirst(double dValue);
     bool AddNullAsFirst(); // add a null value
     bool Delete(int iWhich);
-    bool Replace(int iWhich, const CJsonObject& oJsonObject);
+    bool Replace(int iWhich, const JsonObject& oJsonObject);
     bool Replace(int iWhich, const std::string& strValue);
     bool Replace(int iWhich, int32 iValue);
     bool Replace(int iWhich, uint32 uiValue);
@@ -136,15 +136,15 @@ public: // method of json array
     bool ReplaceWithNull(int iWhich); // replace with a null value
 
 private:
-    CJsonObject(cJSON* pJsonData);
+    JsonObject(cJSON* pJsonData);
 
 private:
     cJSON* m_pJsonData;
     cJSON* m_pExternJsonDataRef;
     cJSON* m_pKeyTravers;
     std::string m_strErrMsg;
-    std::map<unsigned int, CJsonObject*> m_mapJsonArrayRef;
-    std::map<std::string, CJsonObject*> m_mapJsonObjectRef;
+    std::map<unsigned int, JsonObject*> m_mapJsonArrayRef;
+    std::map<std::string, JsonObject*> m_mapJsonObjectRef;
 };
 
-#endif /* CJSONHELPER_H_ */
+#endif /* JSONHELPER_H_ */

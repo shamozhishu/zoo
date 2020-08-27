@@ -1,11 +1,12 @@
 #ifndef __WAR_SIMULATOR_H__
 #define __WAR_SIMULATOR_H__
 
-#include <zoo/Support.h>
+#include "WarComponents.h"
 
-enum ESimState { ready_ = 0, running_, paused_, count_ };
+enum ESimState { uninited_ = 0, ready_, running_, paused_, count_ };
 
 class LuaScript;
+class WarSimulator;
 class SimState
 {
 	bool _scriptValid;
@@ -13,22 +14,25 @@ class SimState
 public:
 	SimState();
 	~SimState();
-	bool init(string scriptFile);
-	void stepping();
+	bool init(string scriptFile, WarSimulator* simulator);
 	void enter();
+	void stepping();
 	void exit();
 };
 
-class WarSimulator
+class WarSimulator : zoo::Type
 {	
 public:
 	WarSimulator();
 	virtual void stepping();
 	void transition(ESimState simState);
+	void addBehavior(Behavior* behavior);
+	void removeBehavior(Behavior* behavior);
 
 protected:
 	friend class SimState;
 	SimState* _currentState;
+	list<Behavior*> _behaviors;
 	static SimState _simStates[count_];
 };
 

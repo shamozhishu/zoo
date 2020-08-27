@@ -1,6 +1,5 @@
 #include <zoo/Component.h>
-#include <zoo/DatabaseCSV.h>
-#include <cJSON/CJsonObject.h>
+#include <cJSON/JsonObject.h>
 
 namespace zoo {
 
@@ -167,7 +166,7 @@ void Entity::serialize(Spawner* spawner)
 	if (!spawner || !spawner->_parser)
 		return;
 
-	CJsonObject& entJson = *(CJsonObject*)spawner->_parser;
+	JsonObject& entJson = *(JsonObject*)spawner->_parser;
 	if (_id != -1)
 		entJson.Add("id", _id);
 	else
@@ -186,7 +185,7 @@ void Entity::serialize(Spawner* spawner)
 	auto it = _components.begin();
 	for (; it != _components.end(); ++it)
 	{
-		CJsonObject comJson;
+		JsonObject comJson;
 		spawner->_parser = &comJson;
 		comJson.Add("type", it->second->typeName());
 
@@ -205,13 +204,13 @@ void Entity::deserialize(Spawner* spawner)
 	if (!spawner || !spawner->_parser)
 		return;
 
-	CJsonObject& entJson = *(CJsonObject*)spawner->_parser;
+	JsonObject& entJson = *(JsonObject*)spawner->_parser;
 	entJson.Get("desc", _desc);
 
 	int comCount = entJson["component"].GetArraySize();
 	for (int i = 0; i < comCount; ++i)
 	{
-		CJsonObject comJson;
+		JsonObject comJson;
 		entJson["component"].Get(i, comJson);
 		spawner->_parser = &comJson;
 		string type, impl;
@@ -393,14 +392,17 @@ bool Spawner::load(const string& filename)
 	stringstream ss;
 	ss << fout.rdbuf();
 
-	CJsonObject sceneJson(ss.str());
+	JsonObject sceneJson;
+	if (!sceneJson.Parse(ss.str()))
+		return false;
+
 	_parser = &sceneJson;
 	deserialize(this);
 
 	int entCount = sceneJson["entity"].GetArraySize();
 	for (int i = 0; i < entCount; ++i)
 	{
-		CJsonObject entJson;
+		JsonObject entJson;
 		sceneJson["entity"].Get(i, entJson);
 		int id, breed;
 		entJson.Get("id", id);
@@ -421,7 +423,7 @@ void Spawner::save(const string& filename)
 		return;
 	}
 
-	CJsonObject sceneJson;
+	JsonObject sceneJson;
 	_parser = &sceneJson;
 	serialize(this);
 
@@ -435,7 +437,7 @@ void Spawner::save(const string& filename)
 		auto itorEnd = entities.end();
 		for (; itor != itorEnd; ++itor)
 		{
-			CJsonObject entJson;
+			JsonObject entJson;
 			_parser = &entJson;
 			itor->second->serialize(this);
 			sceneJson["entity"].Add(entJson);
@@ -478,14 +480,14 @@ void Spawner::discard(Entity* pEntity)
 
 void Spawner::setNull(const string& key)
 {
-	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	JsonObject* pJsonObj = (JsonObject*)_parser;
 	if (pJsonObj)
 		pJsonObj->AddNull(key);
 }
 
 void Spawner::setValue(const string& key, const void* val, const char* typeName)
 {
-	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	JsonObject* pJsonObj = (JsonObject*)_parser;
 	if (!pJsonObj)
 		return;
 
@@ -521,7 +523,7 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 
 void Spawner::getValue(const string& key, void* val, const char* typeName)
 {
-	CJsonObject* pJsonObj = (CJsonObject*)_parser;
+	JsonObject* pJsonObj = (JsonObject*)_parser;
 	if (!pJsonObj)
 		return;
 

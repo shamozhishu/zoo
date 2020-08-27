@@ -1,8 +1,9 @@
 #ifndef __UI_MANAGER_SERVICE_H__
 #define __UI_MANAGER_SERVICE_H__
 
+#include <QMenu>
 #include <QtPlugin>
-#include <QActionGroup>
+#include <QDockWidget>
 
 class UIManagerService
 {
@@ -11,13 +12,12 @@ public:
 	virtual void starWindowTitle() = 0;
 	virtual void unstarWindowTitle() = 0;
 	virtual void finishWindowLaunch() = 0;
-	virtual void addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area, Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas) = 0;
-	virtual void removeWidget(const QString& strId) = 0;
 	virtual QWidget* getWidget(const QString& strId) = 0;
-	virtual void addMenu(const QString &strId, QMenu* pSubMenu) = 0;
+	virtual QDockWidget* addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+		Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas, bool isShow = true, bool hasToolBtn = true, bool hasSeparator = false) = 0;
+	virtual void removeWidget(const QString& strId) = 0;
+	virtual void addMenu(const QString &strId, QMenu* pSubMenu, bool hasToolButton = true) = 0;
 	virtual void removeMenu(const QString& strId) = 0;
-	virtual void addToolButton(const QString &strId, QActionGroup* pActionGroup) = 0;
-	virtual void removeToolButton(const QString& strId) = 0;
 };
 
 #define UIManagerService_iid "com.Interface.UIManagerService"

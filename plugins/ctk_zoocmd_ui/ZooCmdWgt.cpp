@@ -180,6 +180,16 @@ ZooCmdWgt::~ZooCmdWgt()
 	zooCmd_Destroy();
 }
 
+HWND ZooCmdWgt::getWnd()
+{
+	return (HWND)winId();
+}
+
+bool ZooCmdWgt::isFocus()
+{
+	return hasFocus();
+}
+
 void ZooCmdWgt::resgisterCmdset(QStringList cmdset)
 {
 	_regCmdThread->setCmdset(cmdset);

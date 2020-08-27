@@ -9,9 +9,6 @@ Battlefield::Battlefield(int id, TableCSV* table)
 	, _table(table)
 {
 	_spawner = Spawner::create(id, table->item2str(id, "description"));
-	_simStates[ready_].init(table->item2str(id, "ready"));
-	_simStates[running_].init(table->item2str(id, "running"));
-	_simStates[paused_].init(table->item2str(id, "paused"));
 }
 
 Battlefield::~Battlefield()
@@ -19,11 +16,25 @@ Battlefield::~Battlefield()
 	Spawner::destroy(_spawner);
 }
 
-void Battlefield::enter()
+void Battlefield::stepping()
+{
+	WarSimulator::stepping();
+	_spawner->updateAll();
+}
+
+bool Battlefield::load()
 {
 	string sceneFile = _table->item2str(_id, "scene_file");
 	if (sceneFile != "" && _spawner->load(ZOO_DATA_ROOT_DIR + sceneFile))
+	{
 		_spawner->awakeAll();
+		_simStates[ready_].init(_table->item2str(_id, "ready"), this);
+		_simStates[running_].init(_table->item2str(_id, "running"), this);
+		_simStates[paused_].init(_table->item2str(_id, "paused"), this);
+		return true;
+	}
+
+	return false;
 }
 
 void Battlefield::save()
@@ -31,34 +42,6 @@ void Battlefield::save()
 	string sceneFile = _table->item2str(_id, "scene_file");
 	if (sceneFile != "")
 		_spawner->save(ZOO_DATA_ROOT_DIR + sceneFile);
-}
-
-void Battlefield::exit()
-{
-	_spawner->clear();
-}
-
-void Battlefield::stepping()
-{
-	auto it = _behaviors.begin();
-	auto itEnd = _behaviors.end();
-	for (; it != itEnd; ++it)
-		(*it)->exec();
-
-	WarSimulator::stepping();
-	_spawner->updateAll();
-}
-
-void Battlefield::addBehavior(Behavior* behavior)
-{
-	_behaviors.push_back(behavior);
-}
-
-void Battlefield::removeBehavior(Behavior* behavior)
-{
-	auto it = std::find(_behaviors.begin(), _behaviors.end(), behavior);
-	if (it != _behaviors.end())
-		_behaviors.erase(it);
 }
 
 Entity* Battlefield::createArmy(int id, int breed)

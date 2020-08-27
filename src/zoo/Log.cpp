@@ -13,12 +13,14 @@ public:
 	ofstream _fout;
 	bool _hasConsole;
 	ELogLevel _level;
-	Log::Listener _listener;
+	Log::Listener _prePrint;
+	Log::Listener _postPrint;
 
 	Logger(bool hasConsole, const string& logFileName)
 		: _hasConsole(hasConsole)
 		, _level(ELL_DEBUG)
-		, _listener(nullptr)
+		, _prePrint(nullptr)
+		, _postPrint(nullptr)
 	{
 		if (NULL == g_pLogger)
 		{
@@ -74,36 +76,30 @@ public:
 
 LogConfig g_logConfig;
 
-inline void Log::print(ELogLevel level, const char* szFormat, ...)
+static inline void print(ELogLevel level, const char* szArgMessage)
 {
-	if (g_pLogger && level >= g_pLogger->_level)
+	if (g_pLogger->_prePrint)
+		g_pLogger->_prePrint(level, szArgMessage);
+
+	if (g_pLogger->_hasConsole)
 	{
-		static char szArgMessage[2048];
-		va_list args;
-		va_start(args, szFormat);
-		vsprintf(szArgMessage, szFormat, args);
-		va_end(args);
-
-		if (g_pLogger->_listener)
-			g_pLogger->_listener(level, szArgMessage);
-
-		if (g_pLogger->_hasConsole)
+		WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+		switch (level)
 		{
-			WORD wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-			switch (level)
-			{
-			case ELL_INFO: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
-			case ELL_WARNING: wAttributes = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
-			}
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
-			std::cout << szArgMessage << std::endl;
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		case ELL_INFO: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN; break;
+		case ELL_WARNING: wAttributes = FOREGROUND_RED | FOREGROUND_GREEN; break;
+		case ELL_ERROR: wAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED; break;
 		}
-
-		if (g_pLogger->_fout)
-			g_pLogger->_fout << szArgMessage << std::endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wAttributes);
+		std::cout << szArgMessage << std::endl;
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 	}
+
+	if (g_pLogger->_fout)
+		g_pLogger->_fout << szArgMessage << std::endl;
+
+	if (g_pLogger->_postPrint)
+		g_pLogger->_postPrint(level, szArgMessage);
 }
 
 void Log::level(ELogLevel level)
@@ -112,10 +108,65 @@ void Log::level(ELogLevel level)
 		g_pLogger->_level = level;
 }
 
-void Log::listen(Listener listenFunc)
+void Log::debug(const char* szFormat, ...)
+{
+	if (g_pLogger && ELL_DEBUG >= g_pLogger->_level)
+	{
+		static char szArgMessage[2048];
+		va_list args;
+		va_start(args, szFormat);
+		vsprintf(szArgMessage, szFormat, args);
+		va_end(args);
+		print(ELL_DEBUG, szArgMessage);
+	}
+}
+
+void Log::info(const char* szFormat, ...)
+{
+	if (g_pLogger && ELL_INFO >= g_pLogger->_level)
+	{
+		static char szArgMessage[2048];
+		va_list args;
+		va_start(args, szFormat);
+		vsprintf(szArgMessage, szFormat, args);
+		va_end(args);
+		print(ELL_INFO, szArgMessage);
+	}
+}
+
+void Log::warning(const char* szFormat, ...)
+{
+	if (g_pLogger && ELL_WARNING >= g_pLogger->_level)
+	{
+		static char szArgMessage[2048];
+		va_list args;
+		va_start(args, szFormat);
+		vsprintf(szArgMessage, szFormat, args);
+		va_end(args);
+		print(ELL_WARNING, szArgMessage);
+	}
+}
+
+void Log::error(const char* szFormat, ...)
+{
+	if (g_pLogger && ELL_ERROR >= g_pLogger->_level)
+	{
+		static char szArgMessage[2048];
+		va_list args;
+		va_start(args, szFormat);
+		vsprintf(szArgMessage, szFormat, args);
+		va_end(args);
+		print(ELL_ERROR, szArgMessage);
+	}
+}
+
+void Log::listen(Listener prePrint, Listener postPrint)
 {
 	if (g_pLogger)
-		g_pLogger->_listener = listenFunc;
+	{
+		g_pLogger->_prePrint = prePrint;
+		g_pLogger->_postPrint = postPrint;
+	}
 }
 
 }

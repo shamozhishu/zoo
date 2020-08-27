@@ -22,11 +22,6 @@ public:
 	void deserialize(Spawner* spawner);
 };
 
-struct AI : public Component {
-	AI();
-	~AI();
-};
-
 struct DoF : public Component { // tolua_export
 	enum
 	{
@@ -129,7 +124,6 @@ public:
 
 struct Collider : public Component { // tolua_export
 
-
 public:
 	// tolua_begin
 };
@@ -179,6 +173,15 @@ public:
 // tolua_end
 
 struct Environment : public Component { // tolua_export
+	enum
+	{
+		Weather_ = ESTATE_01
+	};
+	// tolua_begin
+	enum EWeather { Sunny_, Rain_, Snow_ };
+	// tolua_end
+	EWeather _type;
+	float _intensity;
 	ZOO_REFLEX_DECLARE(Environment)
 
 public:
@@ -188,6 +191,7 @@ public:
 
 public:
 	// tolua_begin
+	void setWeather(EWeather type, float intensity);
 };
 // tolua_end
 
@@ -223,5 +227,10 @@ public:
 	void setSunlightIntensity(float intensity);
 };
 // tolua_end
+
+struct AI : public Component {
+	AI();
+	~AI();
+};
 
 #endif // __WAR_COMPONENTS_H__

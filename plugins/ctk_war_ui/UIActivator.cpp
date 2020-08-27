@@ -27,13 +27,14 @@ void UIActivator::start(ctkPluginContext* context)
 		service->finishWindowLaunch();
 		service->setWindowTitle(tr("战场编辑器"));
 		ArmyListWgt* pArmyListWidget = new ArmyListWgt;
-		MenuToolButtons::create(service, MenuToolButtons::file_, pArmyListWidget);
-		MenuToolButtons::create(service, MenuToolButtons::edit_, pArmyListWidget);
+		MenuToolButtons::create(service, MenuToolButtons::scene_, pArmyListWidget, true);
+		MenuToolButtons::create(service, MenuToolButtons::simulation_, pArmyListWidget, true);
 		service->addWidget(CTK_WAR_UI_LIST_WIDGET, tr("实体导航"), pArmyListWidget, QIcon(QPixmap(":/images/Resources/images/entnavig.png")),
 			Qt::LeftDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 		ComPropertyBoard* pComPropertyBoard = new ComPropertyBoard;
 		service->addWidget(CTK_WAR_UI_PROPERTY_BOARD, tr("组件属性"), pComPropertyBoard, QIcon(QPixmap(":/images/Resources/images/entparam.png")),
-			Qt::RightDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+			Qt::RightDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea, true, true, true);
+		MenuToolButtons::create(service, MenuToolButtons::help_, nullptr, true);
 	}
 	else
 	{
@@ -48,8 +49,9 @@ void UIActivator::stop(ctkPluginContext* context)
 	{
 		service->removeWidget(CTK_WAR_UI_PROPERTY_BOARD);
 		service->removeWidget(CTK_WAR_UI_LIST_WIDGET);
-		MenuToolButtons::destroy(service, MenuToolButtons::file_);
-		MenuToolButtons::destroy(service, MenuToolButtons::edit_);
+		MenuToolButtons::destroy(service, MenuToolButtons::scene_);
+		MenuToolButtons::destroy(service, MenuToolButtons::simulation_);
+		MenuToolButtons::destroy(service, MenuToolButtons::help_);
 	}
 
 	_pluginContext = nullptr;

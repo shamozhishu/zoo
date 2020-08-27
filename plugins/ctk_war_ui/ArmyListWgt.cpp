@@ -2,6 +2,7 @@
 #include "UIActivator.h"
 #include "ui_ArmyListWgt.h"
 #include <QTreeWidgetItem>
+#include <QDesktopServices>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QDrag>
@@ -70,10 +71,7 @@ public:
 	~ArmyTreeItem()
 	{
 		if (_ent)
-		{
 			_ent->getSpawner()->remove(_ent, true);
-			_uiMgr->starWindowTitle();
-		}
 	}
 
 	zoo::Entity* getEnt()
@@ -123,6 +121,7 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 		{
 			removeItemWidget(pItem, 0);
 			delete pItem;
+			UIActivator::getService<UIManagerService>()->starWindowTitle();
 		}
 	});
 
@@ -133,6 +132,20 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 		ComPropertyBoard* pPropBoard = dynamic_cast<ComPropertyBoard*>(service->getWidget(CTK_WAR_UI_PROPERTY_BOARD));
 		if (pPropBoard)
 		{
+			if (_newParentItem && previous)
+			{
+				previous->setExpanded(true);
+				if (previous->parent())
+					previous->parent()->setExpanded(true);
+
+				ArmyTreeItem* pChildItem = dynamic_cast<ArmyTreeItem*>(previous);
+				if (pChildItem)
+				{
+					pChildItem->setParent(_newParentItem->getEnt()->getComponent<DoF>());
+					pPropBoard->showCom("DoF", pChildItem->getEnt()->getComponent<DoF>());
+				}
+			}
+
 			ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(current);
 			if (pItem && pItem->getEnt())
 			{
@@ -151,17 +164,6 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 			{
 				pPropBoard->showCurEntComs(nullptr);
 				setHeaderLabels(QStringList() << tr("编号：null    类别：null    描述：null"));
-			}
-
-			if (_newParentItem && previous)
-			{
-				previous->setExpanded(true);
-				if (previous->parent())
-					previous->parent()->setExpanded(true);
-
-				ArmyTreeItem* pChildItem = dynamic_cast<ArmyTreeItem*>(previous);
-				if (pChildItem)
-					pChildItem->setParent(_newParentItem->getEnt()->getComponent<DoF>());
 			}
 		}
 	});
@@ -185,12 +187,21 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 				pItem->setText(0, QString::fromLocal8Bit(pItem->getEnt()->desc().c_str()));
 			else
 			{
-				string strOldDesc = pItem->getEnt()->desc();
+				zoo::Entity* pEnt = pItem->getEnt();
+				string strOldDesc = pEnt->desc();
 				string strNewDesc = pItem->text(0).toLocal8Bit();
 				if (strOldDesc != strNewDesc)
 				{
-					pItem->getEnt()->desc() = strNewDesc;
+					pEnt->desc() = strNewDesc;
 					UIActivator::getService<UIManagerService>()->starWindowTitle();
+
+					if (item == currentItem())
+					{
+						QString strId = pEnt->id() == -1 ? "null" : QString::number(pEnt->id());
+						QString strBreed = pEnt->breed() == -1 ? "null" : QString::number(pEnt->breed());
+						QString strDesc = pEnt->desc() == "" ? "null" : QString::fromLocal8Bit(pEnt->desc().c_str());
+						setHeaderLabels(QStringList() << QString(tr("编号：%1    类别：%2    描述：%3").arg(strId, strBreed, strDesc)));
+					}
 				}
 			}
 		}
@@ -273,7 +284,7 @@ ArmyListWgt::ArmyListWgt()
 	_ui->lineEdit_id->setValidator(pIntValidator);
 	_ui->lineEdit_breed->setValidator(pIntValidator);
 
-	connect(_ui->toolButton, &QPushButton::clicked, [this]
+	connect(_ui->toolButton_createEnt, &QPushButton::clicked, [this]
 	{
 		if (!_spawner || !_rootItem)
 		{
@@ -311,6 +322,45 @@ ArmyListWgt::ArmyListWgt()
 		ent->desc() = _ui->lineEdit_desc->text().toLocal8Bit();
 		emit createItem(ent);
 	});
+	connect(_ui->toolButton_readyScript, &QToolButton::clicked, [this]
+	{
+		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(ReadyScript_);
+		if (filename.isEmpty())
+		{
+			QMessageBox::warning(this, tr("警告"), tr("仿真就绪脚本不存在！"));
+			return;
+		}
+
+		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
+		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
+			QMessageBox::warning(this, tr("警告"), tr("打开仿真就绪脚本文件%1失败！").arg(filename));
+	});
+	connect(_ui->toolButton_pausedScript, &QToolButton::clicked, [this]
+	{
+		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(PausedScript_);
+		if (filename.isEmpty())
+		{
+			QMessageBox::warning(this, tr("警告"), tr("仿真暂停脚本不存在！"));
+			return;
+		}
+
+		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
+		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
+			QMessageBox::warning(this, tr("警告"), tr("打开仿真暂停脚本文件%1失败！").arg(filename));
+	});
+	connect(_ui->toolButton_runningScript, &QToolButton::clicked, [this]
+	{
+		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(RunningScript_);
+		if (filename.isEmpty())
+		{
+			QMessageBox::warning(this, tr("警告"), tr("仿真执行脚本不存在！"));
+			return;
+		}
+
+		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
+		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
+			QMessageBox::warning(this, tr("警告"), tr("打开仿真执行脚本文件%1失败！").arg(filename));
+	});
 }
 
 ArmyListWgt::~ArmyListWgt()
@@ -335,7 +385,7 @@ void ArmyListWgt::onOpen()
 			return;
 		}
 
-		QString curscenefile = dlg.getCurBattlefieldFile();
+		QString curscenefile = dlg.getCurBattlefieldFile(SceneFile_);
 		if (curscenefile.isEmpty())
 		{
 			QMessageBox::warning(this, tr("警告"), tr("场景文件不存在！"));
@@ -343,19 +393,26 @@ void ArmyListWgt::onOpen()
 		}
 
 		WarService* service = UIActivator::getService<WarService>();
-		if (service != Q_NULLPTR)
+		UIManagerService* uiMgr = UIActivator::getService<UIManagerService>();
+		if (service && uiMgr)
 		{
 			_rootItem = nullptr;
 			_ui->treeWidget->clear();
 			service->closeScene();
-			service->openScene(curid);
-			_spawner = Spawner::find(curid);
-			generateItemTree(_spawner, nullptr);
+			if (service->openScene(curid))
+			{
+				emit sceneOpendSucceed();
+				_spawner = Spawner::find(curid);
+				generateItemTree(_spawner, nullptr);
+				uiMgr->setWindowTitle(tr("战场编辑器 - ") + QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + curscenefile);
+			}
+			else
+			{
+				emit sceneOpendFailed();
+				uiMgr->setWindowTitle(tr("战场编辑器"));
+				QMessageBox::warning(this, tr("警告"), tr("打开场景失败！"));
+			}
 		}
-
-		UIManagerService* uiMgr = UIActivator::getService<UIManagerService>();
-		if (uiMgr)
-			uiMgr->setWindowTitle(tr("战场编辑器 - ") + QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + curscenefile);
 	}
 }
 
@@ -370,8 +427,40 @@ void ArmyListWgt::onSave()
 	}
 }
 
-void ArmyListWgt::onSim(bool checked)
+void ArmyListWgt::onSim(bool started)
 {
+	WarService* service = UIActivator::getService<WarService>();
+	if (service)
+	{
+		if (started)
+		{
+			if (service->startSimulation())
+				emit simStarted();
+		}
+		else
+		{
+			if (service->stopSimulation())
+				emit simStoped();
+		}
+	}
+}
+
+void ArmyListWgt::onPaused(bool paused)
+{
+	WarService* service = UIActivator::getService<WarService>();
+	if (service)
+	{
+		if (paused)
+		{
+			if (service->pauseSimulation())
+				emit simPaused();
+		}
+		else
+		{
+			if (service->startSimulation())
+				emit simStarted();
+		}
+	}
 }
 
 void ArmyListWgt::onCreate(zoo::Entity* ent)

@@ -75,6 +75,7 @@ set(PLUGIN_UI_FORMS
 	CameraPropertyWgt.ui
 	EarthPropertyWgt.ui
 	BehaviorPropertyWgt.ui
+	EnvirPropertyWgt.ui
 )
 
 # QRC Files which should be compiled into the plugin

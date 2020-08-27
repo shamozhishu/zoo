@@ -37,10 +37,10 @@
 #endif
 
 #if defined(_DEBUG) || defined(ZOO_ENABLE_LOG_PRINT)
-#define zoo_debug(format, ...)       zoo::Log::print(zoo::ELL_DEBUG, format, ##__VA_ARGS__)
-#define zoo_info(format, ...)        zoo::Log::print(zoo::ELL_INFO, format, ##__VA_ARGS__)
-#define zoo_warning(format, ...)     zoo::Log::print(zoo::ELL_WARNING, format, ##__VA_ARGS__)
-#define zoo_error(format, ...)       zoo::Log::print(zoo::ELL_ERROR, "[%d][%s][%s]:"##format, __LINE__, __FUNCTION__, __FILE__, ##__VA_ARGS__)
+#define zoo_debug(format, ...)       zoo::Log::debug(format, ##__VA_ARGS__)
+#define zoo_info(format, ...)        zoo::Log::info(format, ##__VA_ARGS__)
+#define zoo_warning(format, ...)     zoo::Log::warning(format, ##__VA_ARGS__)
+#define zoo_error(format, ...)       zoo::Log::error("[%d][%s][%s]:"##format, __LINE__, __FUNCTION__, __FILE__, ##__VA_ARGS__)
 #else
 #define zoo_debug(format, ...)
 #define zoo_info(format, ...)
@@ -111,5 +111,28 @@ extern "C" __declspec(dllexport) const char* dllGetTypeName(void)          \
 {                                                                          \
 	return #type;                                                          \
 }
+
+#define IS_KIND_OF(KIND)\
+template<typename T>\
+struct is_kind_of_##KIND\
+{\
+private:\
+	template <typename U> static std::true_type check(KIND<U>&&);\
+	static std::false_type check(...);\
+	using type = decltype(check(std::declval<T>()));\
+public:\
+	enum { value = std::is_same<type, std::true_type>::value };\
+};
+
+#define HAS_MEMBER(member)\
+template<typename T, typename ...Args>\
+struct has_member_##member\
+{\
+private:\
+	template<typename U> static auto check(int)->decltype(std::declval<U>().member(std::declval<Args>()...), std::true_type());\
+	template<typename U> static std::false_type check(...);\
+public:\
+	enum{value = std::is_same<decltype(check<T>(0)), std::true_type>::value};\
+};
 
 #endif // __ZOO_COMMON_H__

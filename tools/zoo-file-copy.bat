@@ -4,8 +4,6 @@ set target_path=D:\Code\_git\zoo
 echo copy[%source_path%]to[%target_path%]:
 pause
 
-copy %source_path%\CMakeLists.txt %target_path%\CMakeLists.txt
-
 echo ----------------------------------------src catalog
 xcopy /y /s /e %source_path%\src\*.* %target_path%\src\
 
@@ -23,5 +21,7 @@ xcopy /y /s /e %source_path%\include\*.* %target_path%\include\
 
 echo ----------------------------------------CMakeModules catalog
 xcopy /y /s /e %source_path%\CMakeModules\*.* %target_path%\CMakeModules\
+
+copy %source_path%\CMakeLists.txt %target_path%\CMakeLists.txt
 
 pause

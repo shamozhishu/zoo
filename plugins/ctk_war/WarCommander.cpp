@@ -1,12 +1,12 @@
 #include "WarCommander.h"
 #include "Battlefield.h"
-#include "InstanceReleaser.h"
 #include <zoo/DatabaseCSV.h>
 #include <QCoreApplication>
 #include <QFile>
 #include <zoo/Log.h>
 #include <zoo/Utils.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
+#include "LuaExportClass.h"
 
 using namespace zoo;
 
@@ -16,6 +16,7 @@ WarCommander::WarCommander(string cmd, string table)
 	, _currentBattlefield(nullptr)
 {
 	new DatabaseCSV();
+	new Input();
 	string csvTablePath = table;
 	size_t pos = csvTablePath.find_last_of(L'/', csvTablePath.length());
 	csvTablePath = csvTablePath.substr(0, pos + 1);
@@ -29,7 +30,7 @@ WarCommander::~WarCommander()
 {
 	_tickTimer.stop();
 	SAFE_DELETE(_currentBattlefield);
-	InstanceReleaser::destroyIns();
+	delete Input::getSingletonPtr();
 	delete DatabaseCSV::getSingletonPtr();
 }
 
@@ -51,9 +52,13 @@ bool WarCommander::enterBattlefield(int id)
 
 	SAFE_DELETE(_currentBattlefield);
 	_currentBattlefield = new Battlefield(id, _battlefieldTable);
-	_currentBattlefield->enter();
+	if (!_currentBattlefield->load())
+	{
+		SAFE_DELETE(_currentBattlefield);
+		zoo_error("¼ÓÔØ³¡¾°[%d]Ê§°Ü", id);
+		return false;
+	}
 
-	zooCmdL_Send(WarCommander::getSingleton().getCmd(), "enter_battlefield()");
 	return true;
 }
 
@@ -61,7 +66,6 @@ void WarCommander::exitCurBattlefield()
 {
 	if (_currentBattlefield)
 	{
-		_currentBattlefield->exit();
 		delete _currentBattlefield;
 		_currentBattlefield = nullptr;
 	}
@@ -85,6 +89,7 @@ Battlefield* WarCommander::getCurBattlefield()
 
 void WarCommander::tick()
 {
+	Input::getSingleton().poll();
 	if (_currentBattlefield)
 		_currentBattlefield->stepping();
 }

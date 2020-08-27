@@ -10,5 +10,11 @@
         <file>Resources/images/modelpath.png</file>
         <file>Resources/images/edit_file.png</file>
         <file>Resources/images/open_file.png</file>
+        <file>Resources/images/about.png</file>
+        <file>Resources/images/pause.png</file>
+        <file>Resources/images/paused.png</file>
+        <file>Resources/images/ready.png</file>
+        <file>Resources/images/running.png</file>
+        <file>Resources/images/reset.png</file>
     </qresource>
 </RCC>

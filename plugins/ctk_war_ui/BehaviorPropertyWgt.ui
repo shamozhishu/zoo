@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>231</width>
+    <width>260</width>
     <height>74</height>
    </rect>
   </property>
@@ -34,6 +34,9 @@
         </item>
         <item>
          <widget class="QToolButton" name="toolButton_open">
+          <property name="toolTip">
+           <string>脚本文件</string>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -45,12 +48,29 @@
         </item>
         <item>
          <widget class="QToolButton" name="toolButton_edit">
+          <property name="toolTip">
+           <string>编辑脚本</string>
+          </property>
           <property name="text">
            <string/>
           </property>
           <property name="icon">
            <iconset resource="ctk_war_ui.qrc">
             <normaloff>:/images/Resources/images/edit_file.png</normaloff>:/images/Resources/images/edit_file.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="toolButton_reset">
+          <property name="toolTip">
+           <string>重置脚本</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="ctk_war_ui.qrc">
+            <normaloff>:/images/Resources/images/reset.png</normaloff>:/images/Resources/images/reset.png</iconset>
           </property>
          </widget>
         </item>

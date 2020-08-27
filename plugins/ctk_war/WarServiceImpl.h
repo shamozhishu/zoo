@@ -2,6 +2,7 @@
 #define __WAR_SERVICE_IMPL_H__
 
 #include <QObject>
+#include "Battlefield.h"
 #include <ctk_service/war/WarService.h>
 
 class WarServiceImpl : public QObject, public WarService
@@ -10,12 +11,15 @@ class WarServiceImpl : public QObject, public WarService
 	Q_INTERFACES(WarService)
 public:
 	WarServiceImpl();
-	~WarServiceImpl();
 	bool openScene(int id);
 	void closeScene();
 	void saveScene();
-	void startSimulation();
-	void stopSimulation();
+	bool startSimulation();
+	bool pauseSimulation();
+	bool stopSimulation();
+
+private:
+	ESimState _simuState;
 };
 
 #endif // __WAR_SERVICE_IMPL_H__

@@ -3,6 +3,7 @@
 #include <zoo/Utils.h>
 #include "WarCommander.h"
 #include "Battlefield.h"
+#include "LuaExportClass.h"
 
 ZOO_REFLEX_IMPLEMENT(Behavior);
 Behavior::Behavior()
@@ -27,6 +28,7 @@ void Behavior::exec()
 		_scriptValid = false;
 		if (_scriptFile != "")
 		{
+			LuaScript::clearScriptFileName2ContentCache(ZOO_DATA_ROOT_DIR + _scriptFile);
 			_scriptValid = _script->executeScriptFile(ZOO_DATA_ROOT_DIR + _scriptFile);
 			if (_scriptValid)
 			{
@@ -36,10 +38,13 @@ void Behavior::exec()
 				for (; it != components.end(); ++it)
 				{
 					if (it->first != "Behavior")
-						_script->setVariable(it->first.c_str(), it->first.c_str(), it->second);
+						_script->setVariable(zoo::strToLower(it->first).c_str(), it->first.c_str(), it->second);
 				}
 
 				_script->setVariable("this", "Entity", getEntity());
+				_script->setVariable("input", "Input", Input::getSingletonPtr());
+				static Log logger;
+				_script->setVariable("logger", "Log", &logger);
 				_script->executeGlobalFunction("Init");
 			}
 		}
@@ -62,14 +67,6 @@ void Behavior::serialize(Spawner* spawner)
 void Behavior::deserialize(Spawner* spawner)
 {
 	spawner->getValue("script", _scriptFile);
-}
-//////////////////////////////////////////////////////////////////////////
-AI::AI()
-{
-}
-
-AI::~AI()
-{
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(DoF);
@@ -161,10 +158,14 @@ bool DoF::isLLH() const
 
 void DoF::setPos(double x, double y, double z, bool lon_lat_height /*= false*/)
 {
-	_x = x;
-	_y = y;
-	_z = z;
-	_dirty.addState(Dof_);
+	if (!equals(_x, x) || !equals(_y, y) || !equals(_z, z))
+	{
+		_x = x;
+		_y = y;
+		_z = z;
+		_dirty.addState(Dof_);
+	}
+
 	if (_lonLatHeight != lon_lat_height)
 	{
 		_lonLatHeight = lon_lat_height;
@@ -189,10 +190,13 @@ double DoF::getPosZ() const
 
 void DoF::setRot(float h, float p, float r)
 {
-	_heading = h;
-	_pitch = p;
-	_roll = r;
-	_dirty.addState(Dof_);
+	if (!equals(_heading, h) || !equals(_pitch, p) || !equals(_roll, r))
+	{
+		_heading = h;
+		_pitch = p;
+		_roll = r;
+		_dirty.addState(Dof_);
+	}
 }
 
 float DoF::getHeading() const
@@ -212,10 +216,13 @@ float DoF::getRoll() const
 
 void DoF::setScale(float sx, float sy, float sz)
 {
-	_sx = sx;
-	_sy = sy;
-	_sz = sz;
-	_dirty.addState(Dof_);
+	if (!equals(_sx, sx) || !equals(_sy, sy) || !equals(_sz, sz))
+	{
+		_sx = sx;
+		_sy = sy;
+		_sz = sz;
+		_dirty.addState(Dof_);
+	}
 }
 
 float DoF::getScaleX() const
@@ -283,14 +290,20 @@ bool Model::isVisible() const
 
 void Model::setVisible(bool visible)
 {
-	_visible = visible;
-	_dirty.addState(Visible_);
+	if (_visible != visible)
+	{
+		_visible = visible;
+		_dirty.addState(Visible_);
+	}
 }
 
 void Model::setModelFile(const string& modelFile)
 {
-	_modelFile = modelFile;
-	_dirty.addState(ModelFile_);
+	if (_modelFile != modelFile)
+	{
+		_modelFile = modelFile;
+		_dirty.addState(ModelFile_);
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Sound);
@@ -344,7 +357,7 @@ ZOO_REFLEX_IMPLEMENT(Camera);
 Camera::Camera()
 	: _trackEntID(-1)
 	, _trackEntBreed(-1)
-	, _manipulatorKey(Earth_)
+	, _manipulatorKey(Terrain_)
 	, _lRatio(0)
 	, _rRatio(1)
 	, _bRatio(0)
@@ -400,40 +413,69 @@ void Camera::setManipulator(int key)
 
 void Camera::setTrackEnt(int id, int breed)
 {
-	_trackEntID = id;
-	_trackEntBreed = breed;
-	_dirty.addState(TrackEnt_);
+	if (_trackEntID != id || _trackEntBreed != breed)
+	{
+		_trackEntID = id;
+		_trackEntBreed = breed;
+		_dirty.addState(TrackEnt_);
+	}
 }
 
 void Camera::setBgColor(int r, int g, int b, int a /*= 255*/)
 {
-	_red = r; _green = g; _blue = b; _alpha = a;
-	_dirty.addState(Bgcolour_);
+	if (_red != r || _green != g || _blue != b || _alpha != a)
+	{
+		_red = r; _green = g; _blue = b; _alpha = a;
+		_dirty.addState(Bgcolour_);
+	}
 }
 
 void Camera::setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio)
 {
-	_lRatio = leftRatio;
-	_rRatio = rightRatio;
-	_bRatio = bottomRatio;
-	_tRatio = topRatio;
-	_dirty.addState(Viewport_);
+	if (!equals(_lRatio, leftRatio) || !equals(_rRatio, rightRatio) || !equals(_bRatio, bottomRatio) || !equals(_tRatio, topRatio))
+	{
+		_lRatio = leftRatio;
+		_rRatio = rightRatio;
+		_bRatio = bottomRatio;
+		_tRatio = topRatio;
+		_dirty.addState(Viewport_);
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Environment);
 Environment::Environment()
+	: _type(Sunny_)
+	, _intensity(0.3f)
 {
-
 }
+
 void Environment::serialize(Spawner* spawner)
 {
-	
+	spawner->setValue("weather", _type);
+	spawner->setValue("intensity", _intensity);
 }
 
 void Environment::deserialize(Spawner* spawner)
 {
-	
+	spawner->getValue("weather", _type);
+	spawner->getValue("intensity", _intensity);
 }
+
+void Environment::setWeather(EWeather type, float intensity)
+{
+	if (!equals(_intensity, intensity))
+	{
+		_intensity = intensity;
+		_dirty.addState(Weather_);
+	}
+
+	if (_type != type)
+	{
+		_type = type;
+		_dirty.addState(Weather_);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Earth);
 Earth::Earth()
@@ -466,36 +508,62 @@ void Earth::deserialize(Spawner* spawner)
 
 void Earth::setSunVisible(bool visible)
 {
-	_skyVisibility[sun_] = visible;
-	_dirty.addState(SunVisible_);
+	if (_skyVisibility[sun_] != visible)
+	{
+		_skyVisibility[sun_] = visible;
+		_dirty.addState(SunVisible_);
+	}
 }
 
 void Earth::setMoonVisible(bool visible)
 {
-	_skyVisibility[moon_] = visible;
-	_dirty.addState(MoonVisible_);
+	if (_skyVisibility[moon_] != visible)
+	{
+		_skyVisibility[moon_] = visible;
+		_dirty.addState(MoonVisible_);
+	}
 }
 
 void Earth::setStarVisible(bool visible)
 {
-	_skyVisibility[star_] = visible;
-	_dirty.addState(StarVisible_);
+	if (_skyVisibility[star_] != visible)
+	{
+		_skyVisibility[star_] = visible;
+		_dirty.addState(StarVisible_);
+	}
 }
 
 void Earth::setNebulaVisible(bool visible)
 {
-	_skyVisibility[nebula_] = visible;
-	_dirty.addState(NebulaVisible_);
+	if (_skyVisibility[nebula_] != visible)
+	{
+		_skyVisibility[nebula_] = visible;
+		_dirty.addState(NebulaVisible_);
+	}
 }
 
 void Earth::setAtmosphereVisible(bool visible)
 {
-	_skyVisibility[atmosphere_] = visible;
-	_dirty.addState(AtmosphereVisible_);
+	if (_skyVisibility[atmosphere_] != visible)
+	{
+		_skyVisibility[atmosphere_] = visible;
+		_dirty.addState(AtmosphereVisible_);
+	}
 }
 
 void Earth::setSunlightIntensity(float intensity)
 {
-	_sunlightIntensity = intensity;
-	_dirty.addState(SunlightIntensity_);
+	if (!equals(_sunlightIntensity, intensity))
+	{
+		_sunlightIntensity = intensity;
+		_dirty.addState(SunlightIntensity_);
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+AI::AI()
+{
+}
+
+AI::~AI()
+{
 }

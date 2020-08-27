@@ -2,25 +2,20 @@
 #define __BATTLEFIELD_H__
 
 #include "WarSimulator.h"
-#include "WarComponents.h"
 
 using namespace zoo;
 
 class Battlefield : public WarSimulator { // tolua_export
 	TableCSV* _table;
 	Spawner* _spawner;
-	list<Behavior*> _behaviors;
 	PROPERTY_R(int, _id, ID)
 
 public:
 	Battlefield(int id, TableCSV* table);
 	~Battlefield();
-	void enter();
-	void save();
-	void exit();
 	void stepping();
-	void addBehavior(Behavior* behavior);
-	void removeBehavior(Behavior* behavior);
+	bool load();
+	void save();
 
 public:
 	// tolua_begin

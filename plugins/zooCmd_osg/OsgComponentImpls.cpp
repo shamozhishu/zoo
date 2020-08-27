@@ -2,10 +2,13 @@
 #include "InputDevice.h"
 #include <zoo/Utils.h>
 #include "StarrySky.h"
+#include "WeatherEffect.h"
+#include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
 #include <zooCmd_osg/OsgEarthUtils.h>
 #include <zooCmd_osg/OsgEarthContext.h>
 
+using namespace osgGA;
 using namespace zooCmd_osg;
 #ifdef NEED_OSGEARTH_LIBRARY
 using namespace osgEarth::Util;
@@ -134,7 +137,7 @@ void ModelImpl::awake()
 		return;
 	}
 
-	_model->getOrCreateStateSet()->setMode(GL_LIGHTING, 0);
+	_model->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 	_switch->addChild(_model);
 	Entity* pEnt = model->getEntity();
 	SignalTrigger::connect(*pEnt, [this]
@@ -252,23 +255,39 @@ void CameraImpl::trackingEnt()
 
 ZOO_REFLEX_IMPLEMENT(EnvironmentImpl);
 EnvironmentImpl::EnvironmentImpl()
+	: _switch(new osg::Switch)
 {
-
+	_switch->addChild(new WeatherEffect, false);
+	osg::Group* pRoot = ServiceLocator<OsgEarthContext>::getService()->getRootNode();
+	if (pRoot)
+		pRoot->addChild(_switch);
 }
 
 EnvironmentImpl::~EnvironmentImpl()
 {
-
+	osg::Group* pRoot = ServiceLocator<OsgEarthContext>::getService()->getRootNode();
+	if (_switch)
+		pRoot->removeChild(_switch.get());
 }
 
 void EnvironmentImpl::awake()
 {
-
+	_switch->setAllChildrenOff();
 }
 
 void EnvironmentImpl::update()
 {
-
+	Environment* pEnvironment = getComponent<Environment>();
+	WeatherEffect* effect = dynamic_cast<WeatherEffect*>(_switch->getChild(0));
+	if (effect && pEnvironment->dirtyBit().checkState(Environment::Weather_))
+	{
+		_switch->setAllChildrenOff();
+		switch (pEnvironment->_type)
+		{
+		case Environment::Rain_: effect->rain(pEnvironment->_intensity); _switch->setValue(0, true); break;
+		case Environment::Snow_: effect->snow(pEnvironment->_intensity); _switch->setValue(0, true); break;
+		}
+	}
 }
 
 #ifdef NEED_OSGEARTH_LIBRARY

@@ -1,6 +1,5 @@
 #include "PropertyWgts.h"
 #include "UIActivator.h"
-#include <zoo/Math.h>
 #include <zoo/Utils.h>
 #include <zoo/ServiceLocator.h>
 #include <zooCmd_osg/OsgEarthUtils.h>
@@ -16,6 +15,7 @@
 #include "ui_CameraPropertyWgt.h"
 #include "ui_EarthPropertyWgt.h"
 #include "ui_BehaviorPropertyWgt.h"
+#include "ui_EnvirPropertyWgt.h"
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 
 // Qt5中文乱码
@@ -25,6 +25,8 @@
 
 #define COM_CAST(TYPE) ((TYPE*)_com)
 #define BEHAVIOR_COMPONENT_NAME "Behavior"
+#define FLOAT_TO_STRING(VAR) QString::number((float)VAR, 'f', 6).replace(QRegExp("(\\.){0,1}0+$"), "").replace(QRegExp("[.]$"), "")
+#define DOUBLE_TO_STRING(VAR) QString::number((double)VAR, 'f', 8).replace(QRegExp("(\\.){0,1}0+$"), "").replace(QRegExp("[.]$"), "")
 
 ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 	: _ui(new Ui::ComListWgt)
@@ -197,7 +199,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_x, tmp))
 		{
 			COM_CAST(DoF)->_x = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -207,7 +209,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_y, tmp))
 		{
 			COM_CAST(DoF)->_y = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -217,7 +219,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_z, tmp))
 		{
 			COM_CAST(DoF)->_z = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -227,7 +229,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_pitch, tmp))
 		{
 			COM_CAST(DoF)->_pitch = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -237,7 +239,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_roll, tmp))
 		{
 			COM_CAST(DoF)->_roll = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -247,7 +249,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_heading, tmp))
 		{
 			COM_CAST(DoF)->_heading = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -257,7 +259,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_sx, tmp))
 		{
 			COM_CAST(DoF)->_sx = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -267,7 +269,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_sy, tmp))
 		{
 			COM_CAST(DoF)->_sy = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -277,7 +279,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_sz, tmp))
 		{
 			COM_CAST(DoF)->_sz = tmp;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -286,7 +288,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_x, val))
 		{
 			COM_CAST(DoF)->_x = val;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -295,7 +297,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_y, val))
 		{
 			COM_CAST(DoF)->_y = val;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -304,7 +306,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (!zoo::equals(COM_CAST(DoF)->_z, val))
 		{
 			COM_CAST(DoF)->_z = val;
-			const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
+			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -328,8 +330,8 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 				pDoF->_x = lon;
 				pDoF->_y = lat;
 				pDoF->_z = height;
-				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
-				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Parent_);
+				_com->dirtyBit().addState(DoF::Dof_);
+				_com->dirtyBit().addState(DoF::Parent_);
 			}
 		}
 		else
@@ -337,14 +339,14 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 			double X, Y, Z;
 			if (zoo::ServiceLocator<OsgEarthUtils>::getService()->convertLatLongHeightToXYZ(pDoF->_y, pDoF->_x, pDoF->_z, X, Y, Z))
 			{
-				_ui->lineEdit_posx->setText(QString::number(X));
-				_ui->lineEdit_posy->setText(QString::number(Y));
-				_ui->lineEdit_posz->setText(QString::number(Z));
+				_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(X));
+				_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(Y));
+				_ui->lineEdit_posz->setText(DOUBLE_TO_STRING(Z));
 				pDoF->_x = X;
 				pDoF->_y = Y;
 				pDoF->_z = Z;
-				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Dof_);
-				const_cast<BitState&>(_com->dirtyBit()).addState(DoF::Parent_);
+				_com->dirtyBit().addState(DoF::Dof_);
+				_com->dirtyBit().addState(DoF::Parent_);
 			}
 		}
 	});
@@ -359,12 +361,12 @@ void DoFPropertyWgt::resetCom(zoo::Component* pCom)
 {
 	PropertyWgt::resetCom(pCom);
 	DoF* pDoF = COM_CAST(DoF);
-	_ui->lineEdit_rotx->setText(QString::number(pDoF->_pitch));
-	_ui->lineEdit_roty->setText(QString::number(pDoF->_roll));
-	_ui->lineEdit_rotz->setText(QString::number(pDoF->_heading));
-	_ui->lineEdit_scalex->setText(QString::number(pDoF->_sx));
-	_ui->lineEdit_scaley->setText(QString::number(pDoF->_sy));
-	_ui->lineEdit_scalez->setText(QString::number(pDoF->_sz));
+	_ui->lineEdit_rotx->setText(FLOAT_TO_STRING(pDoF->_pitch));
+	_ui->lineEdit_roty->setText(FLOAT_TO_STRING(pDoF->_roll));
+	_ui->lineEdit_rotz->setText(FLOAT_TO_STRING(pDoF->_heading));
+	_ui->lineEdit_scalex->setText(FLOAT_TO_STRING(pDoF->_sx));
+	_ui->lineEdit_scaley->setText(FLOAT_TO_STRING(pDoF->_sy));
+	_ui->lineEdit_scalez->setText(FLOAT_TO_STRING(pDoF->_sz));
 
 	do 
 	{
@@ -373,6 +375,7 @@ void DoFPropertyWgt::resetCom(zoo::Component* pCom)
 			(pParent && !pParent->getEntity()->isSpawner()))
 		{
 			_ui->radioButton->hide();
+			_ui->radioButton->setChecked(Qt::Unchecked);
 		}
 		else
 		{
@@ -389,9 +392,9 @@ void DoFPropertyWgt::resetCom(zoo::Component* pCom)
 		}
 
 		_ui->stackedWidget->setCurrentIndex(0);
-		_ui->lineEdit_posx->setText(QString::number(pDoF->_x));
-		_ui->lineEdit_posy->setText(QString::number(pDoF->_y));
-		_ui->lineEdit_posz->setText(QString::number(pDoF->_z));
+		_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(pDoF->_x));
+		_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(pDoF->_y));
+		_ui->lineEdit_posz->setText(DOUBLE_TO_STRING(pDoF->_z));
 
 	} while (0);
 }
@@ -407,13 +410,13 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 		if (COM_CAST(Model)->_visible != isShow)
 		{
 			COM_CAST(Model)->_visible = isShow;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Model::Visible_);
+			_com->dirtyBit().addState(Model::Visible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
 
-	_ui->toolButton->setDefaultAction(_ui->modelPath);
-	connect(_ui->modelPath, &QAction::triggered, [this]
+	_ui->toolButton->setDefaultAction(_ui->modelFile);
+	connect(_ui->modelFile, &QAction::triggered, [this]
 	{
 		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
 		if (!fileName.isEmpty())
@@ -483,7 +486,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 			{
 				_ui->lineEdit_left->setStyleSheet(leftPercentSS);
 				COM_CAST(Camera)->_lRatio = tmp;
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_com->dirtyBit().addState(Camera::Viewport_);
 				_uiMgr->starWindowTitle();
 			}
 		}
@@ -504,7 +507,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 			{
 				_ui->lineEdit_right->setStyleSheet(rightPercentSS);
 				COM_CAST(Camera)->_rRatio = tmp;
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_com->dirtyBit().addState(Camera::Viewport_);
 				_uiMgr->starWindowTitle();
 			}
 		}
@@ -525,7 +528,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 			{
 				_ui->lineEdit_bottom->setStyleSheet(bottomPercentSS);
 				COM_CAST(Camera)->_bRatio = tmp;
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_com->dirtyBit().addState(Camera::Viewport_);
 				_uiMgr->starWindowTitle();
 			}
 		}
@@ -546,7 +549,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 			{
 				_ui->lineEdit_top->setStyleSheet(topPercentSS);
 				COM_CAST(Camera)->_tRatio = tmp;
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Viewport_);
+				_com->dirtyBit().addState(Camera::Viewport_);
 				_uiMgr->starWindowTitle();
 			}
 		}
@@ -565,7 +568,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 				pCam->_green = clr.green();
 				pCam->_blue = clr.blue();
 				pCam->_alpha = clr.alpha();
-				const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Bgcolour_);
+				_com->dirtyBit().addState(Camera::Bgcolour_);
 				_ui->pushButton_color->setStyleSheet(QString(tr("background-color:rgba(%1,%2,%3,%4)").arg(
 					QString::number(pCam->_red), QString::number(pCam->_green),
 					QString::number(pCam->_blue), QString::number(pCam->_alpha))));
@@ -578,7 +581,7 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		if (COM_CAST(Camera)->_manipulatorKey != index)
 		{
 			COM_CAST(Camera)->_manipulatorKey = index;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Camera::Manipulator_);
+			_com->dirtyBit().addState(Camera::Manipulator_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -594,10 +597,10 @@ void CameraPropertyWgt::resetCom(zoo::Component* pCom)
 	PropertyWgt::resetCom(pCom);
 	Camera* pCam = COM_CAST(Camera);
 	_ui->comboBox->setCurrentIndex(pCam->_manipulatorKey);
-	_ui->lineEdit_left->setText(QString::number(pCam->_lRatio * 100.0f));
-	_ui->lineEdit_right->setText(QString::number(pCam->_rRatio * 100.0f));
-	_ui->lineEdit_bottom->setText(QString::number(pCam->_bRatio * 100.0f));
-	_ui->lineEdit_top->setText(QString::number(pCam->_tRatio * 100.0f));
+	_ui->lineEdit_left->setText(FLOAT_TO_STRING(pCam->_lRatio * 100.0f));
+	_ui->lineEdit_right->setText(FLOAT_TO_STRING(pCam->_rRatio * 100.0f));
+	_ui->lineEdit_bottom->setText(FLOAT_TO_STRING(pCam->_bRatio * 100.0f));
+	_ui->lineEdit_top->setText(FLOAT_TO_STRING(pCam->_tRatio * 100.0f));
 	_ui->pushButton_color->setStyleSheet(QString(tr("background-color:rgba(%1,%2,%3,%4)").arg(
 		QString::number(pCam->_red), QString::number(pCam->_green),
 		QString::number(pCam->_blue), QString::number(pCam->_alpha))));
@@ -608,7 +611,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 	, _ui(new Ui::EarthPropertyWgt)
 {
 	_ui->setupUi(this);
-	connect(_ui->toolButton, &QToolButton::clicked, [this]
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this]
 	{
 		QString fileName = QFileDialog::getOpenFileName(this, tr("Earth文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("地球(*.earth)"));
 		if (!fileName.isEmpty())
@@ -620,13 +623,24 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 			_uiMgr->starWindowTitle();
 		}
 	});
+	connect(_ui->toolButton_edit, &QToolButton::clicked, [this]
+	{
+		QString filename = _ui->lineEdit->text();
+		if (!filename.isEmpty())
+			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+	});
+	connect(_ui->toolButton_reset, &QToolButton::clicked, [this]
+	{
+		_com->getImp()->awake();
+		_com->getEntity()->notifyComponents();
+	});
 	connect(_ui->checkBox_sun, &QCheckBox::stateChanged, [this]
 	{
 		bool isVisibility = _ui->checkBox_sun->checkState() == Qt::Unchecked ? false : true;
 		if (COM_CAST(Earth)->_skyVisibility[Earth::sun_] != isVisibility)
 		{
 			COM_CAST(Earth)->_skyVisibility[Earth::sun_] = isVisibility;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::SunVisible_);
+			_com->dirtyBit().addState(Earth::SunVisible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -636,7 +650,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (COM_CAST(Earth)->_skyVisibility[Earth::moon_] != isVisibility)
 		{
 			COM_CAST(Earth)->_skyVisibility[Earth::moon_] = isVisibility;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::MoonVisible_);
+			_com->dirtyBit().addState(Earth::MoonVisible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -646,7 +660,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (COM_CAST(Earth)->_skyVisibility[Earth::star_] != isVisibility)
 		{
 			COM_CAST(Earth)->_skyVisibility[Earth::star_] = isVisibility;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::StarVisible_);
+			_com->dirtyBit().addState(Earth::StarVisible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -656,7 +670,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (COM_CAST(Earth)->_skyVisibility[Earth::nebula_] != isVisibility)
 		{
 			COM_CAST(Earth)->_skyVisibility[Earth::nebula_] = isVisibility;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::NebulaVisible_);
+			_com->dirtyBit().addState(Earth::NebulaVisible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -666,7 +680,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (COM_CAST(Earth)->_skyVisibility[Earth::atmosphere_] != isVisibility)
 		{
 			COM_CAST(Earth)->_skyVisibility[Earth::atmosphere_] = isVisibility;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::AtmosphereVisible_);
+			_com->dirtyBit().addState(Earth::AtmosphereVisible_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -676,7 +690,7 @@ EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
 		if (!zoo::equals(COM_CAST(Earth)->_sunlightIntensity, intensity))
 		{
 			COM_CAST(Earth)->_sunlightIntensity = intensity;
-			const_cast<BitState&>(_com->dirtyBit()).addState(Earth::SunlightIntensity_);
+			_com->dirtyBit().addState(Earth::SunlightIntensity_);
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -732,6 +746,10 @@ BehaviorPropertyWgt::BehaviorPropertyWgt(QWidget* parent)
 		if (!filename.isEmpty())
 			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
 	});
+	connect(_ui->toolButton_reset, &QToolButton::clicked, [this]
+	{
+		COM_CAST(Behavior)->_scriptInited = false;
+	});
 }
 
 BehaviorPropertyWgt::~BehaviorPropertyWgt()
@@ -747,4 +765,50 @@ void BehaviorPropertyWgt::resetCom(zoo::Component* pCom)
 		_ui->lineEdit->setText("");
 	else
 		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + pBehavior->_scriptFile).c_str()));
+}
+
+EnvirPropertyWgt::EnvirPropertyWgt(QWidget* parent)
+	: PropertyWgt(parent)
+	, _ui(new Ui::EnvirPropertyWgt)
+{
+	_ui->setupUi(this);
+	QStringList weatherType;
+	weatherType << tr("晴") << tr("雨") << tr("雪");
+	_ui->comboBox->addItems(weatherType);
+	connect(_ui->comboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index)
+	{
+		if (COM_CAST(Environment)->_type != index)
+		{
+			COM_CAST(Environment)->_type = (Environment::EWeather)index;
+			_com->dirtyBit().addState(Environment::Weather_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->horizontalSlider, &QSlider::valueChanged, [this](int val)
+	{
+		float intensity = (float)val / _ui->horizontalSlider->maximum();
+		if (!zoo::equals(COM_CAST(Environment)->_intensity, intensity))
+		{
+			COM_CAST(Environment)->_intensity = intensity;
+			_com->dirtyBit().addState(Environment::Weather_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+}
+
+EnvirPropertyWgt::~EnvirPropertyWgt()
+{
+	delete _ui;
+}
+
+void EnvirPropertyWgt::resetCom(zoo::Component* pCom)
+{
+	PropertyWgt::resetCom(pCom);
+	_ui->comboBox->setCurrentIndex(COM_CAST(Environment)->_type);
+	int pos = COM_CAST(Environment)->_intensity * _ui->horizontalSlider->maximum();
+	if (pos < _ui->horizontalSlider->minimum())
+		pos = _ui->horizontalSlider->minimum();
+	if (pos > _ui->horizontalSlider->maximum())
+		pos = _ui->horizontalSlider->maximum();
+	_ui->horizontalSlider->setSliderPosition(pos);
 }

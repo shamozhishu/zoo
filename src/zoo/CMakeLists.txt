@@ -21,7 +21,6 @@ set(ZOO_H
 	${PROJECT_INCLUDE}/DynLibManager.h
 	${PROJECT_INCLUDE}/Interlock.h
 	${PROJECT_INCLUDE}/Log.h
-	${PROJECT_INCLUDE}/Math.h
 	${PROJECT_INCLUDE}/Reflection.h
 	${PROJECT_INCLUDE}/ServiceLocator.h
 	${PROJECT_INCLUDE}/Sigslot.h
@@ -41,6 +40,7 @@ set(ZOO_CPP
 	${PROJECT_SRC}/Reflection.cpp
 	${PROJECT_SRC}/ServiceLocator.cpp
 	${PROJECT_SRC}/Sigslot.cpp
+	${PROJECT_INCLUDE}/Singleton.cpp
 	${PROJECT_SRC}/UserData.cpp
 	${PROJECT_SRC}/Utils.cpp
 )
@@ -48,8 +48,8 @@ set(ZOO_CPP
 set(ZOO_JSON
 	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.h
 	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.c
-	${CMAKE_SOURCE_DIR}/src/cJSON/CJsonObject.h
-	${CMAKE_SOURCE_DIR}/src/cJSON/CJsonObject.cpp
+	${CMAKE_SOURCE_DIR}/src/cJSON/JsonObject.h
+	${CMAKE_SOURCE_DIR}/src/cJSON/JsonObject.cpp
 )
            
 if(${BUILD_SHARED_LIBS} STREQUAL "On")

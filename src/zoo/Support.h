@@ -28,6 +28,7 @@
 #include <memory>
 #include <future>
 #include <chrono>
+#include <type_traits>
 // C++ Stream stuff
 #include <fstream>
 #include <iostream>

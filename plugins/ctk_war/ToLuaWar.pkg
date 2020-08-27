@@ -1,2 +1,11 @@
-$cfile "WarComponents.h"
 $cfile "Battlefield.h"
+$cfile "WarComponents.h"
+$cfile "LuaExportClass.h"
+
+class Log
+{
+	void debug(const char* logContent);
+	void info(const char* logContent);
+	void warning(const char* logContent);
+	void error(const char* logContent);
+};

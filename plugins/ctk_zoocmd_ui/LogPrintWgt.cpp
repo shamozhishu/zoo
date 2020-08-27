@@ -34,13 +34,17 @@ public:
 		}
 	}
 
+	static void recoverLogColor(zoo::ELogLevel level, const char* logContent)
+	{
+		_logColor = "<font color=\"#000000\">";
+	}
+
 protected:
 	virtual int_type overflow(int_type v)
 	{
 		if (v == '\n')
 		{
 			_logWindow->append(_logColor + QString::fromLocal8Bit(_logInfo.c_str()) + "</font>");
-			_logColor = "<font color=\"#000000\">";
 			_logInfo.erase(_logInfo.begin(), _logInfo.end());
 		}
 		else
@@ -58,7 +62,7 @@ protected:
 			if (pos != std::string::npos)
 			{
 				std::string tmp(_logInfo.begin(), _logInfo.begin() + pos);
-				_logWindow->append(QString::fromLocal8Bit(tmp.c_str()));
+				_logWindow->append(_logColor + QString::fromLocal8Bit(tmp.c_str()) + "</font>");
 				_logInfo.erase(_logInfo.begin(), _logInfo.begin() + pos + 1);
 			}
 		}
@@ -75,13 +79,15 @@ private:
 
 QString DebugStream::_logColor = "<font color=\"#000000\">";
 
-LogPrintWgt::LogPrintWgt()
-	: _ui(new Ui::LogPrintWgt)
+LogPrintWgt::LogPrintWgt(QWidget* parent)
+	: QWidget(parent)
+	, _ui(new Ui::LogPrintWgt)
 	, _printOut(nullptr)
 {
 	_ui->setupUi(this);
-	zoo::Log::listen(&DebugStream::extractLogColor);
+	zoo::Log::listen(&DebugStream::extractLogColor, &DebugStream::recoverLogColor);
 	_printOut = new DebugStream(std::cout, _ui->textBrowser);
+	connect(_ui->toolButton, SIGNAL(clicked()), this, SLOT(onCleanLog()));
 }
 
 LogPrintWgt::~LogPrintWgt()

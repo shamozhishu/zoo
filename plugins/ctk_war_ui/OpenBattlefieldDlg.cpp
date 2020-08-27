@@ -11,6 +11,7 @@
 
 using namespace zoo;
 
+QString OpenBattlefieldDlg::_curBattlefieldFile[FileCount_];
 OpenBattlefieldDlg::OpenBattlefieldDlg()
 	: _ui(new Ui::OpenBattlefieldDlg)
 	, _curBattlefieldID(-1)
@@ -24,7 +25,6 @@ OpenBattlefieldDlg::OpenBattlefieldDlg()
 
 	_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("±àºÅ")));
 	_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("ÃèÊö")));
-	_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem(tr("³¡¾°ÎÄ¼þ")));
 
 	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 	settings.beginGroup("CTK_PLUGIN_FRAMEWORK_PROPS");
@@ -49,17 +49,16 @@ OpenBattlefieldDlg::OpenBattlefieldDlg()
 			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
 			pItem->setTextAlignment(Qt::AlignCenter);
 			_ui->tableWidget->setItem(i, 1, pItem);
-			pItem = new QTableWidgetItem(QString::fromLocal8Bit(pBattlefieldTable->item2str(sortedKeys[i].c_str(), "scene_file")));
-			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
-			pItem->setTextAlignment(Qt::AlignCenter);
-			_ui->tableWidget->setItem(i, 2, pItem);
 		}
 	}
 
-	connect(_ui->okButton, &QPushButton::clicked, [this]
+	connect(_ui->okButton, &QPushButton::clicked, [this, pBattlefieldTable]
 	{
 		_curBattlefieldID = _ui->tableWidget->item(_ui->tableWidget->currentRow(), 0)->data(Qt::DisplayRole).toInt();
-		_curBattlefieldFile = _ui->tableWidget->item(_ui->tableWidget->currentRow(), 2)->data(Qt::DisplayRole).toString();
+		_curBattlefieldFile[SceneFile_] = pBattlefieldTable->item2str(_curBattlefieldID, "scene_file");
+		_curBattlefieldFile[ReadyScript_] = pBattlefieldTable->item2str(_curBattlefieldID, "ready_script");
+		_curBattlefieldFile[RunningScript_] = pBattlefieldTable->item2str(_curBattlefieldID, "running_script");
+		_curBattlefieldFile[PausedScript_] = pBattlefieldTable->item2str(_curBattlefieldID, "paused_script");
 	});
 }
 
@@ -73,7 +72,9 @@ int OpenBattlefieldDlg::getCurBattlefieldID() const
 	return _curBattlefieldID;
 }
 
-QString OpenBattlefieldDlg::getCurBattlefieldFile() const
+QString OpenBattlefieldDlg::getCurBattlefieldFile(EBattlefieldFileType fileType)
 {
-	return _curBattlefieldFile;
+	if (fileType >= FileCount_)
+		return "";
+	return _curBattlefieldFile[fileType];
 }

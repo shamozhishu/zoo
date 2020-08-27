@@ -19,16 +19,16 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout_left"/>
-    </item>
     <item row="0" column="1">
      <layout class="QGridLayout" name="gridLayout_center"/>
     </item>
-    <item row="0" column="2">
+    <item row="0" column="2" rowspan="2">
      <layout class="QGridLayout" name="gridLayout_right"/>
     </item>
-    <item row="1" column="0" colspan="3">
+    <item row="0" column="0" rowspan="2">
+     <layout class="QGridLayout" name="gridLayout_left"/>
+    </item>
+    <item row="1" column="1">
      <layout class="QGridLayout" name="gridLayout_bottom"/>
     </item>
    </layout>
@@ -53,36 +53,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="separator"/>
-   <addaction name="action_setup"/>
-   <addaction name="action_clean"/>
-   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_setup">
-   <property name="icon">
-    <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/cmd.png</normaloff>:/images/Resources/images/cmd.png</iconset>
-   </property>
-   <property name="text">
-    <string>命令注册</string>
-   </property>
-   <property name="toolTip">
-    <string>命令注册</string>
-   </property>
-  </action>
-  <action name="action_clean">
-   <property name="icon">
-    <iconset resource="zooCmdUI.qrc">
-     <normaloff>:/images/Resources/images/clean.png</normaloff>:/images/Resources/images/clean.png</iconset>
-   </property>
-   <property name="text">
-    <string>日志清理</string>
-   </property>
-   <property name="toolTip">
-    <string>日志清理</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

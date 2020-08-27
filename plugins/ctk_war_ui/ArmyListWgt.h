@@ -42,11 +42,17 @@ public:
 
 Q_SIGNALS:
 	void createItem(zoo::Entity* ent);
+	void sceneOpendSucceed();
+	void sceneOpendFailed();
+	void simStarted();
+	void simPaused();
+	void simStoped();
 
 private Q_SLOTS:
 	void onOpen();
 	void onSave();
-	void onSim(bool checked);
+	void onSim(bool started);
+	void onPaused(bool paused);
 	void onCreate(zoo::Entity* ent);
 
 private:

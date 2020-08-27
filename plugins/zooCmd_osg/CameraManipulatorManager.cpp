@@ -44,6 +44,21 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 	if (!pNode)
 		return;
 
+	osg::Group* pParent = pNode->asGroup();
+	if (pParent)
+	{
+		pParent = pParent->getChild(0) ? pParent->getChild(0)->asGroup() : nullptr;
+		if (pParent)
+		{
+			pParent = pParent->getChild(0) ? pParent->getChild(0)->asGroup() : nullptr;
+			if (pParent)
+			{
+				if (pParent->getChild(0))
+					pNode = pParent->getChild(0);
+			}
+		}
+	}
+
 	switch (num)
 	{
 	case 0:
@@ -60,25 +75,52 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 			pOsgEarthUtils->convertXYZToLatLongHeight(XYZ.x(), XYZ.y(), XYZ.z(), llh._v[0], llh._v[1], llh._v[2]);
 
 			Viewpoint vp = pEarthManipu->getViewpoint();
+			vp.setNode(pNode);
 			vp.focalPoint().mutable_value().x() = llh.y();
 			vp.focalPoint().mutable_value().y() = llh.x();
-			vp.range() = llh._v[2];
-			vp.setNode(pNode);
+			osg::Vec3d scale = localToWorld.getScale();
+			vp.range() = bound.radius() * max(max(scale.x(), scale.y()), scale.z()) * 6;
 			pEarthManipu->setViewpoint(vp);
-			pEarthManipu->clearViewpoint();
 		}
 	}
 	break;
 	case 1:
-		break;
+	{
+		NodeTrackerManipulator* pNodeTrackerManipu = dynamic_cast<NodeTrackerManipulator*>(getMatrixManipulatorWithIndex(num));
+		if (pNodeTrackerManipu)
+			pNodeTrackerManipu->setTrackNode(pNode);
+	}
+	break;
 	case 2:
 		break;
 	case 3:
 		break;
 	case 4:
-		break;
+	{
+		DriveManipulator* pDriveManipu = dynamic_cast<DriveManipulator*>(getMatrixManipulatorWithIndex(num));
+		if (pDriveManipu)
+			pDriveManipu->setNode(pNode);
+	}
+	break;
 	case 5:
-		break;
+	{
+		TerrainManipulator* pTerrainManipu = dynamic_cast<TerrainManipulator*>(getMatrixManipulatorWithIndex(num));
+		if (pTerrainManipu)
+		{
+			pNode->dirtyBound();
+			osg::BoundingSphere bound = pNode->getBound();
+			osg::Matrix localToWorld = osg::computeLocalToWorld(pNode->getParent(0)->getParentalNodePaths()[0]);
+			osg::Vec3d XYZ = bound.center() * localToWorld;
+			osg::Vec3d eye, center, up, direc;
+			pTerrainManipu->getTransformation(eye, center, up);
+			direc = eye - center;
+			direc.normalize();
+			osg::Vec3d scale = localToWorld.getScale();
+			direc *= bound.radius() * max(max(scale.x(), scale.y()), scale.z()) * 4;
+			pTerrainManipu->setTransformation(XYZ + direc, XYZ, up);
+		}
+	}
+	break;
 	case 6:
 		break;
 	case 7:
@@ -92,6 +134,14 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 
 bool CameraManipulatorManager::handle(const GUIEventAdapter& ea, GUIActionAdapter& aa)
 {
+	EarthManipulator* pEarthManipu = dynamic_cast<EarthManipulator*>(getCurrentMatrixManipulator());
+	if (pEarthManipu && ea.getEventType() == GUIEventAdapter::KEYUP)
+	{
+		int key = ea.getKey();
+		if (key == GUIEventAdapter::KEY_Escape || key == (GUIEventAdapter::KEY_Escape & 0xFF))
+			pEarthManipu->setTetherNode(nullptr);
+	}
+
 	if (_switchEnabled)
 		return KeySwitchMatrixManipulator::handle(ea, aa);
 

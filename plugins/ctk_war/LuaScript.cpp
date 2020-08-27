@@ -410,7 +410,15 @@ void LuaScript::setVariable(const char* varName, const char* varType, void* pDat
 	lua_setglobal(_state, varName);
 }
 
-void LuaScript::clearScriptFileName2ContentCache()
+void LuaScript::clearScriptFileName2ContentCache(const string& filename /*= ""*/)
 {
-	s_scriptFileName2ContentCache.clear();
+	if (filename == "")
+	{
+		s_scriptFileName2ContentCache.clear();
+		return;
+	}
+
+	auto it = s_scriptFileName2ContentCache.find(filename);
+	if (it != s_scriptFileName2ContentCache.end())
+		s_scriptFileName2ContentCache.erase(it);
 }

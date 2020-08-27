@@ -63,6 +63,9 @@ public:
 	~EnvironmentImpl();
 	void awake();
 	void update();
+
+public:
+	osg::ref_ptr<osg::Switch> _switch;
 };
 
 #ifdef NEED_OSGEARTH_LIBRARY

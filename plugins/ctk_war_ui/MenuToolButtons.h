@@ -10,12 +10,13 @@ class MenuToolButtons
 public:
 	enum EMenu
 	{
-		file_,
-		edit_
+		scene_,
+		simulation_,
+		help_,
 	};
 
 public:
-	static void create(UIManagerService* service, EMenu menutype, const QObject* receiver);
+	static void create(UIManagerService* service, EMenu menutype, QObject* receiver, bool hasToolButton);
 	static void destroy(UIManagerService* service, EMenu menutype);
 };
 

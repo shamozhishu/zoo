@@ -36,23 +36,29 @@ set(ZOOCMD_OSG_H
 	${CMAKE_SOURCE_DIR}/include/zooCmd_osg/OsgEarthSupport.h
 	${PROJECT_INCLUDE}/InputDevice.h
 	${PROJECT_INCLUDE}/BuiltinCmd.h
+	${PROJECT_INCLUDE}/PublicFunctions.h
 	${PROJECT_INCLUDE}/OsgComponentImpls.h
 	${PROJECT_INCLUDE}/OsgEarthUtilsImpl.h
 	${PROJECT_INCLUDE}/OsgEarthContextImpl.h
 	${PROJECT_INCLUDE}/StarrySky.h
 	${PROJECT_INCLUDE}/NebulaNode.h
 	${PROJECT_INCLUDE}/CameraManipulatorManager.h
+	${PROJECT_INCLUDE}/FogEffect.h
+	${PROJECT_INCLUDE}/WeatherEffect.h
 )
 
 set(ZOOCMD_OSG_CPP
 	${PROJECT_SRC}/InputDevice.cpp
 	${PROJECT_SRC}/BuiltinCmd.cpp
+	${PROJECT_SRC}/PublicFunctions.cpp
 	${PROJECT_SRC}/OsgComponentImpls.cpp
 	${PROJECT_SRC}/OsgEarthUtilsImpl.cpp
 	${PROJECT_SRC}/OsgEarthContextImpl.cpp
 	${PROJECT_SRC}/StarrySky.cpp
 	${PROJECT_SRC}/NebulaNode.cpp
 	${PROJECT_SRC}/CameraManipulatorManager.cpp
+	${PROJECT_SRC}/FogEffect.cpp
+	${PROJECT_SRC}/WeatherEffect.cpp
 )
 
 add_library(
@@ -66,6 +72,7 @@ target_link_libraries(
 	${OUT_NAME}
 	zoo
 	zooCmd
+	OpenGL32.Lib
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

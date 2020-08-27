@@ -4,5 +4,6 @@
         <file>Resources/images/cmd.png</file>
         <file>Resources/images/log.png</file>
         <file>Resources/images/clean.png</file>
+        <file>Resources/images/quit.png</file>
     </qresource>
 </RCC>

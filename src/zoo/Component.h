@@ -11,8 +11,8 @@ namespace zoo {
 class Serializer
 {
 public:
-	virtual void serialize(Spawner* spawner) = 0;
-	virtual void deserialize(Spawner* spawner) = 0;
+	virtual void serialize(Spawner* spawner) {}
+	virtual void deserialize(Spawner* spawner) {}
 };
 
 struct _zooExport Component : public Serializer, public Type
@@ -20,8 +20,9 @@ struct _zooExport Component : public Serializer, public Type
 	Component();
 	virtual ~Component();
 	Entity* getEntity() const { return _entity; }
-	const BitState& dirtyBit() const { return _dirty; }
 	ComponentImpl* getImp() const { return _imp; }
+	BitState& dirtyBit() { return _dirty; }
+	const BitState& dirtyBit() const { return _dirty; }
 protected:
 	Entity* _entity;
 	BitState _dirty;

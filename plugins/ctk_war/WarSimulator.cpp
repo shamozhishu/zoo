@@ -4,7 +4,7 @@
 #include <zoo/DatabaseCSV.h>
 
 SimState::SimState()
-	: _script(new LuaScript)
+	: _script(nullptr)
 	, _scriptValid(false)
 {
 }
@@ -14,22 +14,33 @@ SimState::~SimState()
 	SAFE_DELETE(_script);
 }
 
-bool SimState::init(string scriptFile)
+bool SimState::init(string scriptFile, WarSimulator* simulator)
 {
-	_scriptValid = _script->executeScriptFile(ZOO_DATA_ROOT_DIR + scriptFile);
-	return _scriptValid;
-}
+	if (simulator && scriptFile != "")
+	{
+		SAFE_DELETE(_script);
+		_script = new LuaScript;
+		_scriptValid = _script->executeScriptFile(ZOO_DATA_ROOT_DIR + scriptFile);
+		if (_scriptValid)
+		{
+			_script->setVariable("this", simulator->typeName().c_str(), simulator);
+			_script->executeGlobalFunction("Init");
+		}
+	}
 
-void SimState::stepping()
-{
-	if (_scriptValid)
-		_script->executeGlobalFunction("Stepping");
+	return _scriptValid;
 }
 
 void SimState::enter()
 {
 	if (_scriptValid)
 		_script->executeGlobalFunction("Enter");
+}
+
+void SimState::stepping()
+{
+	if (_scriptValid)
+		_script->executeGlobalFunction("Stepping");
 }
 
 void SimState::exit()
@@ -40,14 +51,23 @@ void SimState::exit()
 
 SimState WarSimulator::_simStates[count_];
 WarSimulator::WarSimulator()
-	: _currentState(nullptr)
+	: _currentState(&_simStates[uninited_])
 {
 }
 
 void WarSimulator::stepping()
 {
-	if (_currentState)
+	if (_currentState && _currentState != &_simStates[uninited_])
+	{
 		_currentState->stepping();
+		if (_currentState == &_simStates[running_])
+		{
+			auto it = _behaviors.begin();
+			auto itEnd = _behaviors.end();
+			for (; it != itEnd; ++it)
+				(*it)->exec();
+		}
+	}
 }
 
 void WarSimulator::transition(ESimState simState)
@@ -57,4 +77,16 @@ void WarSimulator::transition(ESimState simState)
 	_currentState = &WarSimulator::_simStates[simState];
 	if (_currentState)
 		_currentState->enter();
+}
+
+void WarSimulator::addBehavior(Behavior* behavior)
+{
+	_behaviors.push_back(behavior);
+}
+
+void WarSimulator::removeBehavior(Behavior* behavior)
+{
+	auto it = std::find(_behaviors.begin(), _behaviors.end(), behavior);
+	if (it != _behaviors.end())
+		_behaviors.erase(it);
 }

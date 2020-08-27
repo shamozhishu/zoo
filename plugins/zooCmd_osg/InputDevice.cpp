@@ -10,34 +10,38 @@ ZOO_REGISTER(InputDevice)
 
 class Viewers : public osgViewer::CompositeViewer
 {
-	osg::Timer _frameTime;
 public:
-	Viewers() { _frameTime.setStartTick(0); }
 	void frame(double simulationTime = USE_REFERENCE_TIME)
 	{
-		// limit the frame rate
-		if (getRunMaxFrameRate() > 0.0)
+		double minFrameTime = _runMaxFrameRate > 0.0 ? 1.0 / _runMaxFrameRate : 0.0;
+		osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
+		if (_runFrameScheme == ON_DEMAND)
 		{
-			double dt = _frameTime.time_s();
-			double minFrameTime = 1.0 / getRunMaxFrameRate();
-			if (dt < minFrameTime)
-				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (minFrameTime - dt)));
+			if (checkNeedToDoFrame())
+			{
+				CmdManager::waitExchanged();
+				osgViewer::CompositeViewer::frame();
+				CmdManager::releaseWait();
+			}
+			else
+			{
+				// we don't need to render a frame but we don't want to spin the run loop so make sure the minimum
+				// loop time is 1/100th of second, if not otherwise set, so enabling the frame microSleep below to
+				// avoid consume excessive CPU resources.
+				if (minFrameTime == 0.0) minFrameTime = 0.01;
+			}
+		}
+		else
+		{
+			CmdManager::waitExchanged();
+			osgViewer::CompositeViewer::frame();
+			CmdManager::releaseWait();
 		}
 
-		// avoid excessive CPU loading when no frame is required in ON_DEMAND mode
-		if (getRunFrameScheme() == osgViewer::ViewerBase::ON_DEMAND)
-		{
-			double dt = _frameTime.time_s();
-			if (dt < 0.01)
-				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0 * (0.01 - dt)));
-		}
-
-		// record start frame time
-		_frameTime.setStartTick();
-
-		CmdManager::waitExchanged();
-		osgViewer::CompositeViewer::frame(simulationTime);
-		CmdManager::releaseWait();
+		// work out if we need to force a sleep to hold back the frame rate
+		osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
+		double frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
+		if (frameTime < minFrameTime) OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0*(minFrameTime - frameTime)));
 	}
 };
 
@@ -82,7 +86,7 @@ osgViewer::View* InputDevice::createView(string name, float ratioLeft, float rat
 		view->getCamera()->setGraphicsContext(_osgWinEmb.get());
 	}
 
-	view->getCamera()->setNearFarRatio(0.00003);
+	view->getCamera()->setNearFarRatio(0.00008);
 	view->getCamera()->setClearColor(color);
 	view->addEventHandler(new osgViewer::StatsHandler);
 	view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
@@ -203,13 +207,15 @@ void InputDevice::resize(int windowWidth, int windowHeight, float windowScale)
 void InputDevice::keyPress(int key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->keyPress(remap(key));
+	int remapedKey = remap(key);
+	_osgWinEmb->getEventQueue()->keyPress(remapedKey);
 }
 
 void InputDevice::keyRelease(int key, unsigned int modkey)
 {
 	setKeyboardModifiers(modkey);
-	_osgWinEmb->getEventQueue()->keyRelease(remap(key));
+	int remapedKey = remap(key);
+	_osgWinEmb->getEventQueue()->keyRelease(remapedKey);
 }
 
 void InputDevice::mouseMove(int x, int y, unsigned int modkey)

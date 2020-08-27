@@ -68,7 +68,7 @@ ComPropertyBoard::ComPropertyBoard()
 			else
 			{
 				comlist << s_comTypeName[behavior_] << s_comTypeName[camera_] << s_comTypeName[model_] << s_comTypeName[sound_]
-					<< s_comTypeName[animator_] << s_comTypeName[collider_] << s_comTypeName[environment_];
+					<< s_comTypeName[animator_] << s_comTypeName[collider_];
 			}
 
 			pComListWgt->refreshComList(_curSelEnt, bAddComponentBtn, comlist);
@@ -131,6 +131,9 @@ void ComPropertyBoard::showCom(QString comTypeName, zoo::Component* pCom)
 			break;
 		case behavior_:
 			pWgt = new BehaviorPropertyWgt(this);
+			break;
+		case environment_:
+			pWgt = new EnvirPropertyWgt(this);
 			break;
 		default:
 			return;

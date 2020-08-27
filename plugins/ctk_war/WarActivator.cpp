@@ -4,6 +4,7 @@
 #include <zoo/Log.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
 
+ctkPluginContext* WarActivator::_pluginContext = nullptr;
 WarActivator::WarActivator()
 	: _warService(nullptr)
 {
@@ -12,6 +13,8 @@ WarActivator::WarActivator()
 
 void WarActivator::start(ctkPluginContext* context)
 {
+	_pluginContext = context;
+
 	QString cmdName = context->getProperty("ctk.war.cmd").toString();
 	QString tableName = context->getProperty("ctk.war.table").toString();
 
@@ -36,4 +39,6 @@ void WarActivator::stop(ctkPluginContext* context)
 	SAFE_DELETE(_warService);
 	if (WarCommander::getSingletonPtr())
 		delete WarCommander::getSingletonPtr();
+
+	_pluginContext = nullptr;
 }

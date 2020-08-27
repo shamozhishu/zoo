@@ -1,13 +1,13 @@
 #ifndef __ZOO_CMD_UI_H__
 #define __ZOO_CMD_UI_H__
 
-#include <QtWidgets/QMainWindow>
 #include "ui_ZooCmdUI.h"
+#include <QtWidgets/QMainWindow>
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 
+class ZooCmdWgt;
 class QLineEdit;
 class QProgressBar;
-class ZooCmdWgt;
 class ZooCmdUI : public QMainWindow, public UIManagerService
 {
 	Q_OBJECT
@@ -19,13 +19,12 @@ public:
 	void starWindowTitle();
 	void unstarWindowTitle();
 	void finishWindowLaunch();
-	void addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area, Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas);
-	void removeWidget(const QString& strId);
 	QWidget* getWidget(const QString& strId);
-	void addMenu(const QString &strId, QMenu* pSubMenu);
+	QDockWidget* addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+		Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas, bool isShow = true, bool hasToolBtn = true, bool hasSeparator = false);
+	void removeWidget(const QString& strId);
+	void addMenu(const QString &strId, QMenu* pSubMenu, bool hasToolButton = true);
 	void removeMenu(const QString& strId);
-	void addToolButton(const QString &strId, QActionGroup* pActionGroup);
-	void removeToolButton(const QString& strId);
 
 protected:
 	void keyPressEvent(QKeyEvent *event);
@@ -38,13 +37,12 @@ private:
 	int _idx;
 	Ui::ZooCmdUIClass _ui;
 	QString _inputAdaName;
+	ZooCmdWgt* _mainWidget;
 	QLineEdit* _cmdlineEdit;
 	QProgressBar* _progressBar;
-	ZooCmdWgt* _mainWidget;
 	QVector<QString> _cmdlines;
-	QMap<QString, QMenu*> _subMenus;
-	QMap<QString, QDockWidget*> _dockWgts;
-	QMap<QString, QActionGroup*> _actionItems;
+	QMap<QString, QPair<QMenu*, bool>> _subMenus;
+	QMap<QString, QPair<QDockWidget*, QAction*>> _dockWgts;
 };
 
 #endif // __ZOO_CMD_UI_H__

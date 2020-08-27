@@ -60,13 +60,16 @@
     </widget>
    </item>
   </layout>
-  <action name="modelPath">
+  <action name="modelFile">
    <property name="icon">
     <iconset resource="ctk_war_ui.qrc">
-     <normaloff>:/images/Resources/images/modelpath.png</normaloff>:/images/Resources/images/modelpath.png</iconset>
+     <normaloff>:/images/Resources/images/open_file.png</normaloff>:/images/Resources/images/open_file.png</iconset>
    </property>
    <property name="text">
-    <string>模型路径</string>
+    <string>模型文件</string>
+   </property>
+   <property name="toolTip">
+    <string>模型文件</string>
    </property>
   </action>
  </widget>

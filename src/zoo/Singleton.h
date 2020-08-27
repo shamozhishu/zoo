@@ -1,12 +1,23 @@
 #ifndef __ZOO_SINGLETON_H__
 #define __ZOO_SINGLETON_H__
 
-#include <zoo/Common.h>
+#include <zoo/Support.h>
 
 namespace zoo {
 
+class _zooExport InstanceReleaser
+{
+public:
+	void addIns(std::function<void()> func);
+	void destroyIns();
+private:
+	vector<std::function<void()>> _destroyFuncs;
+};
+
+struct SINGLETON { virtual ~SINGLETON() {} };
+
 template<typename T>
-class Singleton
+class Singleton : public SINGLETON
 {
 public:
 	Singleton(void)

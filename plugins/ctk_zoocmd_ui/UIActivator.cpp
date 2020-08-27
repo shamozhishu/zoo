@@ -15,6 +15,8 @@ UIActivator::UIActivator()
 
 void UIActivator::start(ctkPluginContext* context)
 {
+	_pluginContext = context;
+
 	QSurfaceFormat format = QSurfaceFormat::defaultFormat();
 	format.setVersion(2, 0);
 	format.setProfile(QSurfaceFormat::CompatibilityProfile);
@@ -30,18 +32,16 @@ void UIActivator::start(ctkPluginContext* context)
 	ctkDictionary props;
 	props.insert(ctkPluginConstants::SERVICE_RANKING, 0);
 	context->registerService<UIManagerService>(_ui, props);
-
-	_pluginContext = context;
 }
 
 void UIActivator::stop(ctkPluginContext* context)
 {
-	_pluginContext = nullptr;
 	if (_ui)
 	{
 		delete _ui;
 		_ui = nullptr;
 	}
+	_pluginContext = nullptr;
 }
 
 ctkPluginContext* UIActivator::getPluginContext()

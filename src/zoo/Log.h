@@ -16,10 +16,13 @@ enum ELogLevel
 class _zooExport Log
 {
 public:
-	typedef void(*Listener)(ELogLevel level, const char* logContent);
-	static void print(ELogLevel level, const char* szFormat, ...);
 	static void level(ELogLevel level);
-	static void listen(Listener listenFunc);
+	static void debug(const char* szFormat, ...);
+	static void info(const char* szFormat, ...);
+	static void warning(const char* szFormat, ...);
+	static void error(const char* szFormat, ...);
+	typedef void(*Listener)(ELogLevel level, const char* logContent);
+	static void listen(Listener prePrint, Listener postPrint);
 };
 
 }

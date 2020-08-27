@@ -12,7 +12,7 @@ class LogPrintWgt : public QWidget
 {
 	Q_OBJECT
 public:
-	LogPrintWgt();
+	LogPrintWgt(QWidget* parent);
 	~LogPrintWgt();
 
 private Q_SLOTS:
