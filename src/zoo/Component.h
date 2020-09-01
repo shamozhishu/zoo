@@ -30,13 +30,15 @@ protected:
 	friend class Entity;
 };
 
-class _zooExport ComponentImpl : public Type
+// 基类Signal用于自定义函数的注册与调用, 解决组件类在不清楚组件实现类细节的情况下进行组件类到组件实现类的单向通信的要求
+class _zooExport ComponentImpl : public Type, public Signal
 {
 	friend class Entity;
 	Component* _component;
 public:
 	virtual void awake() {}
 	virtual void update() {}
+	virtual void callback(bool cleanup = false);
 	Entity* getEntity() const { return _component->getEntity(); }
 	Component* getComponent() const { return _component; }
 	template<typename T>
@@ -46,6 +48,7 @@ public:
 	}
 };
 
+// 基类Signal用于Entity和Spawner在awakeAll与updateAll之后的对注册函数的调用, 解决组件之间或者实体之间交互时对时序耦合的依赖导致的问题
 class _zooExport Entity : public Serializer, public Signal
 {
 	friend class Spawner;
@@ -86,7 +89,7 @@ public:
 	void removeComponent(string className);
 	void removeComponent(Component* pComponent);
 	void removeComponents();
-	void notifyComponents();
+	void notifyComponents(bool cleanup = true);
 	unordered_map<string, Component*> getComponents() const;
 
 private:
@@ -136,12 +139,12 @@ public:
 	template<typename T>
 	void setValue(const string& key, const T& value)
 	{
-		setValue(key, &value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
+		setValue(key, &value, typeid(value).name());
 	}
 	template<typename T>
 	void getValue(const string& key, T& value)
 	{
-		getValue(key, &value, ReflexFactory<>::getTypeName(typeid(value).name()).c_str());
+		getValue(key, &value, typeid(value).name());
 	}
 
 private:

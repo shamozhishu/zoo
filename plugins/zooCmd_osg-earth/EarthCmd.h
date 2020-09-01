@@ -1,16 +1,16 @@
-#ifndef __WAR_CMD_H__
-#define __WAR_CMD_H__
+#ifndef __EARTH_CMD_H__
+#define __EARTH_CMD_H__
 
 #include <zooCmd/Cmd.h>
 #include "LonLatDistHandler.h"
 
 class OsgEarthContext;
-class WarCmd : public zooCmd::Cmd
+class EarthCmd : public zooCmd::Cmd
 {
-	ZOO_REFLEX_DECLARE(WarCmd)
+	ZOO_REFLEX_DECLARE(EarthCmd)
 public:
-	WarCmd();
-	~WarCmd();
+	EarthCmd();
+	~EarthCmd();
 	bool init();
 	void handle(const zooCmd::Event& evt);
 	void help(zooCmd::CmdUsage* usage);
@@ -21,4 +21,4 @@ private:
 	osg::ref_ptr<LonLatDistHandler> _lonLatHandler;
 };
 
-#endif // __WAR_CMD_H__
+#endif // __EARTH_CMD_H__

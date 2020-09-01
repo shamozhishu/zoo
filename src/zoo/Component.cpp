@@ -13,6 +13,19 @@ Component::~Component()
 	delete _imp;
 }
 
+void ComponentImpl::callback(bool cleanup /*= false*/)
+{
+	if (SignalTrigger::hasSignal(*this))
+	{
+		SignalTrigger::trigger(*this);
+		if (cleanup)
+		{
+			SignalTrigger::disconnect(*this);
+			userData().clear();
+		}
+	}
+}
+
 Entity::Entity()
 	: _id(-1)
 	, _breed(-1)
@@ -105,13 +118,16 @@ void Entity::removeComponents()
 	_components.clear();
 }
 
-void Entity::notifyComponents()
+void Entity::notifyComponents(bool cleanup/* = true*/)
 {
 	if (SignalTrigger::hasSignal(*this))
 	{
 		SignalTrigger::trigger(*this);
-		SignalTrigger::disconnect(*this);
-		userData().clear();
+		if (cleanup)
+		{
+			SignalTrigger::disconnect(*this);
+			userData().clear();
+		}
 	}
 }
 
@@ -136,7 +152,7 @@ void Entity::awakeAll()
 		}
 	}
 
-	notifyComponents();
+	notifyComponents(true);
 }
 
 void Entity::updateAll()
@@ -158,7 +174,7 @@ void Entity::updateAll()
 		}
 	}
 
-	notifyComponents();
+	notifyComponents(true);
 }
 
 void Entity::serialize(Spawner* spawner)
@@ -491,7 +507,7 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 	if (!pJsonObj)
 		return;
 
-	if (ReflexFactory<>::getTypeName(typeid(string).name()) == typeName)
+	if (string(typeid(string).name()) == typeName)
 	{
 		const string& strval = *(string*)(val);
 		if (strval == "")
@@ -499,7 +515,7 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 		else
 			pJsonObj->Add(key, strval);
 	}
-	else if (ReflexFactory<>::getTypeName(typeid(int32).name()) == typeName)
+	else if (string(typeid(int32).name()) == typeName)
 	{
 		int32 ival = *(int32*)(val);
 		if (ival == -1)
@@ -507,17 +523,18 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 		else
 			pJsonObj->Add(key, ival);
 	}
-	else if (ReflexFactory<>::getTypeName(typeid(bool).name()) == typeName)
+	else if (string(typeid(bool).name()) == typeName)
 		pJsonObj->Add(key, *(bool*)(val), true);
-	else if (ReflexFactory<>::getTypeName(typeid(float).name()) == typeName)
+	else if (string(typeid(float).name()) == typeName)
 		pJsonObj->Add(key, *(float*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(double).name()) == typeName)
+	else if (string(typeid(double).name()) == typeName)
 		pJsonObj->Add(key, *(double*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(uint32).name()) == typeName)
+	else if (string(typeid(uint32).name()) == typeName
+		|| string(typeName).substr(0, 5) == "enum ")
 		pJsonObj->Add(key, *(uint32*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(int64).name()) == typeName)
+	else if (string(typeid(int64).name()) == typeName)
 		pJsonObj->Add(key, *(int64*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(uint64).name()) == typeName)
+	else if (string(typeid(uint64).name()) == typeName)
 		pJsonObj->Add(key, *(uint64*)(val));
 }
 
@@ -527,21 +544,22 @@ void Spawner::getValue(const string& key, void* val, const char* typeName)
 	if (!pJsonObj)
 		return;
 
-	if (ReflexFactory<>::getTypeName(typeid(string).name()) == typeName)
+	if (string(typeid(string).name()) == typeName)
 		pJsonObj->Get(key, *(string*)val);
-	else if (ReflexFactory<>::getTypeName(typeid(int32).name()) == typeName)
+	else if (string(typeid(int32).name()) == typeName)
 		pJsonObj->Get(key, *(int32*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(bool).name()) == typeName)
+	else if (string(typeid(bool).name()) == typeName)
 		pJsonObj->Get(key, *(bool*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(float).name()) == typeName)
+	else if (string(typeid(float).name()) == typeName)
 		pJsonObj->Get(key, *(float*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(double).name()) == typeName)
+	else if (string(typeid(double).name()) == typeName)
 		pJsonObj->Get(key, *(double*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(uint32).name()) == typeName)
+	else if (string(typeid(uint32).name()) == typeName
+		|| string(typeName).substr(0, 5) == "enum ")
 		pJsonObj->Get(key, *(uint32*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(int64).name()) == typeName)
+	else if (string(typeid(int64).name()) == typeName)
 		pJsonObj->Get(key, *(int64*)(val));
-	else if (ReflexFactory<>::getTypeName(typeid(uint64).name()) == typeName)
+	else if (string(typeid(uint64).name()) == typeName)
 		pJsonObj->Get(key, *(uint64*)(val));
 }
 

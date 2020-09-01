@@ -367,6 +367,7 @@ Camera::Camera()
 	, _blue(0)
 	, _alpha(255)
 {
+	_passes[0]._rt = Window_;
 }
 
 void Camera::serialize(Spawner* spawner)
@@ -382,6 +383,8 @@ void Camera::serialize(Spawner* spawner)
 	spawner->setValue("manipulator", _manipulatorKey);
 	spawner->setValue("track_entity_id", _trackEntID);
 	spawner->setValue("track_entity_breed", _trackEntBreed);
+	for (PassIndex i = 0; i < MaxPassCount; ++i)
+		spawner->setValue("pass_rt_" + std::to_string(i), _passes[i]._rt);
 }
 
 void Camera::deserialize(Spawner* spawner)
@@ -397,6 +400,8 @@ void Camera::deserialize(Spawner* spawner)
 	spawner->getValue("manipulator", _manipulatorKey);
 	spawner->getValue("track_entity_id", _trackEntID);
 	spawner->getValue("track_entity_breed", _trackEntBreed);
+	for (PassIndex i = 0; i < MaxPassCount; ++i)
+		spawner->getValue("pass_rt_" + std::to_string(i), _passes[i]._rt);
 }
 
 void Camera::setManipulator(int key)
@@ -411,7 +416,7 @@ void Camera::setManipulator(int key)
 	}
 }
 
-void Camera::setTrackEnt(int id, int breed)
+void Camera::setTrackEntity(int id, int breed)
 {
 	if (_trackEntID != id || _trackEntBreed != breed)
 	{
@@ -427,6 +432,30 @@ void Camera::setBgColor(int r, int g, int b, int a /*= 255*/)
 	{
 		_red = r; _green = g; _blue = b; _alpha = a;
 		_dirty.addState(Bgcolour_);
+	}
+}
+
+void Camera::setRenderTarget(PassIndex pass, RenderTarget rt)
+{
+	if (pass >= MaxPassCount)
+		return;
+
+	if (_passes[pass]._rt != rt)
+	{
+		_passes[pass]._rt = rt;
+		unsigned int mask = Pass1_;
+		switch (pass)
+		{
+		case 0: mask = Pass1_; break;
+		case 1: mask = Pass2_; break;
+		case 2: mask = Pass3_; break;
+		case 3: mask = Pass4_; break;
+		case 4: mask = Pass5_; break;
+		case 5: mask = Pass6_; break;
+		case 6: mask = Pass7_; break;
+		case 7: mask = Pass8_; break;
+		}
+		_dirty.addState(mask);
 	}
 }
 
@@ -461,7 +490,7 @@ void Environment::deserialize(Spawner* spawner)
 	spawner->getValue("intensity", _intensity);
 }
 
-void Environment::setWeather(EWeather type, float intensity)
+void Environment::setWeather(Weather type, float intensity)
 {
 	if (!equals(_intensity, intensity))
 	{

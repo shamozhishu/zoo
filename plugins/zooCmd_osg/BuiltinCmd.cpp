@@ -1,5 +1,6 @@
 #include "BuiltinCmd.h"
 #include "InputDevice.h"
+#include <zoo/Utils.h>
 #include <zoo/Component.h>
 #include <zooCmd/CmdManager.h>
 #include "OsgComponentImpls.h"
@@ -8,11 +9,20 @@ using namespace zooCmd;
 
 ZOO_REFLEX_IMPLEMENT(BuiltinCmd);
 
+bool BuiltinCmd::init()
+{
+	_screenshotHandler = new osgViewer::ScreenCaptureHandler(new osgViewer::ScreenCaptureHandler::WriteToFile(ZOO_DATA_ROOT_DIR + "tmp/screenshot/screen_shot", "jpg"), 0);
+	_screenshotHandler->setKeyEventTakeScreenShot(0);
+	_screenshotHandler->setKeyEventToggleContinuousCapture(0);
+	return true;
+}
+
 void BuiltinCmd::help(CmdUsage* usage)
 {
-	usage->setDescription("内建命令: 许多基本功能的封装");
+	usage->setDescription("内建命令: osg相关命令");
 	usage->addCommandProcedureCall("home(string view_name)", "摄像机复位");
 	usage->addCommandProcedureCall("focus(int ent_id, int ent_breed, int scene_id)", "将焦点设置到参数索引到的实体");
+	usage->addCommandProcedureCall("screenshot(string view_name, int count)", "截屏: count是截屏帧数, count==0表示禁用截屏, count<0表示不限次数的截屏");
 	usage->addCommandProcedureCall("exit()", "退出程序");
 	usage->addCommandProcedureCall("bool(bool b) // bool& b", "测试布尔返回值");
 	usage->addCommandProcedureCall("int(int i) // int& i", "测试整型数返回值");
@@ -24,19 +34,28 @@ void BuiltinCmd::help(CmdUsage* usage)
 
 void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 {
+	std::function<bool(string, osgViewer::View*&)> hasView = [](string viewName, osgViewer::View*& outView)
+	{
+		outView = ServiceLocator<OsgDevice>::getService()->getView(viewName);
+		if (!outView)
+		{
+			CmdManager::setTipMessage("视图[" + viewName + "]不存在！");
+			return false;
+		}
+
+		return true;
+	};
+
 	do
 	{
 		string viewname;
 		if (cmdarg.read("home", viewname))
 		{
-			SignalTrigger::connect(subcmd, [viewname]
+			SignalTrigger::connect(subcmd, [viewname, hasView]
 			{
-				osgViewer::View* pView = ServiceLocator<OsgDevice>::getService()->getView(viewname);
-				if (!pView)
-				{
-					CmdManager::setTipMessage("视图[" + viewname + "]不存在！");
+				osgViewer::View* pView = nullptr;
+				if (!hasView(viewname, pView))
 					return;
-				}
 
 				pView->getCameraManipulator()->home(2);
 			});
@@ -70,6 +89,29 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 
 				osg::Node* pFocusNode = pEnt->getComponentImpl<DoFImpl>()->_transWorld;
 				pSpawner->getComponentImpl<CameraImpl>()->_manipulatorMgr->focus(pSpawner->getComponent<Camera>()->_manipulatorKey, pFocusNode);
+			});
+			break;
+		}
+
+		int count;
+		if (cmdarg.read("screenshot", viewname, count))
+		{
+			SignalTrigger::connect(subcmd, [this, viewname, count, hasView]
+			{
+				osgViewer::View* pView = nullptr;
+				if (!hasView(viewname, pView))
+					return;
+
+				if (count == 0)
+				{
+					_screenshotHandler->stopCapture();
+				}
+				else
+				{
+					_screenshotHandler->setFramesToCapture(count);
+					pView->addEventHandler(_screenshotHandler);
+					_screenshotHandler->startCapture();
+				}
 			});
 			break;
 		}

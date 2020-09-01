@@ -13,7 +13,7 @@ class OsgEarthContext : public Service
 {
 	ZOO_SERVICE(OsgEarthContext)
 public:
-	virtual osg::Group* getRootNode() = 0;
+	virtual osg::Group* getSceneNode() = 0;
 	virtual osgViewer::View* getOpView() = 0;
 	virtual void setOpView(osgViewer::View* view) = 0;
 	virtual osgEarth::MapNode* getOpMapNode() = 0;

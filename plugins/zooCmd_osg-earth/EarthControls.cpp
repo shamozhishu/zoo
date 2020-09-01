@@ -1,11 +1,11 @@
-#include "WarControls.h"
+#include "EarthControls.h"
 #include <zoo/ServiceLocator.h>
 #include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgEarth::Util::Controls;
-static WarControls* s_worldControls = nullptr;
+static EarthControls* s_earthControls = nullptr;
 
-WarControls::WarControls()
+EarthControls::EarthControls()
 {
 	_canvas = ControlCanvas::getOrCreate(ServiceLocator<OsgEarthContext>::getService()->getOpView());
 	_vboxControl = new VBox();
@@ -21,7 +21,7 @@ WarControls::WarControls()
 		_labelControls[i] = nullptr;
 }
 
-WarControls::~WarControls()
+EarthControls::~EarthControls()
 {
 	_canvas->removeControl(_vboxControl.get());
 	if (_canvas->getNumParents() > 0)
@@ -32,26 +32,26 @@ WarControls::~WarControls()
 	}
 }
 
-WarControls* WarControls::getIns()
+EarthControls* EarthControls::getIns()
 {
-	if (!s_worldControls)
-		s_worldControls = new WarControls();
-	return s_worldControls;
+	if (!s_earthControls)
+		s_earthControls = new EarthControls();
+	return s_earthControls;
 }
 
-void WarControls::destroy()
+void EarthControls::destroy()
 {
-	SAFE_DELETE(s_worldControls);
+	SAFE_DELETE(s_earthControls);
 }
 
-bool WarControls::isHasLabelControl(LabelIndex idx) const
+bool EarthControls::isHasLabelControl(LabelIndex idx) const
 {
 	if (idx < count_label_)
 		return _labelControls[idx] != nullptr;
 	return false;
 }
 
-void WarControls::addLabelTextDisplay(const string& text, LabelIndex idx)
+void EarthControls::addLabelTextDisplay(const string& text, LabelIndex idx)
 {
 	if (idx < count_label_)
 	{
@@ -68,7 +68,7 @@ void WarControls::addLabelTextDisplay(const string& text, LabelIndex idx)
 	}
 }
 
-void WarControls::removeLabelTextDisplay(LabelIndex idx)
+void EarthControls::removeLabelTextDisplay(LabelIndex idx)
 {
 	if (idx < count_label_ && _labelControls[idx])
 	{

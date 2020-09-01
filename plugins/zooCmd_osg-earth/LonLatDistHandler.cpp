@@ -1,5 +1,5 @@
 #include "LonLatDistHandler.h"
-#include "WarControls.h"
+#include "EarthControls.h"
 #include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgEarth;
@@ -15,7 +15,7 @@ bool LonLatDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActio
 		char szbuf[512];
 		Viewpoint vp = _manipulator->getViewpoint();
 		sprintf_s(szbuf, sizeof(szbuf), "[Viewpoint] Longitude: %.2f Latitude: %.2f Distance: %.2f", vp.focalPoint().get().x(), vp.focalPoint().get().y(), vp.getRange());
-		WarControls::getIns()->addLabelTextDisplay(szbuf, lla_label_);
+		EarthControls::getIns()->addLabelTextDisplay(szbuf, lla_label_);
 
 		osgUtil::LineSegmentIntersector::Intersections results;
 		if (view->computeIntersections(ea.getX(), ea.getY(), _nodePath, results))
@@ -26,11 +26,11 @@ bool LonLatDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActio
 			mapPoint.fromWorld(_mapNode->getMapSRS(), world);
 			osg::Vec3d lla = mapPoint.vec3d();
 			sprintf_s(szbuf, sizeof(szbuf), "[Mouse intersect point] Longitude: %.2f Latitude: %.2f Altitude: %.2f", lla.x(), lla.y(), lla.z());
-			WarControls::getIns()->addLabelTextDisplay(szbuf, ipt_label_);
+			EarthControls::getIns()->addLabelTextDisplay(szbuf, ipt_label_);
 		}
-		else if (WarControls::getIns()->isHasLabelControl(ipt_label_))
+		else if (EarthControls::getIns()->isHasLabelControl(ipt_label_))
 		{
-			WarControls::getIns()->removeLabelTextDisplay(ipt_label_);
+			EarthControls::getIns()->removeLabelTextDisplay(ipt_label_);
 		}
 	}
 

@@ -1,5 +1,5 @@
-#include "WarCmd.h"
-#include "WarControls.h"
+#include "EarthCmd.h"
+#include "EarthControls.h"
 #include <zoo/Utils.h>
 #include <zoo/Sigslot.h>
 #include <zooCmd/CmdManager.h>
@@ -9,55 +9,55 @@
 
 using namespace osgEarth;
 
-ZOO_REGISTER(WarCmd)
-ZOO_REFLEX_IMPLEMENT(WarCmd);
+ZOO_REGISTER(EarthCmd)
+ZOO_REFLEX_IMPLEMENT(EarthCmd);
 
-WarCmd::WarCmd()
+EarthCmd::EarthCmd()
 	: _osgEarthContext(nullptr)
 {
 }
 
-WarCmd::~WarCmd()
+EarthCmd::~EarthCmd()
 {
 }
 
-bool WarCmd::init()
+bool EarthCmd::init()
 {
 	_osgEarthContext = ServiceLocator<OsgEarthContext>::getService();
 	_lonLatHandler = new LonLatDistHandler;
 	return true;
 }
 
-void WarCmd::handle(const zooCmd::Event& evt)
+void EarthCmd::handle(const zooCmd::Event& evt)
 {
 	if (evt.getTopic() == zooCmd_osg::EVENT_RESET_OSGEARTH_CONTEXT)
 	{
-		WarControls::destroy();
+		EarthControls::destroy();
 		osgViewer::View* pView = _osgEarthContext->getOpView();
 		if (pView)
 			pView->removeEventHandler(_lonLatHandler.get());
 	}
 }
 
-void WarCmd::help(CmdUsage* usage)
+void EarthCmd::help(CmdUsage* usage)
 {
-	usage->setDescription("war command: 战场场景编辑器的命令插件.");
+	usage->setDescription("earth command: osgearth相关的命令插件");
 	usage->addCommandProcedureCall("lla(bool show)", "显示经度纬度和海拔");
 	usage->addCommandProcedureCall("fly(float longitude, float latitude, float distance)", "将视点转移到指定经度纬度和高度处");
 	usage->addCommandProcedureCall("dist()", "贴地测距");
 	usage->addCommandProcedureCall("locate(string model, float height, float scale, bool repeat)", "在地球上放置模型");
 }
 
-void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
+void EarthCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 {
-	std::function<bool(osgViewer::View*&, osgEarth::MapNode*&, osgEarth::Util::EarthManipulator*&)> errorTipFunc = [this]
+	std::function<bool(osgViewer::View*&, osgEarth::MapNode*&, osgEarth::Util::EarthManipulator*&)> testError = [this]
 	(osgViewer::View*& pView, osgEarth::MapNode*& pMapNode, osgEarth::Util::EarthManipulator*& pManipulator)
 	{
 		pView = _osgEarthContext->getOpView();
 		if (!pView)
 		{
 			CmdManager::setTipMessage("视图不存在！");
-			return false;
+			return true;
 		}
 
 		pMapNode = _osgEarthContext->getOpMapNode();
@@ -65,10 +65,10 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		if (!pMapNode || !pManipulator)
 		{
 			CmdManager::setTipMessage("请在场景中添加一个有效的地球组件！");
-			return false;
+			return true;
 		}
 
-		return true;
+		return false;
 	};
 
 	do
@@ -76,12 +76,12 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		bool show;
 		if (cmdarg.read("lla", show))
 		{
-			SignalTrigger::connect(subcmd, [this, show, errorTipFunc]
+			SignalTrigger::connect(subcmd, [this, show, testError]
 			{
 				osgViewer::View* pView;
 				osgEarth::MapNode* pMapNode;
 				osgEarth::Util::EarthManipulator* pManipulator;
-				if (!errorTipFunc(pView, pMapNode, pManipulator))
+				if (testError(pView, pMapNode, pManipulator))
 					return;
 
 				if (show)
@@ -93,8 +93,8 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 				else
 				{
 					pView->removeEventHandler(_lonLatHandler.get());
-					WarControls::getIns()->removeLabelTextDisplay(lla_label_);
-					WarControls::getIns()->removeLabelTextDisplay(ipt_label_);
+					EarthControls::getIns()->removeLabelTextDisplay(lla_label_);
+					EarthControls::getIns()->removeLabelTextDisplay(ipt_label_);
 				}
 			});
 			break;
@@ -103,12 +103,12 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		float lon, lat, dist;
 		if (cmdarg.read("fly", lon, lat, dist))
 		{
-			SignalTrigger::connect(subcmd, [this, lon, lat, dist, errorTipFunc]
+			SignalTrigger::connect(subcmd, [this, lon, lat, dist, testError]
 			{
 				osgViewer::View* pView;
 				osgEarth::MapNode* pMapNode;
 				osgEarth::Util::EarthManipulator* pManipulator;
-				if (!errorTipFunc(pView, pMapNode, pManipulator))
+				if (testError(pView, pMapNode, pManipulator))
 					return;
 
 				Viewpoint vp = pManipulator->getViewpoint();
@@ -122,18 +122,18 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 
 		if (cmdarg.read("dist"))
 		{
-			SignalTrigger::connect(subcmd, [this, errorTipFunc]
+			SignalTrigger::connect(subcmd, [this, testError]
 			{
 				osgViewer::View* pView;
 				osgEarth::MapNode* pMapNode;
 				osgEarth::Util::EarthManipulator* pManipulator;
-				if (!errorTipFunc(pView, pMapNode, pManipulator))
+				if (testError(pView, pMapNode, pManipulator))
 					return;
 
 				osg::ref_ptr<MeasureDistHandler> measureDistanceHandler = new MeasureDistHandler(pMapNode, pManipulator);
 				pView->addEventHandler(measureDistanceHandler.get());
 				CmdManager::getSingleton().block(true);
-				WarControls::getIns()->removeLabelTextDisplay(dist_label_);
+				EarthControls::getIns()->removeLabelTextDisplay(dist_label_);
 				pView->removeEventHandler(measureDistanceHandler.get());
 			});
 			break;
@@ -142,12 +142,12 @@ void WarCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		string model; float height, scale; bool repeat;
 		if (cmdarg.read("locate", model, height, scale, repeat))
 		{
-			SignalTrigger::connect(subcmd, [this, model, height, scale, repeat, errorTipFunc]
+			SignalTrigger::connect(subcmd, [this, model, height, scale, repeat, testError]
 			{
 				osgViewer::View* pView;
 				osgEarth::MapNode* pMapNode;
 				osgEarth::Util::EarthManipulator* pManipulator;
-				if (!errorTipFunc(pView, pMapNode, pManipulator))
+				if (testError(pView, pMapNode, pManipulator))
 					return;
 
 				osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + model);

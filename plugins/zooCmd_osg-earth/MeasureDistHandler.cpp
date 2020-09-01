@@ -1,5 +1,5 @@
 #include "MeasureDistHandler.h"
-#include "WarControls.h"
+#include "EarthControls.h"
 #include <zooCmd/CmdManager.h>
 
 using namespace osgEarth;
@@ -119,7 +119,7 @@ bool MeasureDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 						char szbuf[128];
 						sprintf_s(szbuf, sizeof(szbuf), "[Measure distance] Total distance: %.2f", _totalDistance);
-						WarControls::getIns()->addLabelTextDisplay(szbuf, dist_label_);
+						EarthControls::getIns()->addLabelTextDisplay(szbuf, dist_label_);
 					}
 
 				} while (0);

@@ -1,5 +1,5 @@
-#ifndef __WAR_CONTROLS_H__
-#define __WAR_CONTROLS_H__
+#ifndef __EARTH_CONTROLS_H__
+#define __EARTH_CONTROLS_H__
 
 #include <zooCmd_osg/OsgEarthSupport.h>
 
@@ -11,12 +11,12 @@ enum LabelIndex
 	count_label_
 };
 
-class WarControls
+class EarthControls
 {
 public:
-	WarControls();
-	~WarControls();
-	static WarControls* getIns();
+	EarthControls();
+	~EarthControls();
+	static EarthControls* getIns();
 	static void destroy();
 	bool isHasLabelControl(LabelIndex idx) const;
 	void addLabelTextDisplay(const string& text, LabelIndex idx);
@@ -28,4 +28,4 @@ private:
 	osgEarth::Util::Controls::LabelControl* _labelControls[count_label_];
 };
 
-#endif // __WAR_CONTROLS_H__
+#endif // __EARTH_CONTROLS_H__

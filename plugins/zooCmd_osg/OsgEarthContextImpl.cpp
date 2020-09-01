@@ -1,10 +1,10 @@
 #include "OsgEarthContextImpl.h"
 
-osg::Group* OsgEarthContextImpl::getRootNode()
+osg::Group* OsgEarthContextImpl::getSceneNode()
 {
-	if (!_root)
-		_root = new osg::Group;
-	return _root;
+	if (!_scene)
+		_scene = new osg::Group;
+	return _scene;
 }
 
 osgViewer::View* OsgEarthContextImpl::getOpView()

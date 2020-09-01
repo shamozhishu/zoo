@@ -23,8 +23,7 @@ public:
 };
 
 struct DoF : public Component { // tolua_export
-	enum
-	{
+	enum {
 		Dof_ = ESTATE_01,
 		Parent_ = ESTATE_02
 	};
@@ -66,8 +65,7 @@ public:
 // tolua_end
 
 struct Model : public Component { // tolua_export
-	enum
-	{
+	enum {
 		Visible_ = ESTATE_01,
 		ModelFile_ = ESTATE_02
 	};
@@ -130,16 +128,21 @@ public:
 // tolua_end
 
 struct Camera : public Component { // tolua_export
-	enum
-	{
+	enum {
 		Bgcolour_ = ESTATE_01,
 		Viewport_ = ESTATE_02,
 		TrackEnt_ = ESTATE_03,
-		Manipulator_ = ESTATE_04
+		Manipulator_ = ESTATE_04,
+		Pass1_ = ESTATE_05,
+		Pass2_ = ESTATE_06,
+		Pass3_ = ESTATE_07,
+		Pass4_ = ESTATE_08,
+		Pass5_ = ESTATE_09,
+		Pass6_ = ESTATE_10,
+		Pass7_ = ESTATE_11,
+		Pass8_ = ESTATE_12
 	};
-
-	enum
-	{
+	enum {
 		Earth_ = 0,
 		NodeTracker_,
 		Trackball_,
@@ -151,11 +154,27 @@ struct Camera : public Component { // tolua_export
 		Spherical_,
 		Custom_
 	};
-
+	// tolua_begin
+	enum RenderTarget {
+		Nothing_ = 0,
+		Window_,
+		TextureColor_,
+		TextureDepth_,
+		HeadUpDisplay_
+	};
+	typedef unsigned int PassIndex;
+	// tolua_end
+	struct Pass
+	{
+		RenderTarget _rt;
+		Pass() : _rt(Nothing_) {}
+	};
 	int _manipulatorKey;
 	int _trackEntID, _trackEntBreed;
 	int _red, _green, _blue, _alpha;
 	float _lRatio, _rRatio, _bRatio, _tRatio;
+	static const PassIndex MaxPassCount = 8;
+	Pass _passes[MaxPassCount]; // 最多支持八通道
 	ZOO_REFLEX_DECLARE(Camera)
 
 public:
@@ -166,21 +185,21 @@ public:
 public:
 	// tolua_begin
 	void setManipulator(int key);
-	void setTrackEnt(int id, int breed);
+	void setTrackEntity(int id, int breed);
 	void setBgColor(int r, int g, int b, int a = 255);
+	void setRenderTarget(PassIndex pass, RenderTarget rt);
 	void setViewport(float leftRatio, float rightRatio, float bottomRatio, float topRatio);
 };
 // tolua_end
 
 struct Environment : public Component { // tolua_export
-	enum
-	{
+	enum {
 		Weather_ = ESTATE_01
 	};
 	// tolua_begin
-	enum EWeather { Sunny_, Rain_, Snow_ };
+	enum Weather { Sunny_, Rain_, Snow_ };
 	// tolua_end
-	EWeather _type;
+	Weather _type;
 	float _intensity;
 	ZOO_REFLEX_DECLARE(Environment)
 
@@ -191,13 +210,12 @@ public:
 
 public:
 	// tolua_begin
-	void setWeather(EWeather type, float intensity);
+	void setWeather(Weather type, float intensity);
 };
 // tolua_end
 
 struct Earth : public Component { // tolua_export
-	enum
-	{
+	enum {
 		SunVisible_ = ESTATE_01,
 		MoonVisible_ = ESTATE_02,
 		StarVisible_ = ESTATE_03,
@@ -205,7 +223,6 @@ struct Earth : public Component { // tolua_export
 		AtmosphereVisible_ = ESTATE_05,
 		SunlightIntensity_ = ESTATE_06
 	};
-
 	enum Sky { sun_, moon_, star_, nebula_, atmosphere_, count_ };
 	string _earthFile;
 	float _sunlightIntensity;

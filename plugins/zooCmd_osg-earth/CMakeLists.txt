@@ -1,9 +1,9 @@
 ﻿###########################################################################
 #                                                                         #
-#                              zooCmd_osg-war                             #
+#                             zooCmd_osg-earth                            #
 #                                                                         #
 ###########################################################################
-set(OUT_NAME zooCmd_osg-war)
+set(OUT_NAME zooCmd_osg-earth)
 
 set(PROJECT_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR})
 set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -29,16 +29,16 @@ else()
 endif()
 
 set(ZOOCMD_PLUGIN_LIB_H
-	${PROJECT_INCLUDE}/WarCmd.h
-	${PROJECT_INCLUDE}/WarControls.h
+	${PROJECT_INCLUDE}/EarthCmd.h
+	${PROJECT_INCLUDE}/EarthControls.h
 	${PROJECT_INCLUDE}/LonLatDistHandler.h
 	${PROJECT_INCLUDE}/LocateModelHandler.h
 	${PROJECT_INCLUDE}/MeasureDistHandler.h
 )
 
 set(ZOOCMD_PLUGIN_LIB_CPP
-	${PROJECT_SRC}/WarCmd.cpp
-	${PROJECT_SRC}/WarControls.cpp
+	${PROJECT_SRC}/EarthCmd.cpp
+	${PROJECT_SRC}/EarthControls.cpp
 	${PROJECT_SRC}/LonLatDistHandler.cpp
 	${PROJECT_SRC}/LocateModelHandler.cpp
 	${PROJECT_SRC}/MeasureDistHandler.cpp

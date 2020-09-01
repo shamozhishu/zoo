@@ -3,7 +3,7 @@
 
 #include <zooCmd_osg/OsgDevice.h>
 
-class WarCmd;
+class EarthCmd;
 class MeasureDistHandler : public osgGA::GUIEventHandler
 {
 public:

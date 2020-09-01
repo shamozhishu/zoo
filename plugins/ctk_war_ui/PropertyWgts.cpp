@@ -464,6 +464,39 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 		<< tr("地形") << tr("轨道") << tr("第一人称视角") << tr("球面") << tr("定制");
 	_ui->comboBox->addItems(manipulatorType);
 
+	QStringList rtStrList;
+	rtStrList << tr("空") << tr("窗口") << tr("颜色纹理") << tr("深度纹理") << tr("平视显示器");
+
+	std::function<void(QComboBox*, Camera::PassIndex, unsigned int)> rtFunc = [this]
+	(QComboBox* combox, Camera::PassIndex passInx, unsigned int passMask)
+	{
+		connect(combox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this, passInx, passMask](int index)
+		{
+			if (COM_CAST(Camera)->_passes[passInx]._rt != index)
+			{
+				COM_CAST(Camera)->_passes[passInx]._rt = (Camera::RenderTarget)index;
+				_com->dirtyBit().addState(passMask);
+				_uiMgr->starWindowTitle();
+			}
+		});
+	};
+	_ui->comboBox_pass1->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass1, 0, Camera::Pass1_);
+	_ui->comboBox_pass2->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass2, 1, Camera::Pass2_);
+	_ui->comboBox_pass3->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass3, 2, Camera::Pass3_);
+	_ui->comboBox_pass4->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass4, 3, Camera::Pass4_);
+	_ui->comboBox_pass5->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass5, 4, Camera::Pass5_);
+	_ui->comboBox_pass6->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass6, 5, Camera::Pass6_);
+	_ui->comboBox_pass7->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass7, 6, Camera::Pass7_);
+	_ui->comboBox_pass8->addItems(rtStrList);
+	rtFunc(_ui->comboBox_pass8, 7, Camera::Pass8_);
+
 	QString leftPercentSS = _ui->lineEdit_left->styleSheet();
 	QString rightPercentSS = _ui->lineEdit_right->styleSheet();
 	QString bottomPercentSS = _ui->lineEdit_bottom->styleSheet();
@@ -604,6 +637,15 @@ void CameraPropertyWgt::resetCom(zoo::Component* pCom)
 	_ui->pushButton_color->setStyleSheet(QString(tr("background-color:rgba(%1,%2,%3,%4)").arg(
 		QString::number(pCam->_red), QString::number(pCam->_green),
 		QString::number(pCam->_blue), QString::number(pCam->_alpha))));
+
+	_ui->comboBox_pass1->setCurrentIndex(pCam->_passes[0]._rt);
+	_ui->comboBox_pass2->setCurrentIndex(pCam->_passes[1]._rt);
+	_ui->comboBox_pass3->setCurrentIndex(pCam->_passes[2]._rt);
+	_ui->comboBox_pass4->setCurrentIndex(pCam->_passes[3]._rt);
+	_ui->comboBox_pass5->setCurrentIndex(pCam->_passes[4]._rt);
+	_ui->comboBox_pass6->setCurrentIndex(pCam->_passes[5]._rt);
+	_ui->comboBox_pass7->setCurrentIndex(pCam->_passes[6]._rt);
+	_ui->comboBox_pass8->setCurrentIndex(pCam->_passes[7]._rt);
 }
 
 EarthPropertyWgt::EarthPropertyWgt(QWidget* parent)
@@ -779,7 +821,7 @@ EnvirPropertyWgt::EnvirPropertyWgt(QWidget* parent)
 	{
 		if (COM_CAST(Environment)->_type != index)
 		{
-			COM_CAST(Environment)->_type = (Environment::EWeather)index;
+			COM_CAST(Environment)->_type = (Environment::Weather)index;
 			_com->dirtyBit().addState(Environment::Weather_);
 			_uiMgr->starWindowTitle();
 		}

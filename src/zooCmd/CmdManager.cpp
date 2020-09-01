@@ -9,8 +9,8 @@
 
 namespace zooCmd {
 
-std::thread::id g_renderThreadID;
 InputAdapter* g_inputAdapter = nullptr;
+std::thread::id g_renderThreadID = std::thread::id();
 
 static std::mutex s_mutex;
 static UserData s_retValue;
@@ -303,7 +303,8 @@ Any CmdManager::getReturnValue(const string& key)
 			std::future<Any> fut = s_promises[key]->get_future();
 
 			// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
-			if (g_renderThreadID == std::this_thread::get_id())
+			if (g_renderThreadID == std::this_thread::get_id()
+				|| g_renderThreadID == std::thread::id()) // 如果渲染线程未启动, 则无需阻塞命令线程.
 				s_interlock.canExchange = true;
 
 			Any temp = fut.get();
@@ -330,7 +331,8 @@ string CmdManager::getTipMessage()
 		std::future<Any> fut = s_promises[ZOO_TIP_MESSAGE]->get_future();
 
 		// 如果渲染线程和执行当前成员函数的线程是同一个线程, 则无需阻塞命令线程.
-		if (g_renderThreadID == std::this_thread::get_id())
+		if (g_renderThreadID == std::this_thread::get_id()
+			|| g_renderThreadID == std::thread::id()) // 如果渲染线程未启动, 则无需阻塞命令线程.
 			s_interlock.canExchange = true;
 
 		Any temp = fut.get();
