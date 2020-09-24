@@ -1,5 +1,6 @@
 #include "CameraManipulatorManager.h"
-#include <zooCmd_osg/OsgEarthUtils.h>
+#include <UniversalGlobalServices.h>
+#include <osgEarth/Version>
 
 using namespace osgGA;
 using namespace osgEarth::Util;
@@ -47,13 +48,13 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 	osg::Group* pParent = pNode->asGroup();
 	if (pParent)
 	{
-		pParent = pParent->getChild(0) ? pParent->getChild(0)->asGroup() : nullptr;
+		pParent = (pParent->getNumChildren() > 0 && pParent->getChild(0)) ? pParent->getChild(0)->asGroup() : nullptr;
 		if (pParent)
 		{
-			pParent = pParent->getChild(0) ? pParent->getChild(0)->asGroup() : nullptr;
+			pParent = (pParent->getNumChildren() > 0 && pParent->getChild(0)) ? pParent->getChild(0)->asGroup() : nullptr;
 			if (pParent)
 			{
-				if (pParent->getChild(0))
+				if (pParent->getNumChildren() > 0 && pParent->getChild(0))
 					pNode = pParent->getChild(0);
 			}
 		}
@@ -63,7 +64,7 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 	{
 	case 0:
 	{
-		OsgEarthUtils* pOsgEarthUtils = ServiceLocator<OsgEarthUtils>::getService();
+		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
 		EarthManipulator* pEarthManipu = dynamic_cast<EarthManipulator*>(getMatrixManipulatorWithIndex(num));
 		if (pOsgEarthUtils && pEarthManipu)
 		{
@@ -72,12 +73,12 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 			osg::Vec3d llh;
 			osg::Matrix localToWorld = osg::computeLocalToWorld(pNode->getParent(0)->getParentalNodePaths()[0]);
 			osg::Vec3d XYZ = bound.center() * localToWorld;
-			pOsgEarthUtils->convertXYZToLatLongHeight(XYZ.x(), XYZ.y(), XYZ.z(), llh._v[0], llh._v[1], llh._v[2]);
+			pOsgEarthUtils->convertXYZToLLH(XYZ.x(), XYZ.y(), XYZ.z(), llh._v[0], llh._v[1], llh._v[2]);
 
 			Viewpoint vp = pEarthManipu->getViewpoint();
 			vp.setNode(pNode);
-			vp.focalPoint().mutable_value().x() = llh.y();
-			vp.focalPoint().mutable_value().y() = llh.x();
+			vp.focalPoint().mutable_value().x() = llh.x();
+			vp.focalPoint().mutable_value().y() = llh.y();
 			osg::Vec3d scale = localToWorld.getScale();
 			vp.range() = bound.radius() * max(max(scale.x(), scale.y()), scale.z()) * 6;
 			pEarthManipu->setViewpoint(vp);
@@ -139,7 +140,11 @@ bool CameraManipulatorManager::handle(const GUIEventAdapter& ea, GUIActionAdapte
 	{
 		int key = ea.getKey();
 		if (key == GUIEventAdapter::KEY_Escape || key == (GUIEventAdapter::KEY_Escape & 0xFF))
+#if OSGEARTH_MIN_VERSION_REQUIRED(2, 8, 0)
+			pEarthManipu->setTetherCallback(nullptr);
+#else
 			pEarthManipu->setTetherNode(nullptr);
+#endif
 	}
 
 	if (_switchEnabled)

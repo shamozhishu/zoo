@@ -165,30 +165,11 @@ public:
 
 	///获得一些特殊的节点，这些一般用户不会使用
 public:
-	///获得地球大气层节点
-	osg::Node* getAtmosphereNode();
-
-	///获得太阳实体节点
-	osg::Node* getSunNode();
-
-	///获得月亮实体节点
-	osg::Node* getMoonNode();
-
-	///获得远距离恒星实体节点
-	osg::Node* getStarsNode();
-
 	///获得星云节点
 	osg::Node* getNebulaNode();
 
 	///获得星SkyNode节点
 	osg::Light* getLight();
-
-	/**
-		* @note 大气节点雾化参数
-	*/
-	osg::Uniform* getUniformFogEnabled();
-
-	osg::Uniform* getUniformFogColor();
 
 protected:
 	virtual ~StarrySky(void);

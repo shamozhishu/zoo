@@ -1,9 +1,69 @@
+/************************************************************************\
+* 概述: 组件接口,其中DoF是实体必须拥有的组件,实体的其他类型的组件可有可无
+* https://github.com/shamozhishu
+* Copyright (c) 2020-2020 authored by shamozhishu
+\************************************************************************/
 #ifndef __WAR_COMPONENTS_H__
 #define __WAR_COMPONENTS_H__
 
 #include <zoo/Component.h>
 
 using namespace zoo;
+
+struct Mesh : public Serializer { // tolua_export
+	enum {
+		Changed_ = ESTATE_31
+	};
+
+	string _modelFile;
+	string _currentUseMeshName;
+	map<string, vector<double>> _params;
+	PROPERTY_RW(Component*, _parent, Parent)
+
+public:
+	Mesh();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+
+public:
+	// tolua_begin
+	void changeMesh(const string& name);
+	void changeParam(const string& var, const vector<double>& val);
+};
+// tolua_end
+
+struct Material : public Serializer { // tolua_export
+	enum {
+		Changed_ = ESTATE_32
+	};
+	enum ShaderType {
+		VERTEX = 0,
+		TESSCONTROL,
+		TESSEVALUATION,
+		GEOMETRY,
+		FRAGMENT,
+		COMPUTE,
+		COUNT
+	};
+
+	string _currentUseMatName;
+	map<string, vector<double>> _uniforms;
+	std::pair<string, string> _shaderFiles[COUNT];
+	static const int TexUnitNum = 8;
+	std::pair<string, string> _textureFiles[TexUnitNum];
+	PROPERTY_RW(Component*, _parent, Parent)
+
+public:
+	Material();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+
+public:
+	// tolua_begin
+	void changeMat(const string& name);
+	void changeUniform(const string& uniform, const vector<double>& val);
+};
+// tolua_end
 
 struct Behavior : public Component {
 	string _scriptFile;
@@ -66,12 +126,12 @@ public:
 
 struct Model : public Component { // tolua_export
 	enum {
-		Visible_ = ESTATE_01,
-		ModelFile_ = ESTATE_02
+		Visible_ = ESTATE_01
 	};
 
 	bool _visible;
-	string _modelFile;
+	Mesh _mesh;
+	Material _material;
 	ZOO_REFLEX_DECLARE(Model)
 
 public:
@@ -83,7 +143,8 @@ public:
 	// tolua_begin
 	bool isVisible() const;
 	void setVisible(bool visible);
-	void setModelFile(const string& modelFile);
+	Mesh* getMesh();
+	Material* getMaterial();
 };
 // tolua_end
 
@@ -167,6 +228,7 @@ struct Camera : public Component { // tolua_export
 	struct Pass
 	{
 		RenderTarget _rt;
+		Material _material;
 		Pass() : _rt(Nothing_) {}
 	};
 	int _manipulatorKey;
@@ -185,6 +247,7 @@ public:
 public:
 	// tolua_begin
 	void setManipulator(int key);
+	Material* getMaterial(PassIndex pass);
 	void setTrackEntity(int id, int breed);
 	void setBgColor(int r, int g, int b, int a = 255);
 	void setRenderTarget(PassIndex pass, RenderTarget rt);

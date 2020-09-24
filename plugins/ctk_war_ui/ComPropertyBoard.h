@@ -6,6 +6,10 @@
 #include <QPushButton>
 #include <component/war/WarComponents.h>
 
+namespace Ui {
+	class ComPropertyBoard;
+}
+
 class PropertyWgt;
 class ComPropertyBoard : public QWidget
 {
@@ -23,9 +27,7 @@ private:
 
 private:
 	zoo::Entity* _curSelEnt;
-	QVBoxLayout* _rootLayout;
-	QPushButton* _addComponentBtn;
-	QPushButton* _removeComponentBtn;
+	Ui::ComPropertyBoard* _ui;
 	QHash<QString, PropertyWgt*> _comPropertyWgts;
 };
 

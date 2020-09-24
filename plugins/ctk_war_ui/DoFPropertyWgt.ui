@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>189</height>
+    <width>527</width>
+    <height>153</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -46,6 +46,9 @@
         </property>
         <widget class="QWidget" name="page">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="margin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QLabel" name="label">
             <property name="sizePolicy">
@@ -135,6 +138,9 @@
         </widget>
         <widget class="QWidget" name="page_2">
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="margin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QLabel" name="label_13">
             <property name="sizePolicy">
@@ -246,6 +252,9 @@
         </property>
         <widget class="QWidget" name="page_3">
          <layout class="QGridLayout" name="gridLayout">
+          <property name="margin">
+           <number>0</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
             <property name="sizePolicy">

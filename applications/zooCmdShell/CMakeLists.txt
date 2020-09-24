@@ -4,18 +4,15 @@
 #                                                                         #
 ###########################################################################
 set(OUT_NAME zooCmdShell)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/applications/zooCmdShell)
-
-set(ZOO_CPP
-	${PROJECT_SRC}/main.cpp
-)
+file(GLOB ZOOCMDSHELL_CPP "*.cpp")
            
 add_executable(
 	${OUT_NAME}
-	${ZOO_CPP}
+	${ZOOCMDSHELL_CPP}
 )
 
 target_link_libraries(

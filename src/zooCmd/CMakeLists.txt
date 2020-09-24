@@ -4,29 +4,12 @@
 #                                                                         #
 ###########################################################################
 set(OUT_NAME zooCmd)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-SET(PROJECT_INCLUDE ${CMAKE_SOURCE_DIR}/src/zooCmd)
-SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/src/zooCmd)
-
-set(ZOOCMD_H
-	${PROJECT_INCLUDE}/Cmd.h
-	${PROJECT_INCLUDE}/CmdManager.h
-	${PROJECT_INCLUDE}/CmdParser.h
-	${PROJECT_INCLUDE}/CmdUsage.h
-	${PROJECT_INCLUDE}/InputAdapter.h
-    ${PROJECT_INCLUDE}/Support.h
-	${PROJECT_INCLUDE}/ZooCmd.h
-)
-
-set(ZOOCMD_CPP
-	${PROJECT_SRC}/CmdManager.cpp
-	${PROJECT_SRC}/CmdParser.cpp
-	${PROJECT_SRC}/CmdUsage.cpp
-	${PROJECT_SRC}/InputAdapter.cpp
-	${PROJECT_SRC}/ZooCmd.cpp
-)
+file(GLOB ZOOCMD_H "*.h")
+file(GLOB ZOOCMD_CPP "*.cpp")
 	  
 if(${BUILD_SHARED_LIBS} STREQUAL "On")
     add_library(

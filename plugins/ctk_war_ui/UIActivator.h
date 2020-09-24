@@ -8,6 +8,7 @@
 
 #define CTK_WAR_UI_LIST_WIDGET "ctk_war_ui_list_widget"
 #define CTK_WAR_UI_PROPERTY_BOARD "ctk_war_ui_property_board"
+#define CTK_WAR_UI_MATERIAL_EDIT_BOARD "ctk_war_ui_material_edit_board"
 
 class NoFocusDelegate : public QStyledItemDelegate
 {

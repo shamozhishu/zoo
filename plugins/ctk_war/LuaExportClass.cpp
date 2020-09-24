@@ -1,5 +1,4 @@
 #include "LuaExportClass.h"
-#include <windows.h>
 #include <dinput.h>
 #include <ctk_service/zoocmd_ui/Win32Service.h>
 #include "WarActivator.h"

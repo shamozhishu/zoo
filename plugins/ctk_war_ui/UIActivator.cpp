@@ -2,9 +2,10 @@
 #include "ArmyListWgt.h"
 #include "MenuToolButtons.h"
 #include "ComPropertyBoard.h"
+#include "MaterialEditBoard.h"
 #include <QMessageBox>
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
+#include <ctk_service/zoocmd_ui/UIManagerService.h>
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
@@ -31,9 +32,12 @@ void UIActivator::start(ctkPluginContext* context)
 		MenuToolButtons::create(service, MenuToolButtons::simulation_, pArmyListWidget, true);
 		service->addWidget(CTK_WAR_UI_LIST_WIDGET, tr("实体导航"), pArmyListWidget, QIcon(QPixmap(":/images/Resources/images/entnavig.png")),
 			Qt::LeftDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-		ComPropertyBoard* pComPropertyBoard = new ComPropertyBoard;
-		service->addWidget(CTK_WAR_UI_PROPERTY_BOARD, tr("组件属性"), pComPropertyBoard, QIcon(QPixmap(":/images/Resources/images/entparam.png")),
+		service->addWidget(CTK_WAR_UI_PROPERTY_BOARD, tr("组件属性"), new ComPropertyBoard, QIcon(QPixmap(":/images/Resources/images/entparam.png")),
+			Qt::RightDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+		service->addWidget(CTK_WAR_UI_MATERIAL_EDIT_BOARD, tr("材质编辑"), new MaterialEditBoard, QIcon(QPixmap(":/images/Resources/images/material.png")),
 			Qt::RightDockWidgetArea, Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea, true, true, true);
+		service->tabifyWidget(CTK_WAR_UI_PROPERTY_BOARD, CTK_WAR_UI_MATERIAL_EDIT_BOARD);
+		service->raiseWidget(CTK_WAR_UI_PROPERTY_BOARD);
 		MenuToolButtons::create(service, MenuToolButtons::help_, nullptr, true);
 	}
 	else
@@ -47,6 +51,7 @@ void UIActivator::stop(ctkPluginContext* context)
 	UIManagerService* service = UIActivator::getService<UIManagerService>();
 	if (service != Q_NULLPTR)
 	{
+		service->removeWidget(CTK_WAR_UI_MATERIAL_EDIT_BOARD);
 		service->removeWidget(CTK_WAR_UI_PROPERTY_BOARD);
 		service->removeWidget(CTK_WAR_UI_LIST_WIDGET);
 		MenuToolButtons::destroy(service, MenuToolButtons::scene_);

@@ -5,6 +5,10 @@
 #include <zooCmd/CmdManager.h>
 #include "OsgEarthContextImpl.h"
 #include "OsgEarthUtilsImpl.h"
+#include "MaterialManager.h"
+#include "BuiltinMaterial.h"
+#include "MeshManager.h"
+#include "BuiltinMesh.h"
 
 ZOO_REGISTER(InputDevice)
 
@@ -56,10 +60,21 @@ InputDevice::InputDevice()
 	_compositeViewer = new Viewers;
 	_osgContextImpl = new OsgEarthContextImpl;
 	_osgUtilsImpl = new OsgEarthUtilsImpl;
+	//----------------------------------------
+	// 初始化网格管理器和所有的内建网格
+	new MeshManager;
+	new SphereMesh;
+	new BoxMesh;
+	//----------------------------------------
+	// 初始化材质管理器和所有的内建材质
+	new MaterialManager;
+	new BumpMapping;
 }
 
 InputDevice::~InputDevice()
 {
+	delete MaterialManager::getSingletonPtr();
+	delete MeshManager::getSingletonPtr();
 	SAFE_DELETE(_osgUtilsImpl);
 	SAFE_DELETE(_osgContextImpl);
 	destroyAllViews();

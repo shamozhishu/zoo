@@ -1,6 +1,8 @@
 ﻿#include "StarrySky.h"
 #include <zoo/Utils.h>
 #include <OpenThreads/ScopedLock>
+#include <osgEarth/NodeUtils>
+#include <osgEarth/Version>
 
 static const double s_dTimeFlyRate = 1440.0; // 默认的流逝速率
 
@@ -293,7 +295,9 @@ void StarrySky::setAtmosphereVisible(bool bState)
 {
 	if (m_opSkyNode.valid())
 	{
-		m_opSkyNode->getAtmosphere()->setNodeMask(bState);
+#if OSGEARTH_MIN_VERSION_REQUIRED(2, 8, 0)
+		m_opSkyNode->setAtmosphereVisible(bState);
+#endif
 	}
 }
 
@@ -301,24 +305,12 @@ bool StarrySky::getAtmosphereVisible() const
 {
 	if (m_opSkyNode.valid())
 	{
-		return (m_opSkyNode->getAtmosphere()->getNodeMask() != 0x0);
+#if OSGEARTH_MIN_VERSION_REQUIRED(2, 8, 0)
+		return m_opSkyNode->getAtmosphereVisible();
+#endif
 	}
 
 	return false;
-}
-
-osg::Node* StarrySky::getAtmosphereNode()
-{
-	return m_opSkyNode->getAtmosphere();
-}
-
-osg::Node* StarrySky::getSunNode()
-{
-	return m_opSkyNode->getSun();
-}
-osg::Node* StarrySky::getMoonNode()
-{
-	return m_opSkyNode->getMoon();
 }
 
 osg::Node* StarrySky::getNebulaNode()
@@ -326,23 +318,9 @@ osg::Node* StarrySky::getNebulaNode()
 	return m_opNebulaNode.get();
 }
 
-osg::Node* StarrySky::getStarsNode()
-{
-	return m_opSkyNode->getStars();
-}
-
 osg::Light* StarrySky::getLight()
 {
 	return m_opSkyNode->getSunLight();
-}
-
-osg::Uniform* StarrySky::getUniformFogEnabled()
-{
-	return m_opSkyNode->GetUniformFogEnabled();
-}
-osg::Uniform* StarrySky::getUniformFogColor()
-{
-	return m_opSkyNode->GetUniformFogColor();
 }
 
 void StarrySky::setSyncLocalTime(bool bState)

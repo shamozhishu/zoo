@@ -55,10 +55,10 @@ public:
 				exit(-1);
 			}
 
-			QSharedPointer<ctkPlugin> plugin = installThenStart(pluginName);
-			_mainPluginName = pluginName;
+			QSharedPointer<ctkPlugin> plugin = installThenStart(MAIN_PLUGIN);
+			_mainPluginName = MAIN_PLUGIN;
 			_mainPluginId = plugin->getPluginId();
-			zoo_debug("Install main plug-in %s: %s", pluginName.toStdString().c_str(), pluginFile.toStdString().c_str());
+			zoo_debug("Install main plug-in %s: %s", MAIN_PLUGIN, pluginFile.toStdString().c_str());
 		}
 
 		auto it = _pluginList.begin();

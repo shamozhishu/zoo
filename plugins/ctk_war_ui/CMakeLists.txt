@@ -5,7 +5,7 @@
 ###########################################################################
 project(ctk_war_ui)
 
-SET(CMAKE_DEBUG_POSTFIX "")
+set(CMAKE_DEBUG_POSTFIX "")
 set(PLUGIN_export_directive "ctk_war_ui_EXPORT")
 
 IF(QT_INCLUDES)
@@ -15,7 +15,6 @@ ENDIF()
 IF(WIN32 AND NOT ANDROID)
 	# CTK
 	IF(3RD_PARTY_DIR)
-		SET(CTK_DIR ${3RD_PARTY_DIR}/lib/ctk-0.1/CMake)
 		FIND_PACKAGE(CTK REQUIRED)
 		include_directories(
 			${CTKCore_INCLUDE_DIRS}
@@ -40,20 +39,12 @@ else()
 	link_directories("${3RD_PARTY_DIR}/lib")
 endif()
 
+file(GLOB CTK_PLUGIN_LIB_H "*.h")
+file(GLOB CTK_PLUGIN_LIB_CPP "*.cpp")
+
 set(PLUGIN_SRCS
-	UIActivator.h
-	ArmyListWgt.h
-	MenuToolButtons.h
-	ComPropertyBoard.h
-	PropertyWgts.h
-	OpenBattlefieldDlg.h
-	
-	UIActivator.cpp
-	ArmyListWgt.cpp
-	MenuToolButtons.cpp
-	ComPropertyBoard.cpp
-	PropertyWgts.cpp
-	OpenBattlefieldDlg.cpp
+	${CTK_PLUGIN_LIB_H}
+	${CTK_PLUGIN_LIB_CPP}
 )
 
 # Files which should be processed by Qts moc
@@ -61,6 +52,7 @@ set(PLUGIN_MOC_SRCS
 	UIActivator.h
 	ArmyListWgt.h
 	ComPropertyBoard.h
+	MaterialEditBoard.h
 	PropertyWgts.h
 	OpenBattlefieldDlg.h
 )
@@ -68,7 +60,14 @@ set(PLUGIN_MOC_SRCS
 # Qt Designer files which should be processed by Qts uic
 set(PLUGIN_UI_FORMS
 	ComListWgt.ui
+	MeshWgt.ui
+	ShaderWgt.ui
+	TextureWgt.ui
+	MaterialWgt.ui
 	ArmyListWgt.ui
+	ConfigTableWgt.ui
+	ComPropertyBoard.ui
+	MaterialEditBoard.ui
 	OpenBattlefieldDlg.ui
 	DoFPropertyWgt.ui
 	ModelPropertyWgt.ui

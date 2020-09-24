@@ -1,7 +1,7 @@
 #include "OsgEarthUtilsImpl.h"
 #include <zooCmd_osg/OsgEarthContext.h>
 
-bool OsgEarthUtilsImpl::convertLatLongHeightToXYZ(double latitude, double longitude, double height, double& X, double& Y, double& Z)
+bool OsgEarthUtilsImpl::convertLLHToXYZ(double longitude, double latitude, double height, double& X, double& Y, double& Z)
 {
 	OsgEarthContext* pOsgEarthContext = ServiceLocator<OsgEarthContext>::getService();
 	if (!pOsgEarthContext)
@@ -13,7 +13,7 @@ bool OsgEarthUtilsImpl::convertLatLongHeightToXYZ(double latitude, double longit
 	return true;
 }
 
-bool OsgEarthUtilsImpl::convertXYZToLatLongHeight(double X, double Y, double Z, double& latitude, double& longitude, double& height)
+bool OsgEarthUtilsImpl::convertXYZToLLH(double X, double Y, double Z, double& longitude, double& latitude, double& height)
 {
 	OsgEarthContext* pOsgEarthContext = ServiceLocator<OsgEarthContext>::getService();
 	if (!pOsgEarthContext)
@@ -22,7 +22,7 @@ bool OsgEarthUtilsImpl::convertXYZToLatLongHeight(double X, double Y, double Z, 
 	if (!pMapNode)
 		return false;
 	pMapNode->getMapSRS()->getEllipsoid()->convertXYZToLatLongHeight(X, Y, Z, latitude, longitude, height);
-	latitude = osg::RadiansToDegrees(latitude);
 	longitude = osg::RadiansToDegrees(longitude);
+	latitude = osg::RadiansToDegrees(latitude);
 	return true;
 }

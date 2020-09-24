@@ -4,11 +4,7 @@
 #                                                                         #
 ###########################################################################
 set(OUT_NAME ctk_pluginfwadmin)
-
-SET(CMAKE_DEBUG_POSTFIX "")
-set(PROJECT_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR})
-set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${PROJECT_INCLUDE})
+set(CMAKE_DEBUG_POSTFIX "")
 
 IF(QT_INCLUDES)
 	include_directories(${QT_INCLUDES})
@@ -17,7 +13,6 @@ ENDIF()
 IF(WIN32 AND NOT ANDROID)
 	# CTK
 	IF(3RD_PARTY_DIR)
-		SET(CTK_DIR ${3RD_PARTY_DIR}/lib/ctk-0.1/CMake)
 		FIND_PACKAGE(CTK REQUIRED)
 		include_directories(
 			${CTKCore_INCLUDE_DIRS}
@@ -42,16 +37,11 @@ else()
 	link_directories("${3RD_PARTY_DIR}/lib")
 endif()
 
-set(QT_PLUGIN_LIB_H 
-	${PROJECT_INCLUDE}/PluginFrameworkAdmin.h
-)
-
-set(QT_PLUGIN_LIB_CPP
-	${PROJECT_SRC}/PluginFrameworkAdmin.cpp
-)
+file(GLOB QT_PLUGIN_LIB_H "*.h")
+file(GLOB QT_PLUGIN_LIB_CPP "*.cpp")
 
 set(LIB_MOC_HDRS
-	${PROJECT_SRC}/PluginFrameworkAdmin.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PluginFrameworkAdmin.h
 )
 
 IF(Qt5Widgets_FOUND)
@@ -62,32 +52,21 @@ IF(Qt5Widgets_FOUND)
         LIST( APPEND LIB_MOC_SRCS ${LIB_MOC_SRC} )
     ENDFOREACH()
 ELSE()
-    INCLUDE( ${QT_USE_FILE} )
-    QT4_WRAP_CPP( LIB_MOC_SRCS ${LIB_MOC_HDRS} OPTIONS "-f" )
+    message(FATAL_ERROR "Qt5Widgets_FOUND need to set!!!")
 ENDIF()
 
 add_library(
-    	${OUT_NAME} SHARED 
-    	${QT_PLUGIN_LIB_H}
-    	${QT_PLUGIN_LIB_CPP}
-		${LIB_MOC_HDRS}
-		${LIB_MOC_SRCS}
+	${OUT_NAME} SHARED 
+	${QT_PLUGIN_LIB_H}
+	${QT_PLUGIN_LIB_CPP}
+	${LIB_MOC_SRCS}
 )
 
-IF(Qt5Widgets_FOUND)	
-	target_link_libraries(
-		${OUT_NAME} 
-		${Qt5Core_LIBRARIES}
-		zoo
-		CTKPluginFramework
-		)							
-ELSE()
-	target_link_libraries(
-		${OUT_NAME} 
-		${QT_LIBRARIES}
-		zoo
-		CTKPluginFramework
-		)
-ENDIF()
+target_link_libraries(
+	${OUT_NAME} 
+	${Qt5Core_LIBRARIES}
+	zoo
+	CTKPluginFramework
+)
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

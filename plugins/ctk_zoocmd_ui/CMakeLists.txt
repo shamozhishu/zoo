@@ -5,7 +5,7 @@
 ###########################################################################
 project(ctk_zoocmd_ui)
 
-SET(CMAKE_DEBUG_POSTFIX "")
+set(CMAKE_DEBUG_POSTFIX "")
 set(PLUGIN_export_directive "ctk_zoocmd_ui_EXPORT")
 
 IF(QT_INCLUDES)
@@ -15,7 +15,6 @@ ENDIF()
 IF(WIN32 AND NOT ANDROID)
 	# CTK
 	IF(3RD_PARTY_DIR)
-		SET(CTK_DIR ${3RD_PARTY_DIR}/lib/ctk-0.1/CMake)
 		FIND_PACKAGE(CTK REQUIRED)
 		include_directories(
 			${CTKCore_INCLUDE_DIRS}
@@ -40,18 +39,12 @@ else()
 	link_directories("${3RD_PARTY_DIR}/lib")
 endif()
 
-set(PLUGIN_SRCS
-	UIActivator.h
-	SetupDlg.h
-	ZooCmdUI.h
-	ZooCmdWgt.h
-	LogPrintWgt.h
+file(GLOB CTK_PLUGIN_LIB_H "*.h")
+file(GLOB CTK_PLUGIN_LIB_CPP "*.cpp")
 
-	UIActivator.cpp
-	SetupDlg.cpp
-	ZooCmdUI.cpp
-	ZooCmdWgt.cpp
-	LogPrintWgt.cpp
+set(PLUGIN_SRCS
+	${CTK_PLUGIN_LIB_H}
+	${CTK_PLUGIN_LIB_CPP}
 )
 
 # Files which should be processed by Qts moc

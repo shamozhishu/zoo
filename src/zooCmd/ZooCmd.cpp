@@ -93,7 +93,7 @@ bool zooCmd_IsInited()
 
 bool zooCmd_Register(const char* cmd)
 {
-	if (!s_isInited)
+	if (!s_isInited || strcmp(cmd, "") == 0)
 		return false;
 
 	if (CmdManager::getSingleton().findCmd(cmd))

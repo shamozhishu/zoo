@@ -5,15 +5,60 @@
 #include "WeatherEffect.h"
 #include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
-#include <zooCmd_osg/OsgEarthUtils.h>
+#include <UniversalGlobalServices.h>
 #include <zooCmd_osg/OsgEarthContext.h>
 #include "PublicFunctions.h"
+#include "MeshManager.h"
+#include "MaterialManager.h"
 
 using namespace osgGA;
 using namespace zooCmd_osg;
 #ifdef NEED_OSGEARTH_LIBRARY
 using namespace osgEarth::Util;
 #endif
+
+MeshImpl::MeshImpl(osg::Group* parent)
+	: _meshNode(new osg::Group)
+{
+	parent->addChild(_meshNode);
+}
+
+MeshImpl::~MeshImpl()
+{
+	if (_meshNode->getNumParents() > 0)
+		_meshNode->getParent(0)->removeChild(_meshNode);
+}
+
+void MeshImpl::update(Mesh* mesh)
+{
+	if (mesh)
+	{
+		MeshManager::getSingleton().detach(_meshNode);
+		MeshManager::getSingleton().attach(mesh, _meshNode);
+	}
+}
+
+osg::Group* MeshImpl::getMeshNode() const
+{
+	return _meshNode.get();
+}
+
+MaterialImpl::MaterialImpl()
+	: _lastUseMatName("Default")
+{
+	_defaultStateSet = new osg::StateSet;
+}
+
+void MaterialImpl::update(Material* material, osg::Node* node)
+{
+	if (!material || !node)
+		return;
+
+	MaterialManager::getSingleton().detach(_lastUseMatName, node);
+	_lastUseMatName = material->_currentUseMatName;
+	if (!MaterialManager::getSingleton().attach(material, node))
+		node->setStateSet(_defaultStateSet);
+}
 
 ZOO_REFLEX_IMPLEMENT(DoFImpl);
 DoFImpl::DoFImpl()
@@ -59,12 +104,12 @@ void DoFImpl::locate(DoF* dof)
 	if (dof->_lonLatHeight)
 	{
 #ifdef NEED_OSGEARTH_LIBRARY
-		OsgEarthUtils* pOsgEarthUtils = ServiceLocator<OsgEarthUtils>::getService();
+		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
 		osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
 		if (pOsgEarthUtils && pMapNode)
 		{
 			double x, y, z;
-			pOsgEarthUtils->convertLatLongHeightToXYZ(dof->_y, dof->_x, dof->_z, x, y, z);
+			pOsgEarthUtils->convertLLHToXYZ(dof->_x, dof->_y, dof->_z, x, y, z);
 			osg::Matrix mat;
 			osgEarth::GeoPoint mapPoint;
 			mapPoint.fromWorld(pMapNode->getMapSRS(), osg::Vec3d(x, y, z));
@@ -111,37 +156,25 @@ void DoFImpl::changeParent(DoF* dof)
 ZOO_REFLEX_IMPLEMENT(ModelImpl);
 ModelImpl::ModelImpl()
 	: _switch(new osg::Switch)
+	, _mesh(_switch)
 {
 	_switch->setAllChildrenOn();
+	_switch->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 }
 
 ModelImpl::~ModelImpl()
 {
 	if (_switch->getNumParents() > 0)
 	{
-		auto node = _switch->getParent(0);
-		if (node)
-			node->asGroup()->removeChild(_switch.get());
+		osg::Group* parent = _switch->getParent(0);
+		if (parent)
+			parent->removeChild(_switch.get());
 	}
 }
 
 void ModelImpl::awake()
 {
-	Model* model = getComponent<Model>();
-	if (_model)
-		_switch->removeChild(_model);
-
-	_model = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + model->_modelFile);
-	if (!_model.get())
-	{
-		zoo_warning("Read node file [%s] failed!", model->_modelFile.c_str());
-		return;
-	}
-
-	_model->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
-	_switch->addChild(_model);
-	Entity* pEnt = model->getEntity();
-	SignalTrigger::connect(*pEnt, [this]
+	SignalTrigger::connect(*getEntity(), [this]
 	{
 		ModelImpl* pModelImpl = getEntity()->getComponentImpl<ModelImpl>();
 		if (pModelImpl)
@@ -159,6 +192,12 @@ void ModelImpl::update()
 		else
 			_switch->setAllChildrenOff();
 	}
+
+	if (model->dirtyBit().checkState(Mesh::Changed_))
+		_mesh.update(&model->_mesh);
+
+	if (model->dirtyBit().checkState(Material::Changed_))
+		_material.update(&model->_material, _mesh.getMeshNode());
 }
 
 ZOO_REFLEX_IMPLEMENT(CameraImpl);
@@ -261,8 +300,8 @@ void CameraImpl::trackingEntity()
 	{
 		osg::Node* node = nullptr;
 		ModelImpl* pModelImpl = pTrackEnt->getComponentImpl<ModelImpl>();
-		if (pModelImpl && pModelImpl->_model)
-			node = pModelImpl->_model;
+		if (pModelImpl && pModelImpl->_switch)
+			node = pModelImpl->_switch;
 		else
 			node = pTrackEnt->getComponentImpl<DoFImpl>()->_transWorld;
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  neb
- * @file     CJsonObject.cpp
+ * @file     JsonObject.cpp
  * @brief 
  * @author   bwarliao
  * @date:    2014-7-16

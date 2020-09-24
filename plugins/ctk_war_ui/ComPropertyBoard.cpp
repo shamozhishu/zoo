@@ -1,10 +1,12 @@
 #include "ComPropertyBoard.h"
 #include "UIActivator.h"
+#include "ui_ComPropertyBoard.h"
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QScrollArea>
 #include "PropertyWgts.h"
 #include "ArmyListWgt.h"
 
@@ -31,9 +33,7 @@ static const char* s_comTypeName[] = { "DoF", "Behavior", "Camera", "Earth", "Mo
 static QHash<QString, ComType> s_comsTypeMap;
 ComPropertyBoard::ComPropertyBoard()
 	: _curSelEnt(nullptr)
-	, _rootLayout(new QVBoxLayout(this))
-	, _addComponentBtn(new QPushButton("添加组件", this))
-	, _removeComponentBtn(new QPushButton("移除组件", this))
+	, _ui(new Ui::ComPropertyBoard)
 {
 	int i = dof_;
 	while (s_comTypeName[i])
@@ -42,17 +42,8 @@ ComPropertyBoard::ComPropertyBoard()
 		++i;
 	}
 
+	_ui->setupUi(this);
 	hideAll();
-	setLayout(_rootLayout);
-	setMinimumWidth(300);
-	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-	QHBoxLayout* pLayoutTailer = new QHBoxLayout(this);
-	pLayoutTailer->addWidget(_addComponentBtn);
-	pLayoutTailer->addWidget(_removeComponentBtn);
-
-	_rootLayout->addLayout(pLayoutTailer);
-	_rootLayout->addStretch();
 
 	ComListWgt* pComListWgt = new ComListWgt(this);
 	std::function<void(bool)> addDelComsFunc = [this, pComListWgt](bool bAddComponentBtn)
@@ -76,11 +67,11 @@ ComPropertyBoard::ComPropertyBoard()
 		}
 	};
 
-	connect(_addComponentBtn, &QPushButton::clicked, [addDelComsFunc]
+	connect(_ui->pushButton_add, &QPushButton::clicked, [addDelComsFunc]
 	{
 		addDelComsFunc(true);
 	});
-	connect(_removeComponentBtn, &QPushButton::clicked, [addDelComsFunc]
+	connect(_ui->pushButton_remove, &QPushButton::clicked, [addDelComsFunc]
 	{
 		addDelComsFunc(false);
 	});
@@ -105,8 +96,8 @@ void ComPropertyBoard::showCurEntComs(zoo::Entity* ent)
 			showCom(it->first.c_str(), it->second);
 		}
 
-		_addComponentBtn->setVisible(true);
-		_removeComponentBtn->setVisible(true);
+		_ui->pushButton_add->setVisible(true);
+		_ui->pushButton_remove->setVisible(true);
 	}
 }
 
@@ -140,8 +131,8 @@ void ComPropertyBoard::showCom(QString comTypeName, zoo::Component* pCom)
 		}
 
 		_comPropertyWgts.insert(comTypeName, pWgt);
-		int cnt = _rootLayout->count();
-		_rootLayout->insertWidget(cnt - 2, pWgt);
+		int cnt = _ui->verticalLayout->count();
+		_ui->verticalLayout->insertWidget(cnt - 2, pWgt);
 	}
 
 	pWgt->resetCom(pCom);
@@ -157,8 +148,8 @@ void ComPropertyBoard::hideCom(QString comTypeName)
 
 void ComPropertyBoard::hideAll()
 {
-	_addComponentBtn->setVisible(false);
-	_removeComponentBtn->setVisible(false);
+	_ui->pushButton_add->setVisible(false);
+	_ui->pushButton_remove->setVisible(false);
 	auto it = _comPropertyWgts.begin();
 	auto itEnd = _comPropertyWgts.end();
 	for (; it != itEnd; ++it)

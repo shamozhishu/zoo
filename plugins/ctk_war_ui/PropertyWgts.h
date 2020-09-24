@@ -8,6 +8,11 @@
 namespace Ui
 {
 	class ComListWgt;
+	class MeshWgt;
+	class ShaderWgt;
+	class TextureWgt;
+	class MaterialWgt;
+	class ConfigTableWgt;
 	class DoFPropertyWgt;
 	class ModelPropertyWgt;
 	class CameraPropertyWgt;
@@ -33,11 +38,71 @@ private:
 	ComPropertyBoard* _propBoard;
 };
 
+class ConfigTableWgt : public QWidget
+{
+	Q_OBJECT
+public:
+	ConfigTableWgt(QWidget *parent, map<string, vector<double>>& keyValMap);
+	~ConfigTableWgt();
+
+signals:
+	void keyValMapChanged();
+
+private:
+	Ui::ConfigTableWgt* _ui;
+};
+
+class MeshWgt : public QWidget
+{
+public:
+	MeshWgt(QWidget *parent);
+	~MeshWgt();
+	void resetMesh(Mesh* mesh);
+
+private:
+	Mesh* _mesh;
+	Ui::MeshWgt* _ui;
+	ConfigTableWgt* _configWgt;
+};
+
+class ShaderWgt : public QWidget
+{
+public:
+	ShaderWgt(QWidget *parent, Material* mat, Material::ShaderType shaderType);
+	~ShaderWgt();
+
+private:
+	Ui::ShaderWgt* _ui;
+};
+
+class TextureWgt : public QWidget
+{
+public:
+	TextureWgt(QWidget *parent, Material* mat, int texUnitNum);
+	~TextureWgt();
+
+private:
+	Ui::TextureWgt* _ui;
+};
+
+class MaterialWgt : public QWidget
+{
+public:
+	MaterialWgt(QWidget *parent);
+	~MaterialWgt();
+	void resetMat(Material* material);
+
+private:
+	Material* _material;
+	Ui::MaterialWgt* _ui;
+	UIManagerService* _uiMgr;
+	QVector<QWidget*> _wgtlist;
+};
+
 class PropertyWgt : public QWidget
 {
 public:
 	PropertyWgt(QWidget *parent);
-	QSize sizeHint() const;
 	virtual void resetCom(zoo::Component* pCom);
 
 protected:
@@ -64,6 +129,8 @@ public:
 	void resetCom(zoo::Component* pCom);
 
 private:
+	MeshWgt* _meshWgt;
+	MaterialWgt* _matWgt;
 	Ui::ModelPropertyWgt* _ui;
 };
 

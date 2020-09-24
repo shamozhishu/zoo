@@ -5,15 +5,15 @@
 ###########################################################################
 set(OUT_NAME zooCmdUI)
 
-set(PROJECT_SRC ${CMAKE_CURRENT_SOURCE_DIR})
-
-set(ZOO_CPP
-	${PROJECT_SRC}/main.cpp
+set(ZOOCMDUI_CPP
+	resource.h
+	ZooCmdUI.rc
+	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
 add_executable(
 	${OUT_NAME}
-	${ZOO_CPP}
+	${ZOOCMDUI_CPP}
 )
 
 Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
@@ -27,25 +27,17 @@ IF(Qt5Widgets_FOUND)
         LIST( APPEND LIB_MOC_SRCS ${LIB_MOC_SRC} )
     ENDFOREACH()
 ELSE()
-    INCLUDE( ${QT_USE_FILE} )
-    QT4_WRAP_CPP( LIB_MOC_SRCS ${LIB_MOC_HDRS} OPTIONS "-f" )
+    message(FATAL_ERROR "Qt5Widgets_FOUND need to set!!!")
 ENDIF()
 
 IF(QT_INCLUDES)
 	include_directories(${QT_INCLUDES})
 ENDIF()
 
-IF(Qt5Widgets_FOUND)	
-	target_link_libraries(
-		${OUT_NAME} 
-		${Qt5Core_LIBRARIES}
-		${Qt5Widgets_LIBRARIES}
-		)							
-ELSE()
-	target_link_libraries(
-		${OUT_NAME} 
-		${QT_LIBRARIES}
-		)
-ENDIF()
+target_link_libraries(
+	${OUT_NAME} 
+	${Qt5Core_LIBRARIES}
+	${Qt5Widgets_LIBRARIES}
+)
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

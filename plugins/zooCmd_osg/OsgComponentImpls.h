@@ -1,9 +1,33 @@
+/************************************************************************\
+* 概述: 组件实现,这里是OSG和OSGEARTH的实现版本
+* https://github.com/shamozhishu
+* Copyright (c) 2020-2020 authored by shamozhishu
+\************************************************************************/
 #ifndef __OSG_COMPONENTIMPLS_H__
 #define __OSG_COMPONENTIMPLS_H__
 
 #include <zooCmd_osg/OsgEarthSupport.h>
 #include <component/war/WarComponents.h>
 #include "CameraManipulatorManager.h"
+
+class MeshImpl
+{
+	osg::ref_ptr<osg::Group> _meshNode;
+public:
+	MeshImpl(osg::Group* parent);
+	~MeshImpl();
+	void update(Mesh* mesh);
+	osg::Group* getMeshNode() const;
+};
+
+class MaterialImpl
+{
+	string _lastUseMatName;
+	osg::ref_ptr<osg::StateSet> _defaultStateSet;
+public:
+	MaterialImpl();
+	void update(Material* material, osg::Node* node);
+};
 
 class DoFImpl : public ComponentImpl
 {
@@ -34,8 +58,9 @@ public:
 	void update();
 
 public:
-	osg::ref_ptr<osg::Node> _model;
 	osg::ref_ptr<osg::Switch> _switch;
+	MeshImpl _mesh;
+	MaterialImpl _material;
 };
 
 class CameraImpl : public ComponentImpl

@@ -4,46 +4,15 @@
 #                                                                         #
 ###########################################################################
 set(OUT_NAME zoo)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 SET(PROJECT_INCLUDE ${CMAKE_SOURCE_DIR}/src/zoo)
 SET(PROJECT_SRC ${CMAKE_SOURCE_DIR}/src/zoo)
 
-set(ZOO_H 
-	${PROJECT_INCLUDE}/Any.h
-	${PROJECT_INCLUDE}/BitState.h
-	${PROJECT_INCLUDE}/Block.h
-	${PROJECT_INCLUDE}/Common.h
-	${PROJECT_INCLUDE}/Component.h
-	${PROJECT_INCLUDE}/DatabaseCSV.h
-    ${PROJECT_INCLUDE}/DynLib.h
-	${PROJECT_INCLUDE}/DynLibManager.h
-	${PROJECT_INCLUDE}/Interlock.h
-	${PROJECT_INCLUDE}/Log.h
-	${PROJECT_INCLUDE}/Reflection.h
-	${PROJECT_INCLUDE}/ServiceLocator.h
-	${PROJECT_INCLUDE}/Sigslot.h
-	${PROJECT_INCLUDE}/Singleton.h
-	${PROJECT_INCLUDE}/Support.h
-	${PROJECT_INCLUDE}/Timer.h
-	${PROJECT_INCLUDE}/UserData.h
-    ${PROJECT_INCLUDE}/Utils.h
-)
-
-set(ZOO_CPP
-	${PROJECT_SRC}/Component.cpp
-	${PROJECT_SRC}/DatabaseCSV.cpp
-	${PROJECT_SRC}/DynLib.cpp
-	${PROJECT_SRC}/DynLibManager.cpp
-	${PROJECT_SRC}/Log.cpp
-	${PROJECT_SRC}/Reflection.cpp
-	${PROJECT_SRC}/ServiceLocator.cpp
-	${PROJECT_SRC}/Sigslot.cpp
-	${PROJECT_INCLUDE}/Singleton.cpp
-	${PROJECT_SRC}/UserData.cpp
-	${PROJECT_SRC}/Utils.cpp
-)
+file(GLOB ZOO_H "*.h")
+file(GLOB ZOO_CPP "*.cpp")
 
 set(ZOO_JSON
 	${CMAKE_SOURCE_DIR}/src/cJSON/cJSON.h

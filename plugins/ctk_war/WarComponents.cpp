@@ -4,7 +4,272 @@
 #include "WarCommander.h"
 #include "Battlefield.h"
 #include "LuaExportClass.h"
+#include <zoo/ServiceLocator.h>
+#include <UniversalGlobalServices.h>
 
+Mesh::Mesh()
+	: _currentUseMeshName("Default")
+{
+}
+
+void Mesh::serialize(Spawner* spawner)
+{
+	spawner->setValue("mesh_name", _currentUseMeshName);
+	spawner->setValue("model_file", _modelFile);
+
+	string params;
+	auto it = _params.begin();
+	auto itEnd = _params.end();
+	for (; it != itEnd; it++)
+	{
+		stringstream ss;
+		const vector<double> val = it->second;
+		int siz = val.size();
+		if (siz > 0)
+		{
+			ss << it->first << ":";
+			for (int i = 0; i < siz; ++i)
+			{
+				ss << val[i];
+				if (i != siz - 1)
+					ss << ",";
+				else
+					ss << ";";
+			}
+		}
+
+		params += ss.str();
+	}
+
+	spawner->setValue("params", params);
+}
+
+void Mesh::deserialize(Spawner* spawner)
+{
+	spawner->getValue("mesh_name", _currentUseMeshName);
+	spawner->getValue("model_file", _modelFile);
+
+	_params.clear();
+	string params;
+	vector<string> container;
+	spawner->getValue("params", params);
+	zoo::stringtok(container, params, ";");
+	int siz = container.size();
+	if (siz > 0)
+	{
+		for (int i = 0; i < siz; ++i)
+		{
+			vector<string> vars;
+			zoo::stringtok(vars, container[i], ":");
+			if (vars.size() != 2)
+				continue;
+
+			vector<string> vals;
+			zoo::stringtok(vals, vars[1], ",");
+			int len = vals.size();
+			if (len == 0)
+				continue;
+
+			_params[vars[0]] = vector<double>(len);
+			for (int j = 0; j < len; ++j)
+				_params[vars[0]][j] = atof(vals[j].c_str());
+		}
+	}
+}
+
+void Mesh::changeMesh(const string& name)
+{
+	if (_currentUseMeshName != name)
+	{
+		if (name == "")
+			_currentUseMeshName = "Default";
+		else
+			_currentUseMeshName = name;
+		_parent->dirtyBit().addState(Mesh::Changed_);
+		ServiceLocator<MeshList>().getService()->getMeshConfigInfo(_currentUseMeshName, this);
+	}
+}
+
+void Mesh::changeParam(const string& var, const vector<double>& val)
+{
+	auto it = _params.find(var);
+	if (it == _params.end())
+	{
+		zoo_warning("网格[%s]的参数[%s]不存在！", _currentUseMeshName.c_str(), var.c_str());
+		return;
+	}
+
+	_params[var] = val;
+	_parent->dirtyBit().addState(Mesh::Changed_);
+}
+
+Material::Material()
+	: _currentUseMatName("Default")
+{
+}
+
+void Material::serialize(Spawner* spawner)
+{
+	spawner->setValue("material_name", _currentUseMatName);
+
+	// 序列化着色器
+	string shaders;
+	for (int i = 0; i < COUNT; ++i)
+	{
+		if (_shaderFiles[i].first != "")
+		{
+			stringstream ss;
+			ss << i << ":" << _shaderFiles[i].second << ";";
+			shaders += ss.str();
+		}
+	}
+
+	spawner->setValue("shaders", shaders);
+
+	// 序列化纹理单元
+	string textures;
+	for (int i = 0; i < TexUnitNum; ++i)
+	{
+		if (_textureFiles[i].first != "")
+		{
+			stringstream ss;
+			ss << i << ":" << _textureFiles[i].second << ";";
+			textures += ss.str();
+		}
+	}
+
+	spawner->setValue("textures", textures);
+
+	// 序列化统一值
+	string uniforms;
+	auto it = _uniforms.begin();
+	auto itEnd = _uniforms.end();
+	for (; it != itEnd; it++)
+	{
+		stringstream ss;
+		const vector<double> val = it->second;
+		int siz = val.size();
+		if (siz > 0)
+		{
+			ss << it->first << ":";
+			for (int i = 0; i < siz; ++i)
+			{
+				ss << val[i];
+				if (i != siz - 1)
+					ss << ",";
+				else
+					ss << ";";
+			}
+		}
+
+		uniforms += ss.str();
+	}
+
+	spawner->setValue("uniforms", uniforms);
+}
+
+void Material::deserialize(Spawner* spawner)
+{
+	spawner->getValue("material_name", _currentUseMatName);
+
+	string strin;
+	vector<string> vars;
+	vector<string> container;
+
+	// 反序列化着色器
+	for (int i = 0; i < COUNT; ++i)
+		_shaderFiles[i] = make_pair("", "");
+
+	spawner->getValue("shaders", strin);
+	zoo::stringtok(container, strin, ";");
+	int siz = container.size();
+	if (siz > 0)
+	{
+		for (int i = 0; i < siz; ++i)
+		{
+			vars.clear();
+			zoo::stringtok(vars, container[i], ":");
+			if (vars.size() != 2)
+				continue;
+
+			_shaderFiles[atoi(vars[0].c_str())] = make_pair(vars[0], vars[1]);
+		}
+	}
+
+	// 反序列化纹理单元
+	for (int i = 0; i < TexUnitNum; ++i)
+		_textureFiles[i] = make_pair("", "");
+
+	container.clear();
+	spawner->getValue("textures", strin);
+	zoo::stringtok(container, strin, ";");
+	siz = container.size();
+	if (siz > 0)
+	{
+		for (int i = 0; i < siz; ++i)
+		{
+			vars.clear();
+			zoo::stringtok(vars, container[i], ":");
+			if (vars.size() != 2)
+				continue;
+
+			_textureFiles[atoi(vars[0].c_str())] = make_pair(vars[0], vars[1]);
+		}
+	}
+
+	// 反序列化统一值
+	_uniforms.clear();
+	container.clear();
+	spawner->getValue("uniforms", strin);
+	zoo::stringtok(container, strin, ";");
+	siz = container.size();
+	if (siz > 0)
+	{
+		for (int i = 0; i < siz; ++i)
+		{
+			vars.clear();
+			zoo::stringtok(vars, container[i], ":");
+			if (vars.size() != 2)
+				continue;
+
+			vector<string> vals;
+			zoo::stringtok(vals, vars[1], ",");
+			int len = vals.size();
+			if (len == 0)
+				continue;
+
+			_uniforms[vars[0]] = vector<double>(len);
+			for (int j = 0; j < len; ++j)
+				_uniforms[vars[0]][j] = atof(vals[j].c_str());
+		}
+	}
+}
+
+void Material::changeMat(const string& name)
+{
+	if (_currentUseMatName != name)
+	{
+		if (name == "")
+			_currentUseMatName = "Default";
+		else
+			_currentUseMatName = name;
+		_parent->dirtyBit().addState(Material::Changed_);
+		ServiceLocator<MaterialList>().getService()->getMaterialConfigInfo(_currentUseMatName, this);
+	}
+}
+
+void Material::changeUniform(const string& uniform, const vector<double>& val)
+{
+	auto it = _uniforms.find(uniform);
+	if (it == _uniforms.end())
+	{
+		zoo_warning("材质[%s]的Uniform[%s]不存在！", _currentUseMatName.c_str(), uniform.c_str());
+		return;
+	}
+
+	_uniforms[uniform] = val;
+}
+//////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Behavior);
 Behavior::Behavior()
 	: _scriptValid(false)
@@ -269,18 +534,22 @@ ZOO_REFLEX_IMPLEMENT(Model);
 Model::Model()
 	: _visible(true)
 {
+	_mesh.setParent(this);
+	_material.setParent(this);
 }
 
 void Model::serialize(Spawner* spawner)
 {
 	spawner->setValue("visible", _visible);
-	spawner->setValue("model_file", _modelFile);
+	_mesh.serialize(spawner);
+	_material.serialize(spawner);
 }
 
 void Model::deserialize(Spawner* spawner)
 {
 	spawner->getValue("visible", _visible);
-	spawner->getValue("model_file", _modelFile);
+	_mesh.deserialize(spawner);
+	_material.deserialize(spawner);
 }
 
 bool Model::isVisible() const
@@ -297,13 +566,14 @@ void Model::setVisible(bool visible)
 	}
 }
 
-void Model::setModelFile(const string& modelFile)
+Mesh* Model::getMesh()
 {
-	if (_modelFile != modelFile)
-	{
-		_modelFile = modelFile;
-		_dirty.addState(ModelFile_);
-	}
+	return &_mesh;
+}
+
+Material* Model::getMaterial()
+{
+	return &_material;
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Sound);
@@ -368,6 +638,8 @@ Camera::Camera()
 	, _alpha(255)
 {
 	_passes[0]._rt = Window_;
+	for (int i = 0; i < MaxPassCount; ++i)
+		_passes[i]._material.setParent(this);
 }
 
 void Camera::serialize(Spawner* spawner)
@@ -384,7 +656,10 @@ void Camera::serialize(Spawner* spawner)
 	spawner->setValue("track_entity_id", _trackEntID);
 	spawner->setValue("track_entity_breed", _trackEntBreed);
 	for (PassIndex i = 0; i < MaxPassCount; ++i)
+	{
 		spawner->setValue("pass_rt_" + std::to_string(i), _passes[i]._rt);
+		_passes[i]._material.serialize(spawner);
+	}
 }
 
 void Camera::deserialize(Spawner* spawner)
@@ -401,7 +676,10 @@ void Camera::deserialize(Spawner* spawner)
 	spawner->getValue("track_entity_id", _trackEntID);
 	spawner->getValue("track_entity_breed", _trackEntBreed);
 	for (PassIndex i = 0; i < MaxPassCount; ++i)
+	{
 		spawner->getValue("pass_rt_" + std::to_string(i), _passes[i]._rt);
+		_passes[i]._material.deserialize(spawner);
+	}
 }
 
 void Camera::setManipulator(int key)
@@ -414,6 +692,14 @@ void Camera::setManipulator(int key)
 		_manipulatorKey = key;
 		_dirty.addState(Manipulator_);
 	}
+}
+
+Material* Camera::getMaterial(PassIndex pass)
+{
+	if (pass >= MaxPassCount)
+		return nullptr;
+
+	return &_passes[pass]._material;
 }
 
 void Camera::setTrackEntity(int id, int breed)

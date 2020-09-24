@@ -50,7 +50,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	toolBtn->setChecked(false);
 	toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/log.png")));
 	connect(toolBtn, &QToolButton::clicked, [pLogPrintDock](bool checked)
-	{ pLogPrintDock->setVisible(checked); });
+	{ pLogPrintDock->setVisible(checked); if (checked) pLogPrintDock->lower(); });
 #endif
 	_progressBar = new QProgressBar;
 	_ui.statusBar->addWidget(_progressBar);
@@ -159,10 +159,25 @@ void ZooCmdUI::finishWindowLaunch()
 	showMaximized();
 }
 
-QDockWidget* ZooCmdUI::addWidget(const QString& strId, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+QWidget* ZooCmdUI::getWidget(const QString& wgtID)
+{
+	QDockWidget* dock = _dockWgts.value(wgtID).first;
+	if (dock)
+		return dock->widget();
+	return nullptr;
+}
+
+void ZooCmdUI::raiseWidget(const QString& wgtID)
+{
+	QDockWidget* dock = _dockWgts.value(wgtID).first;
+	if (dock)
+		dock->raise();
+}
+
+QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
 	Qt::DockWidgetAreas areas /*= Qt::AllDockWidgetAreas*/, bool isShow /*= true*/, bool hasToolBtn /*= true*/, bool hasSeparator /*= false*/)
 {
-	QDockWidget* dock = _dockWgts.value(strId).first;
+	QDockWidget* dock = _dockWgts.value(wgtID).first;
 	if (!dock)
 	{
 		dock = new QDockWidget(strName);
@@ -178,7 +193,8 @@ QDockWidget* ZooCmdUI::addWidget(const QString& strId, const QString& strName, Q
 			pActionWnd->setChecked(isShow);
 			_ui.mainToolBar->addAction(pActionWnd);
 			connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(setVisible(bool)));
-			_dockWgts.insert(strId, qMakePair(dock, pActionWnd));
+			connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(raise()));
+			_dockWgts.insert(wgtID, qMakePair(dock, pActionWnd));
 			if (hasSeparator)
 				_ui.mainToolBar->addSeparator();
 		}
@@ -187,35 +203,35 @@ QDockWidget* ZooCmdUI::addWidget(const QString& strId, const QString& strName, Q
 	return dock;
 }
 
-void ZooCmdUI::removeWidget(const QString& strId)
+void ZooCmdUI::removeWidget(const QString& wgtID)
 {
-	QDockWidget* dock = _dockWgts.value(strId).first;
+	QDockWidget* dock = _dockWgts.value(wgtID).first;
 	if (dock)
 	{
 		delete dock->widget();
 		removeDockWidget(dock);
 		dock->deleteLater();
-		_dockWgts.remove(strId);
-		_ui.mainToolBar->removeAction(_dockWgts.value(strId).second);
+		_dockWgts.remove(wgtID);
+		_ui.mainToolBar->removeAction(_dockWgts.value(wgtID).second);
 	}
 }
 
-QWidget* ZooCmdUI::getWidget(const QString& strId)
+void ZooCmdUI::tabifyWidget(const QString& firstWgtID, const QString& secondWgtID)
 {
-	QDockWidget* dock = _dockWgts.value(strId).first;
-	if (dock)
-		return dock->widget();
-	return nullptr;
+	QDockWidget* firstDock = _dockWgts.value(firstWgtID).first;
+	QDockWidget* secondDock = _dockWgts.value(secondWgtID).first;
+	if (firstDock && firstDock)
+		tabifyDockWidget(firstDock, secondDock);
 }
 
-void ZooCmdUI::addMenu(const QString &strId, QMenu* pSubMenu, bool hasToolButton /*= true*/)
+void ZooCmdUI::addMenu(const QString &menuID, QMenu* pSubMenu, bool hasToolBtn /*= true*/)
 {
-	QMenu* subMenu = _subMenus.value(strId).first;
+	QMenu* subMenu = _subMenus.value(menuID).first;
 	if (!subMenu && pSubMenu)
 	{
 		_ui.menuBar->addMenu(pSubMenu);
-		_subMenus.insert(strId, qMakePair(pSubMenu, hasToolButton));
-		if (hasToolButton)
+		_subMenus.insert(menuID, qMakePair(pSubMenu, hasToolBtn));
+		if (hasToolBtn)
 		{
 			_ui.mainToolBar->addActions(pSubMenu->actions());
 			_ui.mainToolBar->addSeparator();
@@ -223,12 +239,12 @@ void ZooCmdUI::addMenu(const QString &strId, QMenu* pSubMenu, bool hasToolButton
 	}
 }
 
-void ZooCmdUI::removeMenu(const QString& strId)
+void ZooCmdUI::removeMenu(const QString& menuID)
 {
-	QMenu* subMenu = _subMenus.value(strId).first;
+	QMenu* subMenu = _subMenus.value(menuID).first;
 	if (subMenu)
 	{
-		if (_subMenus.value(strId).second)
+		if (_subMenus.value(menuID).second)
 		{
 			QList<QAction*> acts = subMenu->actions();
 			auto it = acts.begin();
@@ -239,7 +255,7 @@ void ZooCmdUI::removeMenu(const QString& strId)
 			}
 		}
 
-		_subMenus.remove(strId);
+		_subMenus.remove(menuID);
 		subMenu->deleteLater();
 	}
 }

@@ -1,5 +1,5 @@
 ﻿#include "WeatherEffect.h"
-#include <zooCmd_osg/OsgEarthUtils.h>
+#include <UniversalGlobalServices.h>
 #include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgParticle;
@@ -25,12 +25,12 @@ void WeatherEffect::update()
 	PrecipitationEffect::update();
 	if (_isLocal)
 	{
-		OsgEarthUtils* pOsgEarthUtils = ServiceLocator<OsgEarthUtils>::getService();
+		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
 		osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
 		if (pOsgEarthUtils && pMapNode)
 		{
 			osg::Vec3d worldXYZ;
-			bool succ = _islonlat ? pOsgEarthUtils->convertLatLongHeightToXYZ(_weatherPos.y(), _weatherPos.x(), _weatherPos.z(), worldXYZ.x(), worldXYZ.y(), worldXYZ.z()) : false;
+			bool succ = _islonlat ? pOsgEarthUtils->convertLLHToXYZ(_weatherPos.x(), _weatherPos.y(), _weatherPos.z(), worldXYZ.x(), worldXYZ.y(), worldXYZ.z()) : false;
 			if (succ)
 			{
 				float meanPerimeter_2 = osg::PI * worldXYZ.length();
@@ -57,12 +57,12 @@ bool WeatherEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float s
 	osg::Vec3 position = _origin + osg::Vec3(float(i)*_du.x(), float(j)*_dv.y(), float(k)*_dw.z());
 
 	double lon = 180, lat = 90, hei = 0;
-	OsgEarthUtils* pOsgEarthUtils = ServiceLocator<OsgEarthUtils>::getService();
+	CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
 	osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
 	if (pOsgEarthUtils && pMapNode)
 	{
 		osg::Vec3d vecLL;
-		pOsgEarthUtils->convertXYZToLatLongHeight(position.x(), position.y(), position.z(), vecLL.y(), vecLL.x(), vecLL.z());
+		pOsgEarthUtils->convertXYZToLLH(position.x(), position.y(), position.z(), vecLL.x(), vecLL.y(), vecLL.z());
 		lon = vecLL.x();
 		lat = vecLL.y();
 		hei = vecLL.z();
@@ -78,5 +78,5 @@ bool WeatherEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float s
 	if (hei > _weatherHeight)
 		return false;
 
-	build(eyeLocal, i, j, k, startTime, pds, frustum, cv);
+	return osgParticle::PrecipitationEffect::build(eyeLocal, i, j, k, startTime, pds, frustum, cv);
 }

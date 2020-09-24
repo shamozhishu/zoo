@@ -2,7 +2,8 @@
 #include "UIActivator.h"
 #include <zoo/Utils.h>
 #include <zoo/ServiceLocator.h>
-#include <zooCmd_osg/OsgEarthUtils.h>
+#include <UniversalGlobalServices.h>
+#include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QColorDialog>
@@ -16,7 +17,11 @@
 #include "ui_EarthPropertyWgt.h"
 #include "ui_BehaviorPropertyWgt.h"
 #include "ui_EnvirPropertyWgt.h"
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include "ui_MeshWgt.h"
+#include "ui_MaterialWgt.h"
+#include "ui_ShaderWgt.h"
+#include "ui_TextureWgt.h"
+#include "ui_ConfigTableWgt.h"
 
 // Qt5中文乱码
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
@@ -159,16 +164,305 @@ bool ComListWgt::eventFilter(QObject *o, QEvent *e)
 	return false;
 }
 
+ConfigTableWgt::ConfigTableWgt(QWidget *parent, map<string, vector<double>>& keyValMap)
+	: QWidget(parent)
+	, _ui(new Ui::ConfigTableWgt)
+{
+	_ui->setupUi(this);
+	int rowCnt = keyValMap.size();
+	if (rowCnt > 0)
+	{
+		_ui->tableWidget->setRowCount(rowCnt);
+		auto it = keyValMap.begin();
+		auto itEnd = keyValMap.end();
+		for (int i = 0; it != itEnd; ++it, ++i)
+		{
+			vector<double>& val = it->second;
+			int num = val.size();
+			if (num == 0)
+				continue;
+
+			QWidget* pValWgt = new QWidget;
+			QHBoxLayout* pLayout = new QHBoxLayout;
+			pLayout->setMargin(0);
+			pValWgt->setLayout(pLayout);
+			_ui->tableWidget->setCellWidget(i, 1, pValWgt);
+
+			for (int j = 0; j < num; ++j)
+			{
+				QDoubleSpinBox* spinBox = new QDoubleSpinBox;
+				spinBox->setFrame(false);
+				spinBox->setRange(-1000000, 1000000);
+				spinBox->setDecimals(6);
+				spinBox->setValue(val[j]);
+				pLayout->addWidget(spinBox);
+
+				connect(spinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this, &keyValMap, i, j](double value)
+				{
+					QString strVar = _ui->tableWidget->item(i, 0)->text();
+					keyValMap[strVar.toStdString()][j] = value;
+					emit keyValMapChanged();
+				});
+			}
+
+			QTableWidgetItem* pItem = new QTableWidgetItem(QString::fromLocal8Bit(it->first.c_str()));
+			pItem->setFlags(pItem->flags() & (~Qt::ItemIsEditable));
+			pItem->setTextAlignment(Qt::AlignCenter);
+			_ui->tableWidget->setItem(i, 0, pItem);
+		}
+	}
+}
+
+ConfigTableWgt::~ConfigTableWgt()
+{
+	delete _ui;
+}
+
+MeshWgt::MeshWgt(QWidget *parent)
+	: QWidget(parent)
+	, _mesh(nullptr)
+	, _ui(new Ui::MeshWgt)
+	, _configWgt(nullptr)
+{
+	_ui->setupUi(this);
+
+	QStringList renderMesh;
+	vector<string> meshList = ServiceLocator<MeshList>().getService()->getMeshList();
+	auto it = meshList.begin();
+	auto itEnd = meshList.end();
+	for (; it != itEnd; ++it)
+		renderMesh << (*it).c_str();
+
+	_ui->comboBox->addItems(renderMesh);
+
+	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this, pUIMgr]
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
+		if (!fileName.isEmpty())
+		{
+			_ui->lineEdit->setText(fileName);
+			_mesh->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			pUIMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), [this, pUIMgr](const QString& meshName)
+	{
+		ServiceLocator<MeshList>().getService()->getMeshConfigInfo(meshName.toStdString(), _mesh);
+
+		if (_configWgt)
+		{
+			_ui->verticalLayout->removeWidget(_configWgt);
+			_configWgt->deleteLater();
+			_configWgt = nullptr;
+		}
+
+		if (_mesh->_params.size() > 0)
+		{
+			_configWgt = new ConfigTableWgt(this, _mesh->_params);
+			_ui->verticalLayout->addWidget(_configWgt);
+			connect(_configWgt, &ConfigTableWgt::keyValMapChanged, [this, pUIMgr]
+			{
+				_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
+				pUIMgr->starWindowTitle();
+			});
+		}
+
+		bool isShow = (meshName == "Default");
+		_ui->lineEdit->setVisible(isShow);
+		_ui->toolButton_open->setVisible(isShow);
+
+		if (QString(_mesh->_currentUseMeshName.c_str()) != meshName)
+		{
+			_mesh->_currentUseMeshName = meshName.toStdString();
+			_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
+			pUIMgr->starWindowTitle();
+		}
+	});
+}
+
+MeshWgt::~MeshWgt()
+{
+	delete _ui;
+}
+
+void MeshWgt::resetMesh(Mesh* mesh)
+{
+	_mesh = mesh;
+	_ui->comboBox->setCurrentText(mesh->_currentUseMeshName.c_str());
+
+	bool isShow = (mesh->_currentUseMeshName == "Default");
+	_ui->lineEdit->setVisible(isShow);
+	_ui->toolButton_open->setVisible(isShow);
+
+	if (mesh->_modelFile == "")
+		_ui->lineEdit->setText("");
+	else
+		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_modelFile).c_str()));
+}
+
+ShaderWgt::ShaderWgt(QWidget *parent, Material* mat, Material::ShaderType shaderType)
+	: QWidget(parent)
+	, _ui(new Ui::ShaderWgt)
+{
+	_ui->setupUi(this);
+	
+	_ui->label->setText(QString::fromLocal8Bit(mat->_shaderFiles[shaderType].first.c_str()));
+	string shaderPath = mat->_shaderFiles[shaderType].second;
+	if (shaderPath != "")
+		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + shaderPath).c_str()));
+
+	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this, mat, shaderType, pUIMgr]
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("Shader文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("Shader(*.vert *.frag)"));
+		if (!fileName.isEmpty())
+		{
+			_ui->lineEdit->setText(fileName);
+			mat->_shaderFiles[shaderType].second = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			mat->getParent()->dirtyBit().addState(Material::Changed_);
+			pUIMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->toolButton_edit, &QToolButton::clicked, [this]
+	{
+		QString filename = _ui->lineEdit->text();
+		if (!filename.isEmpty())
+			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+	});
+}
+
+ShaderWgt::~ShaderWgt()
+{
+	delete _ui;
+}
+
+TextureWgt::TextureWgt(QWidget *parent, Material* mat, int texUnitNum)
+	: QWidget(parent)
+	, _ui(new Ui::TextureWgt)
+{
+	_ui->setupUi(this);
+
+	_ui->label->setText(QString::fromLocal8Bit(mat->_textureFiles[texUnitNum].first.c_str()));
+	string texPath = mat->_textureFiles[texUnitNum].second;
+	if (texPath != "")
+		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + texPath).c_str()));
+
+	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this, mat, texUnitNum, pUIMgr]
+	{
+		QString fileName = QFileDialog::getOpenFileName(this, tr("纹理文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("texture(*.png *.jpeg *.jpg)"));
+		if (!fileName.isEmpty())
+		{
+			_ui->lineEdit->setText(fileName);
+			mat->_textureFiles[texUnitNum].second = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			mat->getParent()->dirtyBit().addState(Material::Changed_);
+			pUIMgr->starWindowTitle();
+		}
+	});
+	connect(_ui->toolButton_view, &QToolButton::clicked, [this]
+	{
+		QString filename = _ui->lineEdit->text();
+		if (!filename.isEmpty())
+			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
+	});
+}
+
+TextureWgt::~TextureWgt()
+{
+	delete _ui;
+}
+
+MaterialWgt::MaterialWgt(QWidget *parent)
+	: QWidget(parent)
+	, _material(nullptr)
+	, _ui(new Ui::MaterialWgt)
+	, _uiMgr(UIActivator::getService<UIManagerService>())
+{
+	_ui->setupUi(this);
+
+	QStringList renderPipeline;
+	vector<string> matList = ServiceLocator<MaterialList>().getService()->getMaterialList();
+	auto it = matList.begin();
+	auto itEnd = matList.end();
+	for (; it != itEnd; ++it)
+		renderPipeline << (*it).c_str();
+
+	_ui->comboBox->addItems(renderPipeline);
+
+	connect(_ui->comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), [this](const QString& matName)
+	{
+		if (!_material)
+			return;
+
+		ServiceLocator<MaterialList>().getService()->getMaterialConfigInfo(matName.toStdString(), _material);
+
+		int len = _wgtlist.length();
+		for (int i = 0; i < len; ++i)
+		{
+			_ui->verticalLayout->removeWidget(_wgtlist[i]);
+			_wgtlist[i]->deleteLater();
+		}
+
+		_wgtlist.clear();
+
+		for (int i = Material::VERTEX; i < Material::COUNT; ++i)
+		{
+			if (_material->_shaderFiles[i].first != "")
+			{
+				QWidget* pWgt = new ShaderWgt(this, _material, (Material::ShaderType)i);
+				_wgtlist.push_back(pWgt);
+				_ui->verticalLayout->addWidget(pWgt);
+			}
+		}
+
+		for (int i = 0; i < Material::TexUnitNum; ++i)
+		{
+			if (_material->_textureFiles[i].first != "")
+			{
+				QWidget* pWgt = new TextureWgt(this, _material, i);
+				_wgtlist.push_back(pWgt);
+				_ui->verticalLayout->addWidget(pWgt);
+			}
+		}
+
+		if (_material->_uniforms.size() > 0)
+		{
+			ConfigTableWgt* pWgt = new ConfigTableWgt(this, _material->_uniforms);
+			_wgtlist.push_back(pWgt);
+			_ui->verticalLayout->addWidget(pWgt);
+			connect(pWgt, &ConfigTableWgt::keyValMapChanged, [this]
+			{
+				_material->getParent()->dirtyBit().addState(Material::Changed_);
+				_uiMgr->starWindowTitle();
+			});
+		}
+
+		if (QString(_material->_currentUseMatName.c_str()) != matName)
+		{
+			_material->_currentUseMatName = matName.toStdString();
+			_material->getParent()->dirtyBit().addState(Material::Changed_);
+			_uiMgr->starWindowTitle();
+		}
+	});
+}
+
+MaterialWgt::~MaterialWgt()
+{
+	delete _ui;
+}
+
+void MaterialWgt::resetMat(Material* material)
+{
+	_material = material;
+	_ui->comboBox->setCurrentText(material->_currentUseMatName.c_str());
+}
+
 PropertyWgt::PropertyWgt(QWidget *parent)
 	: QWidget(parent)
 	, _com(nullptr)
 {
 	_uiMgr = UIActivator::getService<UIManagerService>();
-}
-
-QSize PropertyWgt::sizeHint() const
-{
-	return QSize(300, -1); // 在这里定义dock的初始大小
 }
 
 void PropertyWgt::resetCom(zoo::Component* pCom)
@@ -322,7 +616,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (checked)
 		{
 			double lon, lat, height;
-			if (zoo::ServiceLocator<OsgEarthUtils>::getService()->convertXYZToLatLongHeight(pDoF->_x, pDoF->_y, pDoF->_z, lat, lon, height))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertXYZToLLH(pDoF->_x, pDoF->_y, pDoF->_z, lon, lat, height))
 			{
 				_ui->doubleSpinBox_lon->setValue(lon);
 				_ui->doubleSpinBox_lat->setValue(lat);
@@ -337,7 +631,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		else
 		{
 			double X, Y, Z;
-			if (zoo::ServiceLocator<OsgEarthUtils>::getService()->convertLatLongHeightToXYZ(pDoF->_y, pDoF->_x, pDoF->_z, X, Y, Z))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertLLHToXYZ(pDoF->_x, pDoF->_y, pDoF->_z, X, Y, Z))
 			{
 				_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(X));
 				_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(Y));
@@ -404,6 +698,11 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 	, _ui(new Ui::ModelPropertyWgt)
 {
 	_ui->setupUi(this);
+	_meshWgt = new MeshWgt(this);
+	_matWgt = new MaterialWgt(this);
+	_ui->verticalLayout->insertWidget(1, _meshWgt);
+	_ui->verticalLayout->addWidget(_matWgt);
+
 	connect(_ui->checkBox, &QCheckBox::stateChanged, [this](int boxState)
 	{
 		bool isShow = (boxState == Qt::Checked ? true : false);
@@ -411,20 +710,6 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 		{
 			COM_CAST(Model)->_visible = isShow;
 			_com->dirtyBit().addState(Model::Visible_);
-			_uiMgr->starWindowTitle();
-		}
-	});
-
-	_ui->toolButton->setDefaultAction(_ui->modelFile);
-	connect(_ui->modelFile, &QAction::triggered, [this]
-	{
-		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
-		if (!fileName.isEmpty())
-		{
-			_ui->lineEdit->setText(fileName);
-			COM_CAST(Model)->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
-			_com->getImp()->awake();
-			_com->getEntity()->notifyComponents();
 			_uiMgr->starWindowTitle();
 		}
 	});
@@ -440,10 +725,8 @@ void ModelPropertyWgt::resetCom(zoo::Component* pCom)
 	PropertyWgt::resetCom(pCom);
 	Model* pModel = COM_CAST(Model);
 	_ui->checkBox->setCheckState(pModel->_visible ? Qt::Checked : Qt::Unchecked);
-	if (pModel->_modelFile == "")
-		_ui->lineEdit->setText("");
-	else
-		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + pModel->_modelFile).c_str()));
+	_meshWgt->resetMesh(&pModel->_mesh);
+	_matWgt->resetMat(&pModel->_material);
 }
 
 CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
