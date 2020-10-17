@@ -4,7 +4,7 @@
 #include <zooCmd/Support.h>
 #include <zooCmd/CmdUsage.h>
 
-#define __BUILTIN__ "BuiltinCmd"
+#define __BUILTIN__ "__builtin_cmd__"
 
 namespace zooCmd {
 

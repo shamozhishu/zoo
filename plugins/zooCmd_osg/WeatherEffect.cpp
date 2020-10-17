@@ -4,8 +4,9 @@
 
 using namespace osgParticle;
 
-WeatherEffect::WeatherEffect()
-	: _islonlat(false)
+WeatherEffect::WeatherEffect(OsgEarthContext* context)
+	: _earthContext(context)
+	, _islonlat(false)
 	, _isLocal(false)
 	, _weatherHeight(20000)
 {
@@ -13,6 +14,10 @@ WeatherEffect::WeatherEffect()
 
 WeatherEffect::WeatherEffect(const WeatherEffect& copy, const osg::CopyOp& copyop /*= osg::CopyOp::SHALLOW_COPY*/)
 	: PrecipitationEffect(copy, copyop)
+	, _earthContext(copy._earthContext)
+	, _islonlat(copy._islonlat)
+	, _isLocal(copy._isLocal)
+	, _weatherHeight(copy._weatherHeight)
 {
 }
 
@@ -26,11 +31,11 @@ void WeatherEffect::update()
 	if (_isLocal)
 	{
 		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
-		osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
+		osgEarth::MapNode* pMapNode = _earthContext->getEarthMapNode();
 		if (pOsgEarthUtils && pMapNode)
 		{
 			osg::Vec3d worldXYZ;
-			bool succ = _islonlat ? pOsgEarthUtils->convertLLHToXYZ(_weatherPos.x(), _weatherPos.y(), _weatherPos.z(), worldXYZ.x(), worldXYZ.y(), worldXYZ.z()) : false;
+			bool succ = _islonlat ? pOsgEarthUtils->convertLLHToXYZ(_earthContext, _weatherPos.x(), _weatherPos.y(), _weatherPos.z(), worldXYZ.x(), worldXYZ.y(), worldXYZ.z()) : false;
 			if (succ)
 			{
 				float meanPerimeter_2 = osg::PI * worldXYZ.length();
@@ -58,11 +63,11 @@ bool WeatherEffect::build(const osg::Vec3 eyeLocal, int i, int j, int k, float s
 
 	double lon = 180, lat = 90, hei = 0;
 	CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
-	osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
+	osgEarth::MapNode* pMapNode = _earthContext->getEarthMapNode();
 	if (pOsgEarthUtils && pMapNode)
 	{
 		osg::Vec3d vecLL;
-		pOsgEarthUtils->convertXYZToLLH(position.x(), position.y(), position.z(), vecLL.x(), vecLL.y(), vecLL.z());
+		pOsgEarthUtils->convertXYZToLLH(_earthContext, position.x(), position.y(), position.z(), vecLL.x(), vecLL.y(), vecLL.z());
 		lon = vecLL.x();
 		lat = vecLL.y();
 		hei = vecLL.z();

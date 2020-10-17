@@ -12,7 +12,7 @@ using namespace zoo;
 
 struct Mesh : public Serializer { // tolua_export
 	enum {
-		Changed_ = ESTATE_31
+		Changed_ = ESTATE_30
 	};
 
 	string _modelFile;
@@ -34,21 +34,12 @@ public:
 
 struct Material : public Serializer { // tolua_export
 	enum {
-		Changed_ = ESTATE_32
-	};
-	enum ShaderType {
-		VERTEX = 0,
-		TESSCONTROL,
-		TESSEVALUATION,
-		GEOMETRY,
-		FRAGMENT,
-		COMPUTE,
-		COUNT
+		Changed_ = ESTATE_31,
+		Uniform_ = ESTATE_32
 	};
 
 	string _currentUseMatName;
 	map<string, vector<double>> _uniforms;
-	std::pair<string, string> _shaderFiles[COUNT];
 	static const int TexUnitNum = 8;
 	std::pair<string, string> _textureFiles[TexUnitNum];
 	PROPERTY_RW(Component*, _parent, Parent)
@@ -231,16 +222,22 @@ struct Camera : public Component { // tolua_export
 		Material _material;
 		Pass() : _rt(Nothing_) {}
 	};
+	const int _viewID;
+	const int _windowID;
 	int _manipulatorKey;
 	int _trackEntID, _trackEntBreed;
 	int _red, _green, _blue, _alpha;
 	float _lRatio, _rRatio, _bRatio, _tRatio;
 	static const PassIndex MaxPassCount = 8;
 	Pass _passes[MaxPassCount]; // 最多支持八通道
+
+private:
 	ZOO_REFLEX_DECLARE(Camera)
+	static Reflex<Camera, int> _dynReflex_INT;
 
 public:
 	Camera();
+	Camera(int windowID);
 	void serialize(Spawner* spawner);
 	void deserialize(Spawner* spawner);
 

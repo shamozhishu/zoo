@@ -1,5 +1,5 @@
 #include <zooCmd/CmdManager.h>
-#include <zooCmd/InputAdapter.h>
+#include <zooCmd/RenderAdapter.h>
 #include <zooCmd/CmdParser.h>
 #include <zoo/Reflection.h>
 #include <zoo/Interlock.h>
@@ -9,7 +9,7 @@
 
 namespace zooCmd {
 
-InputAdapter* g_inputAdapter = nullptr;
+RenderAdapter* g_renderAdapter = nullptr;
 std::thread::id g_renderThreadID = std::thread::id();
 
 static std::mutex s_mutex;
@@ -51,8 +51,8 @@ CmdManager::CmdManager()
 
 CmdManager::~CmdManager()
 {
-	if (g_inputAdapter)
-		g_inputAdapter->setDone(true);
+	if (g_renderAdapter)
+		g_renderAdapter->setDone(true);
 
 	s_interlock.canExchange = true;
 	_block[0].release();
@@ -64,8 +64,8 @@ CmdManager::~CmdManager()
 	delete _cmdThread;
 	_cmdThread = nullptr;
 	_commands.clear();
-	delete g_inputAdapter;
-	g_inputAdapter = nullptr;
+	delete g_renderAdapter;
+	g_renderAdapter = nullptr;
 	s_promises.clear();
 	s_retValue.clear();
 }
@@ -108,7 +108,7 @@ void CmdManager::block(bool isBlock)
 
 void CmdManager::initBuiltinCmd()
 {
-	s_builtinCmd = ReflexFactory<>::getInstance().create<Cmd>(__BUILTIN__);
+	s_builtinCmd = ReflexFactory<>::getInstance().create<Cmd>(ZOO_STRING(BuiltinCmd));
 	addCmd(__BUILTIN__, s_builtinCmd);
 }
 
@@ -361,7 +361,7 @@ void CmdManager::runCmd()
 			releaseBlockAndRetValue();
 		}
 
-		_running = !g_inputAdapter->isDone();
+		_running = !g_renderAdapter->isDone();
 		if (_running)
 		{
 			_block[1].reset();

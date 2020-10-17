@@ -1,5 +1,5 @@
 #include "OsgComponentImpls.h"
-#include "InputDevice.h"
+#include "RenderDevice.h"
 #include <zoo/Utils.h>
 #include "StarrySky.h"
 #include "WeatherEffect.h"
@@ -45,8 +45,17 @@ osg::Group* MeshImpl::getMeshNode() const
 
 MaterialImpl::MaterialImpl()
 	: _lastUseMatName("Default")
+	, _currentOsgMat(nullptr)
+	, _defaultStateSet(new osg::StateSet)
 {
-	_defaultStateSet = new osg::StateSet;
+}
+
+void MaterialImpl::update(Material* material)
+{
+	if (!material || !_currentOsgMat)
+		return;
+
+	_currentOsgMat->refresh(material->_uniforms);
 }
 
 void MaterialImpl::update(Material* material, osg::Node* node)
@@ -56,7 +65,8 @@ void MaterialImpl::update(Material* material, osg::Node* node)
 
 	MaterialManager::getSingleton().detach(_lastUseMatName, node);
 	_lastUseMatName = material->_currentUseMatName;
-	if (!MaterialManager::getSingleton().attach(material, node))
+	_currentOsgMat = MaterialManager::getSingleton().attach(material, node);
+	if (!_currentOsgMat)
 		node->setStateSet(_defaultStateSet);
 }
 
@@ -105,11 +115,11 @@ void DoFImpl::locate(DoF* dof)
 	{
 #ifdef NEED_OSGEARTH_LIBRARY
 		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
-		osgEarth::MapNode* pMapNode = ServiceLocator<OsgEarthContext>::getService()->getOpMapNode();
+		osgEarth::MapNode* pMapNode = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getEarthMapNode();
 		if (pOsgEarthUtils && pMapNode)
 		{
 			double x, y, z;
-			pOsgEarthUtils->convertLLHToXYZ(dof->_x, dof->_y, dof->_z, x, y, z);
+			pOsgEarthUtils->convertLLHToXYZ(getEntity()->getSpawner()->getContext<OsgEarthContext>(), dof->_x, dof->_y, dof->_z, x, y, z);
 			osg::Matrix mat;
 			osgEarth::GeoPoint mapPoint;
 			mapPoint.fromWorld(pMapNode->getMapSRS(), osg::Vec3d(x, y, z));
@@ -140,7 +150,7 @@ void DoFImpl::changeParent(DoF* dof)
 	remove();
 	if (dof->_lonLatHeight)
 	{
-		osg::Group* pScene = ServiceLocator<OsgEarthContext>::getService()->getSceneNode();
+		osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
 		pScene->addChild(_transWorld.get());
 	}
 	else
@@ -198,11 +208,15 @@ void ModelImpl::update()
 
 	if (model->dirtyBit().checkState(Material::Changed_))
 		_material.update(&model->_material, _mesh.getMeshNode());
+
+	if (model->dirtyBit().checkState(Material::Uniform_))
+		_material.update(&model->_material);
 }
 
 ZOO_REFLEX_IMPLEMENT(CameraImpl);
 CameraImpl::CameraImpl()
 	: _root(new osg::Group)
+	, _viewID(-1)
 {
 	for (unsigned int i = 0; i < Camera::MaxPassCount; ++i)
 	{
@@ -220,28 +234,26 @@ CameraImpl::~CameraImpl()
 		_view->setSceneData(nullptr);
 	}
 
-	string viewName = getEntity()->breed() == -1 ? "" : string("_") + std::to_string(getEntity()->breed());
-	viewName = string("view") + std::to_string(getEntity()->id()) + viewName;
-	ServiceLocator<OsgDevice>::getService()->destroyView(viewName);
+	ServiceLocator<OsgDevice>::getService()->destroyView(_viewID);
 }
 
 void CameraImpl::awake()
 {
-	string viewName = getEntity()->breed() == -1 ? "" : string("_") + std::to_string(getEntity()->breed());
-	viewName = string("view") + std::to_string(getEntity()->id()) + viewName;
-
 	Camera* cam = getComponent<Camera>();
-	ServiceLocator<OsgDevice>::getService()->destroyView(viewName);
-	_view = ServiceLocator<OsgDevice>::getService()->createView(viewName, cam->_lRatio, cam->_rRatio, cam->_bRatio, cam->_tRatio,
+	_viewID = cam->_viewID;
+	ServiceLocator<OsgDevice>::getService()->destroyView(cam->_viewID);
+	_view = ServiceLocator<OsgDevice>::getService()->createView(cam->_viewID, ServiceLocator<OsgDevice>::getService()->getGraphicsWnd(cam->_windowID),
+		cam->_lRatio, cam->_rRatio, cam->_bRatio, cam->_tRatio,
 		osg::Vec4(cam->_red / 255.0f, cam->_green / 255.0f, cam->_blue / 255.0f, cam->_alpha / 255.0f));
+
 	cam->dirtyBit().eraseState(Camera::Viewport_);
 	cam->dirtyBit().eraseState(Camera::Bgcolour_);
 
-	_manipulatorMgr = new CameraManipulatorManager;
+	_manipulatorMgr = new CameraManipulatorManager(getEntity()->getSpawner()->getContext<OsgEarthContext>());
 	_view->setCameraManipulator(_manipulatorMgr);
 	_view->setSceneData(_root);
 
-	osg::Group* pScene = ServiceLocator<OsgEarthContext>::getService()->getSceneNode();
+	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
 	osg::Node* pWorld = getEntity()->getSpawner()->getComponentImpl<DoFImpl>()->_transWorld;
 	if (pWorld->getNumParents() == 0)
 		pScene->addChild(pWorld);
@@ -296,6 +308,7 @@ void CameraImpl::trackingEntity()
 	int id = cam->_trackEntID;
 	int breed = cam->_trackEntBreed;
 	Entity* pTrackEnt = getEntity()->getSpawner()->gain(id, breed);
+	bool haveTrackEnt = false;
 	if (pTrackEnt)
 	{
 		osg::Node* node = nullptr;
@@ -307,31 +320,13 @@ void CameraImpl::trackingEntity()
 
 		if (node)
 		{
-			switch (cam->_manipulatorKey)
-			{
-			case Camera::Earth_:
-				break;
-			case Camera::NodeTracker_:
-				break;
-			case Camera::Trackball_:
-				break;
-			case Camera::Flight_:
-				break;
-			case Camera::Drive_:
-				break;
-			case Camera::Terrain_:
-				break;
-			case Camera::Orbit_:
-				break;
-			case Camera::FirstPerson_:
-				break;
-			case Camera::Spherical_:
-				break;
-			default:
-				break;
-			}
+			haveTrackEnt = true;
+			_view->setSceneData(node);
 		}
 	}
+
+	if (!haveTrackEnt)
+		_view->setSceneData(_root);
 }
 
 void CameraImpl::changePassRT(Camera::PassIndex idx)
@@ -349,18 +344,18 @@ void CameraImpl::changePassRT(Camera::PassIndex idx)
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
 		_multiPasses[idx] = make_pair(_view->getCamera(), nullptr);
-		_passGroups[idx]->addChild(ServiceLocator<OsgEarthContext>::getService()->getSceneNode());
+		_passGroups[idx]->addChild(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
 		break;
 	case Camera::TextureColor_:
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
-		_multiPasses[idx] = createColorPass(ServiceLocator<OsgEarthContext>::getService()->getSceneNode());
+		_multiPasses[idx] = createColorPass(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
 		_passGroups[idx]->addChild(_multiPasses[idx].first);
 		break;
 	case Camera::TextureDepth_:
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
-		_multiPasses[idx] = createDepthPass(ServiceLocator<OsgEarthContext>::getService()->getSceneNode());
+		_multiPasses[idx] = createDepthPass(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
 		_passGroups[idx]->addChild(_multiPasses[idx].first);
 		break;
 	case Camera::HeadUpDisplay_:
@@ -402,22 +397,23 @@ ZOO_REFLEX_IMPLEMENT(EnvironmentImpl);
 EnvironmentImpl::EnvironmentImpl()
 	: _switch(new osg::Switch)
 {
-	_switch->addChild(new WeatherEffect, false);
-	osg::Group* pScene = ServiceLocator<OsgEarthContext>::getService()->getSceneNode();
-	if (pScene)
-		pScene->addChild(_switch);
 }
 
 EnvironmentImpl::~EnvironmentImpl()
 {
-	osg::Group* pScene = ServiceLocator<OsgEarthContext>::getService()->getSceneNode();
+	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
 	if (_switch)
 		pScene->removeChild(_switch.get());
 }
 
 void EnvironmentImpl::awake()
 {
+	OsgEarthContext* pOsgEarthContext = getEntity()->getSpawner()->getContext<OsgEarthContext>();
+	_switch->removeChildren(0, _switch->getNumChildren());
+	_switch->addChild(new WeatherEffect(pOsgEarthContext), false);
 	_switch->setAllChildrenOff();
+	if (_switch->getNumParents() == 0)
+		pOsgEarthContext->getSceneNode()->addChild(_switch);
 }
 
 void EnvironmentImpl::update()
@@ -443,9 +439,11 @@ EarthImpl::EarthImpl()
 
 EarthImpl::~EarthImpl()
 {
-	CmdManager::getSingleton().sendEvent(EVENT_RESET_OSGEARTH_CONTEXT);
+	UserData evtProps;
+	evtProps.setData(getEntity()->getSpawner()->id());
+	CmdManager::getSingleton().sendEvent(EVENT_RESET_OSGEARTH_CONTEXT, evtProps);
 	if (_mapNode)
-		ServiceLocator<OsgEarthContext>::getService()->getSceneNode()->removeChild(_mapNode);
+		getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode()->removeChild(_mapNode);
 }
 
 void EarthImpl::awake()
@@ -454,10 +452,12 @@ void EarthImpl::awake()
 	if (earth->_earthFile == "")
 		return;
 
-	CmdManager::getSingleton().sendEvent(EVENT_RESET_OSGEARTH_CONTEXT);
-
+	UserData evtProps;
+	evtProps.setData(getEntity()->getSpawner()->id());
+	CmdManager::getSingleton().sendEvent(EVENT_RESET_OSGEARTH_CONTEXT, evtProps);
+	OsgEarthContext* pOsgEarthContext = getEntity()->getSpawner()->getContext<OsgEarthContext>();
 	if (_mapNode)
-		ServiceLocator<OsgEarthContext>::getService()->getSceneNode()->removeChild(_mapNode);
+		pOsgEarthContext->getSceneNode()->removeChild(_mapNode);
 
 	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + earth->_earthFile);
 	_mapNode = dynamic_cast<osgEarth::MapNode*>(node.get());
@@ -467,10 +467,10 @@ void EarthImpl::awake()
 		_manipulator = dynamic_cast<osgEarth::Util::EarthManipulator*>(pCameraImpl->_manipulatorMgr->getMatrixManipulatorWithIndex(Camera::Earth_));
 		_manipulator->getSettings()->setArcViewpointTransitions(true);
 		_manipulator->setNode(_mapNode);
-		ServiceLocator<OsgEarthContext>::getService()->getSceneNode()->addChild(_mapNode);
-		ServiceLocator<OsgEarthContext>::getService()->setOpMapNode(_mapNode);
-		ServiceLocator<OsgEarthContext>::getService()->setOpManipulator(_manipulator);
-		ServiceLocator<OsgEarthContext>::getService()->setOpView(getEntity()->getSpawner()->getComponentImpl<CameraImpl>()->_view.get());
+		pOsgEarthContext->getSceneNode()->addChild(_mapNode);
+		pOsgEarthContext->setEarthMapNode(_mapNode);
+		pOsgEarthContext->setEarthManipulator(_manipulator);
+		pOsgEarthContext->setEarthView(getEntity()->getSpawner()->getComponentImpl<CameraImpl>()->_view);
 
 		if (_mapNode->getMap()->getSRS()->isGeographic())
 		{

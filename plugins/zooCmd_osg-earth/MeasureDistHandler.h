@@ -4,10 +4,11 @@
 #include <zooCmd_osg/OsgDevice.h>
 
 class EarthCmd;
+class EarthControls;
 class MeasureDistHandler : public osgGA::GUIEventHandler
 {
 public:
-	MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator);
+	MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator, EarthControls* controls);
 	~MeasureDistHandler();
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor*);
 
@@ -19,6 +20,7 @@ private:
 	float _totalDistance;
 	osg::Vec3d _startPoint;
 	osg::Vec3d _endPoint;
+	EarthControls* _controls;
 	osg::ref_ptr<osg::Geode> _lineStrip;
 	osg::ref_ptr<osg::Vec3dArray> _distPointSet;
 	osg::observer_ptr<osgEarth::MapNode> _mapNode;

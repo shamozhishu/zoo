@@ -1,38 +1,39 @@
 #include "OsgEarthContextImpl.h"
 
+ZOO_REFLEX_IMPLEMENT(OsgEarthContextImpl);
 osg::Group* OsgEarthContextImpl::getSceneNode()
 {
-	if (!_scene)
-		_scene = new osg::Group;
-	return _scene;
+	if (!_sceneNode)
+		_sceneNode = new osg::Group;
+	return _sceneNode;
 }
 
-osgViewer::View* OsgEarthContextImpl::getOpView()
+osgViewer::View* OsgEarthContextImpl::getEarthView()
 {
-	return _view.get();
+	return _earthView;
 }
 
-void OsgEarthContextImpl::setOpView(osgViewer::View* view)
+void OsgEarthContextImpl::setEarthView(osgViewer::View* view)
 {
-	_view = view;
+	_earthView = view;
 }
 
-osgEarth::MapNode* OsgEarthContextImpl::getOpMapNode()
+osgEarth::MapNode* OsgEarthContextImpl::getEarthMapNode()
 {
-	return _mapNode.get();
+	return _earthMapNode;
 }
 
-void OsgEarthContextImpl::setOpMapNode(osgEarth::MapNode* mapNode)
+void OsgEarthContextImpl::setEarthMapNode(osgEarth::MapNode* mapNode)
 {
-	_mapNode = mapNode;
+	_earthMapNode = mapNode;
 }
 
-osgEarth::Util::EarthManipulator* OsgEarthContextImpl::getOpManipulator()
+osgEarth::Util::EarthManipulator* OsgEarthContextImpl::getEarthManipulator()
 {
-	return _manipulator.get();
+	return _earthManipu;
 }
 
-void OsgEarthContextImpl::setOpManipulator(osgEarth::Util::EarthManipulator* manipulator)
+void OsgEarthContextImpl::setEarthManipulator(osgEarth::Util::EarthManipulator* manipulator)
 {
-	_manipulator = manipulator;
+	_earthManipu = manipulator;
 }

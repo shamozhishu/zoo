@@ -4,14 +4,16 @@
 #include <zooCmd_osg/OsgDevice.h>
 #include "PublicFunctions.h"
 
+class OsgEarthContext;
 class ShowCursorWPosHandler : public PickHandler
 {
 public:
-	ShowCursorWPosHandler();
+	ShowCursorWPosHandler(OsgEarthContext* context);
 	~ShowCursorWPosHandler();
 	void doUserOperations(osgUtil::LineSegmentIntersector::Intersection& result);
 
 private:
+	OsgEarthContext* _context;
 	osg::ref_ptr<osgText::Text> _text;
 	osg::ref_ptr<osg::Camera> _textHudCam;
 };

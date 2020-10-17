@@ -20,6 +20,9 @@ void MenuToolButtons::create(UIManagerService* service, EMenu menutype, QObject*
 		QAction* act = new QAction(QIcon(QPixmap(":/images/Resources/images/open.png")), "打开");
 		QObject::connect(act, SIGNAL(triggered()), receiver, SLOT(onOpen()));
 		pSubMenu->addAction(act);
+		act = new QAction(QIcon(QPixmap(":/images/Resources/images/close.png")), "关闭");
+		QObject::connect(act, SIGNAL(triggered()), receiver, SLOT(onClose()));
+		pSubMenu->addAction(act);
 		act = new QAction(QIcon(QPixmap(":/images/Resources/images/save.png")), "保存");
 		act->setEnabled(false);
 		QObject::connect(act, SIGNAL(triggered()), receiver, SLOT(onSave()));

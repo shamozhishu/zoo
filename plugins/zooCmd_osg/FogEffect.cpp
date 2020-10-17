@@ -1,6 +1,5 @@
 ﻿#include "FogEffect.h"
 #include <osgEarth/GeoData>
-#include <zooCmd_osg/OsgEarthContext.h>
 
 //class FogUpdateCallBack : public osg::NodeCallback
 //{

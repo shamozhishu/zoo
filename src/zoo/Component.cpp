@@ -32,11 +32,16 @@ Entity::Entity()
 	, _inUse(true)
 	, _spawner(nullptr)
 {
+	addComponent("DoF", "DoFImpl")->getImp()->awake();
 }
 
 Entity::~Entity()
 {
-	removeComponents();
+	auto it = _components.begin();
+	auto itEnd = _components.end();
+	for (; it != itEnd; ++it)
+		delete it->second;
+	_components.clear();
 }
 
 Component* Entity::getComponent(string className)
@@ -56,42 +61,14 @@ ComponentImpl* Entity::getComponentImpl(string className)
 	return nullptr;
 }
 
-Component* Entity::addComponent(string className, string implName /*= ""*/)
-{
-	Component* pComponent = getComponent(className);
-	if (pComponent)
-		return pComponent;
-
-	pComponent = ReflexFactory<>::getInstance().create<Component>(className);
-	if (!pComponent)
-	{
-		zoo_warning("Component type \"%s\" does not exist!", className.c_str());
-		return nullptr;
-	}
-
-	pComponent->_imp = nullptr;
-	pComponent->_entity = this;
-	_components[className] = pComponent;
-
-	if (implName != "")
-	{
-		ComponentImpl* pComponentImpl = ReflexFactory<>::getInstance().create<ComponentImpl>(implName);
-		if (pComponentImpl)
-		{
-			pComponentImpl->_component = pComponent;
-			pComponent->_imp = pComponentImpl;
-		}
-		else
-		{
-			zoo_warning("Component implement type \"%s\" does not exist!", implName.c_str());
-		}
-	}
-
-	return pComponent;
-}
-
 void Entity::removeComponent(string className)
 {
+	if (className == "DoF")
+	{
+		zoo_warning("DOF component cannot be removed!");
+		return;
+	}
+
 	auto it = _components.find(className);
 	if (it != _components.end())
 	{
@@ -108,14 +85,17 @@ void Entity::removeComponent(Component* pComponent)
 void Entity::removeComponents()
 {
 	auto it = _components.begin();
-	auto itEnd = _components.end();
-	for (; it != itEnd; ++it)
+	while (it != _components.end())
 	{
-		delete it->second;
-		it->second = nullptr;
-	}
+		if (it->first == "DoF")
+		{
+			++it;
+			continue;
+		}
 
-	_components.clear();
+		delete it->second;
+		it = _components.erase(it);
+	}
 }
 
 void Entity::notifyComponents(bool cleanup/* = true*/)
@@ -242,6 +222,7 @@ std::unordered_map<int, Spawner*> Spawner::_spawners;
 Spawner::Spawner()
 	: _firstAvailable(nullptr)
 	, _parser(nullptr)
+	, _relateContext(nullptr)
 {
 	_spawner = this;
 }
@@ -251,7 +232,7 @@ Spawner::~Spawner()
 	clear();
 }
 
-Spawner* Spawner::create(int id, const string& desc /*= ""*/)
+Spawner* Spawner::create(int id, const string& context, const string& desc /*= ""*/)
 {
 	Spawner* spawner = find(id);
 	if (spawner)
@@ -263,6 +244,7 @@ Spawner* Spawner::create(int id, const string& desc /*= ""*/)
 	spawner = new Spawner;
 	spawner->_id = id;
 	spawner->desc() = desc;
+	spawner->_relateContext = ReflexFactory<>::getInstance().create<Context>(context);
 	_spawners[id] = spawner;
 	return spawner;
 }
@@ -275,14 +257,21 @@ Spawner* Spawner::find(int id)
 	return nullptr;
 }
 
-void Spawner::destroy(Spawner* spawner)
+void Spawner::destroy(int id)
 {
-	auto it = _spawners.find(spawner->id());
+	auto it = _spawners.find(id);
 	if (it != _spawners.end())
 	{
+		Context* context = it->second->_relateContext;
+		delete it->second;
 		_spawners.erase(it);
-		delete spawner;
+		delete context;
 	}
+}
+
+void Spawner::destroy(Spawner* spawner)
+{
+	destroy(spawner->id());
 }
 
 Entity* Spawner::born(int id, int breed)
@@ -501,13 +490,16 @@ void Spawner::setNull(const string& key)
 		pJsonObj->AddNull(key);
 }
 
-void Spawner::setValue(const string& key, const void* val, const char* typeName)
+void Spawner::setValue(const string& key, const void* val, string typeName)
 {
 	JsonObject* pJsonObj = (JsonObject*)_parser;
 	if (!pJsonObj)
 		return;
 
-	if (string(typeid(string).name()) == typeName)
+	if (typeName.substr(0, 6) == "const ")
+		typeName = typeName.substr(6);
+
+	if (typeName == typeid(string).name())
 	{
 		const string& strval = *(string*)(val);
 		if (strval == "")
@@ -515,7 +507,7 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 		else
 			pJsonObj->Add(key, strval);
 	}
-	else if (string(typeid(int32).name()) == typeName)
+	else if (typeName == typeid(int32).name())
 	{
 		int32 ival = *(int32*)(val);
 		if (ival == -1)
@@ -523,43 +515,45 @@ void Spawner::setValue(const string& key, const void* val, const char* typeName)
 		else
 			pJsonObj->Add(key, ival);
 	}
-	else if (string(typeid(bool).name()) == typeName)
+	else if (typeName == typeid(bool).name())
 		pJsonObj->Add(key, *(bool*)(val), true);
-	else if (string(typeid(float).name()) == typeName)
+	else if (typeName == typeid(float).name())
 		pJsonObj->Add(key, *(float*)(val));
-	else if (string(typeid(double).name()) == typeName)
+	else if (typeName == typeid(double).name())
 		pJsonObj->Add(key, *(double*)(val));
-	else if (string(typeid(uint32).name()) == typeName
+	else if (typeName == typeid(uint32).name()
 		|| string(typeName).substr(0, 5) == "enum ")
 		pJsonObj->Add(key, *(uint32*)(val));
-	else if (string(typeid(int64).name()) == typeName)
+	else if (typeName == typeid(int64).name())
 		pJsonObj->Add(key, *(int64*)(val));
-	else if (string(typeid(uint64).name()) == typeName)
+	else if (typeName == typeid(uint64).name())
 		pJsonObj->Add(key, *(uint64*)(val));
 }
 
-void Spawner::getValue(const string& key, void* val, const char* typeName)
+void Spawner::getValue(const string& key, void* val, string typeName)
 {
 	JsonObject* pJsonObj = (JsonObject*)_parser;
 	if (!pJsonObj)
 		return;
 
-	if (string(typeid(string).name()) == typeName)
+	if (typeName.substr(0, 6) == "const ")
+		typeName = typeName.substr(6);
+
+	if (typeName == typeid(string).name())
 		pJsonObj->Get(key, *(string*)val);
-	else if (string(typeid(int32).name()) == typeName)
+	else if (typeName == typeid(int32).name())
 		pJsonObj->Get(key, *(int32*)(val));
-	else if (string(typeid(bool).name()) == typeName)
+	else if (typeName == typeid(bool).name())
 		pJsonObj->Get(key, *(bool*)(val));
-	else if (string(typeid(float).name()) == typeName)
+	else if (typeName == typeid(float).name())
 		pJsonObj->Get(key, *(float*)(val));
-	else if (string(typeid(double).name()) == typeName)
+	else if (typeName == typeid(double).name())
 		pJsonObj->Get(key, *(double*)(val));
-	else if (string(typeid(uint32).name()) == typeName
-		|| string(typeName).substr(0, 5) == "enum ")
+	else if (typeName == typeid(uint32).name() || typeName.substr(0, 5) == "enum ")
 		pJsonObj->Get(key, *(uint32*)(val));
-	else if (string(typeid(int64).name()) == typeName)
+	else if (typeName == typeid(int64).name())
 		pJsonObj->Get(key, *(int64*)(val));
-	else if (string(typeid(uint64).name()) == typeName)
+	else if (typeName == typeid(uint64).name())
 		pJsonObj->Get(key, *(uint64*)(val));
 }
 

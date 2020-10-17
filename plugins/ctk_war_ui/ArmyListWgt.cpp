@@ -9,6 +9,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <ctk_service/war/WarService.h>
+#include <ctk_service/zoocmd_ui/Win32Service.h>
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include "ComPropertyBoard.h"
 #include "OpenBattlefieldDlg.h"
@@ -28,25 +29,14 @@ public:
 	{
 		setText(0, QString::fromLocal8Bit(ent->desc().c_str()));
 
-		bool changed = false;
 		_doF = ent->getComponent<DoF>();
-		if (!_doF)
-		{
-			_doF = ent->addComponent<DoF>("DoFImpl");
-			_doF->getImp()->awake();
-			changed = true;
-		}
-
 		_mainCam = ent->getComponent<Camera>();
 		if (!_mainCam)
 		{
-			_mainCam = ent->addComponent<Camera>("CameraImpl");
+			_mainCam = ent->addComponent<Camera, int>("CameraImpl", ZOOCMDWGT);
 			_mainCam->getImp()->awake();
-			changed = true;
-		}
-
-		if (changed)
 			_uiMgr->starWindowTitle();
+		}
 	}
 
 	ArmyTreeItem(zoo::Entity* ent, ArmyTreeItem* parent)
@@ -59,10 +49,8 @@ public:
 		setFlags(flags() | Qt::ItemIsEditable);
 
 		_doF = ent->getComponent<DoF>();
-		if (!_doF)
+		if (!_doF->_parent)
 		{
-			_doF = ent->addComponent<DoF>("DoFImpl");
-			_doF->getImp()->awake();
 			setParent(parent->_doF);
 			_uiMgr->starWindowTitle();
 		}
@@ -413,6 +401,25 @@ void ArmyListWgt::onOpen()
 				QMessageBox::warning(this, tr("警告"), tr("打开场景失败！"));
 			}
 		}
+	}
+}
+
+void ArmyListWgt::onClose()
+{
+	WarService* service = UIActivator::getService<WarService>();
+	UIManagerService* uiMgr = UIActivator::getService<UIManagerService>();
+	if (service && uiMgr)
+	{
+		if (uiMgr->needSavedScene())
+		{
+			if (QMessageBox::information(this, tr("提示"), tr("是否需要保存当前的场景？"), QMessageBox::Save, QMessageBox::Discard) == QMessageBox::Save)
+				service->saveScene();
+		}
+
+		_rootItem = nullptr;
+		_ui->treeWidget->clear();
+		service->closeScene();
+		uiMgr->setWindowTitle(tr("战场编辑器"));
 	}
 }
 

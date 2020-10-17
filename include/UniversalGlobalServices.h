@@ -7,8 +7,15 @@ class CoordTransformUtil : public zoo::Service
 {
 	ZOO_SERVICE(CoordTransformUtil)
 public:
-	virtual bool convertLLHToXYZ(double longitude, double latitude, double height, double& X, double& Y, double& Z) = 0;
-	virtual bool convertXYZToLLH(double X, double Y, double Z, double& longitude, double& latitude, double& height) = 0;
+	class Converter
+	{
+	public:
+		virtual ~Converter() {}
+		template<typename T> T* to() { return dynamic_cast<T*>(this); }
+	};
+
+	virtual bool convertLLHToXYZ(Converter* converter, double longitude, double latitude, double height, double& X, double& Y, double& Z) = 0;
+	virtual bool convertXYZToLLH(Converter* converter, double X, double Y, double Z, double& longitude, double& latitude, double& height) = 0;
 };
 
 class MeshList : public zoo::Service

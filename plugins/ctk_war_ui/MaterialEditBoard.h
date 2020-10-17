@@ -8,6 +8,7 @@ namespace Ui {
 	class MaterialEditBoard;
 }
 
+class MaterialDisplayWgt;
 class MaterialEditBoard : public QWidget
 {
 public:
@@ -17,6 +18,7 @@ public:
 private:
 	Material* _curSelMat;
 	Ui::MaterialEditBoard* _ui;
+	MaterialDisplayWgt* _matDisplayWgt;
 };
 
 #endif // __MATERIAL_EDIT_BOARD_H__

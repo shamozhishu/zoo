@@ -8,7 +8,7 @@ Battlefield::Battlefield(int id, TableCSV* table)
 	: _id(id)
 	, _table(table)
 {
-	_spawner = Spawner::create(id, table->item2str(id, "description"));
+	_spawner = Spawner::create(id, "OsgEarthContextImpl", table->item2str(id, "description"));
 }
 
 Battlefield::~Battlefield()

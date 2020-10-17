@@ -48,7 +48,6 @@ using namespace std;
 namespace zoo {
 
 template<typename ...Args> class ReflexFactory;
-template class _zooExport ReflexFactory<>;
 class Type;
 class Log;
 class Any;

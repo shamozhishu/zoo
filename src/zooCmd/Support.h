@@ -22,7 +22,7 @@ class Event;
 class CmdUsage;
 class CmdParser;
 class CmdManager;
-class InputAdapter;
+class RenderAdapter;
 
 }
 

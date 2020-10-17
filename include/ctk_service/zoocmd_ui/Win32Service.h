@@ -3,6 +3,12 @@
 
 #include <QObject>
 
+enum Win32WindowID
+{
+	ZOOCMDWGT = 0,
+	MATERIALDISPLAYWGT
+};
+
 class Win32Service
 {
 public:

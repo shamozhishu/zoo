@@ -3,11 +3,10 @@
 #include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgEarth::Util::Controls;
-static EarthControls* s_earthControls = nullptr;
 
-EarthControls::EarthControls()
+EarthControls::EarthControls(OsgEarthContext* context)
 {
-	_canvas = ControlCanvas::getOrCreate(ServiceLocator<OsgEarthContext>::getService()->getOpView());
+	_canvas = ControlCanvas::getOrCreate(context->getEarthView());
 	_vboxControl = new VBox();
 	_vboxControl->setBorderColor(0, 0, 0, 0);
 	_vboxControl->setBackColor(0.6f, 0.5f, 0.4f, 0.5f);
@@ -30,18 +29,6 @@ EarthControls::~EarthControls()
 		if (node)
 			node->asGroup()->removeChild(_canvas.get());
 	}
-}
-
-EarthControls* EarthControls::getIns()
-{
-	if (!s_earthControls)
-		s_earthControls = new EarthControls();
-	return s_earthControls;
-}
-
-void EarthControls::destroy()
-{
-	SAFE_DELETE(s_earthControls);
 }
 
 bool EarthControls::isHasLabelControl(LabelIndex idx) const

@@ -1,22 +1,23 @@
 <RCC>
-  <qresource prefix="/images">
-    <file>Resources/images/about.png</file>
-    <file>Resources/images/comlist.png</file>
-    <file>Resources/images/edit_file.png</file>
-    <file>Resources/images/entnavig.png</file>
-    <file>Resources/images/entparam.png</file>
-	<file>Resources/images/material.png</file>
-    <file>Resources/images/modelpath.png</file>
-    <file>Resources/images/open.png</file>
-    <file>Resources/images/open_file.png</file>
-    <file>Resources/images/pause.png</file>
-    <file>Resources/images/paused.png</file>
-    <file>Resources/images/ready.png</file>
-    <file>Resources/images/reset.png</file>
-    <file>Resources/images/running.png</file>
-    <file>Resources/images/save.png</file>
-    <file>Resources/images/start.png</file>
-    <file>Resources/images/stop.png</file>
-    <file>Resources/images/view.png</file>
-  </qresource>
+    <qresource prefix="/images">
+        <file>Resources/images/about.png</file>
+        <file>Resources/images/close.png</file>
+        <file>Resources/images/comlist.png</file>
+        <file>Resources/images/edit_file.png</file>
+        <file>Resources/images/entnavig.png</file>
+        <file>Resources/images/entparam.png</file>
+        <file>Resources/images/material.png</file>
+        <file>Resources/images/modelpath.png</file>
+        <file>Resources/images/open.png</file>
+        <file>Resources/images/open_file.png</file>
+        <file>Resources/images/pause.png</file>
+        <file>Resources/images/paused.png</file>
+        <file>Resources/images/ready.png</file>
+        <file>Resources/images/reset.png</file>
+        <file>Resources/images/running.png</file>
+        <file>Resources/images/save.png</file>
+        <file>Resources/images/start.png</file>
+        <file>Resources/images/stop.png</file>
+        <file>Resources/images/view.png</file>
+    </qresource>
 </RCC>

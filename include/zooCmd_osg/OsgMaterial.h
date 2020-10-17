@@ -26,6 +26,13 @@ public:
 	 * 日期: 2020.9.8
 	 */
 	virtual string getMaterialName() const = 0;
+	/* 功能: 刷新材质效果, 主要是Uniform的实时更新
+	 * 参数: 需要更新的Uniforms
+	 * 返回值: 空
+	 * 作者: shamozhishu
+	 * 日期: 2020.9.28
+	 */
+	virtual void refresh(const map<string, vector<double>>& uniforms) { (void)uniforms; }
 	/* 功能: 如果节点需要改造, 则重写该成员函数, 比如给网格模型添加切线和副法线的顶点属性
 	 * 参数: 要改造的节点
 	 * 返回值: 返回TRUE表示可以执行setupStateSet(), 返回FALSE则不执行setupStateSet().
@@ -73,11 +80,11 @@ class OsgMaterialManager : public Service
 public:
 	/* 功能: 附加材质
 	 * 参数: 1)选择要附加的材质,2)材质影响的节点
-	 * 返回值: 成功返回true,失败返回false
+	 * 返回值: 成功返回对应的osg材质,失败返回NULL
 	 * 作者: shamozhishu
 	 * 日期: 2020.9.10
 	 */
-	virtual bool attach(Material* material, osg::Node* node) = 0;
+	virtual OsgMaterial* attach(Material* material, osg::Node* node) = 0;
 	/* 功能: 解除材质
 	 * 参数: 1)选择要解除的材质,2)材质影响的节点
 	 * 返回值: 空

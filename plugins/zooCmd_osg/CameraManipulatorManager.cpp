@@ -1,12 +1,14 @@
 #include "CameraManipulatorManager.h"
-#include <UniversalGlobalServices.h>
 #include <osgEarth/Version>
+#include <UniversalGlobalServices.h>
+#include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace osgGA;
 using namespace osgEarth::Util;
 
-CameraManipulatorManager::CameraManipulatorManager()
+CameraManipulatorManager::CameraManipulatorManager(OsgEarthContext* context)
 	: _switchEnabled(false)
+	, _context(context)
 {
 	addMatrixManipulator('0', "Earth", new EarthManipulator());
 	addMatrixManipulator('1', "NodeTracker", new NodeTrackerManipulator());
@@ -73,7 +75,7 @@ void CameraManipulatorManager::focus(int num, osg::Node* pNode)
 			osg::Vec3d llh;
 			osg::Matrix localToWorld = osg::computeLocalToWorld(pNode->getParent(0)->getParentalNodePaths()[0]);
 			osg::Vec3d XYZ = bound.center() * localToWorld;
-			pOsgEarthUtils->convertXYZToLLH(XYZ.x(), XYZ.y(), XYZ.z(), llh._v[0], llh._v[1], llh._v[2]);
+			pOsgEarthUtils->convertXYZToLLH(_context, XYZ.x(), XYZ.y(), XYZ.z(), llh._v[0], llh._v[1], llh._v[2]);
 
 			Viewpoint vp = pEarthManipu->getViewpoint();
 			vp.setNode(pNode);

@@ -15,6 +15,7 @@ class ZooCmdUI : public QMainWindow, public UIManagerService
 public:
 	ZooCmdUI(QWidget *parent = Q_NULLPTR);
 	~ZooCmdUI();
+	bool needSavedScene();
 	void setWindowTitle(QString windowTitle);
 	void starWindowTitle();
 	void unstarWindowTitle();

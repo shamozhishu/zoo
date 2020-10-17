@@ -30,6 +30,12 @@
 #	endif
 #endif
 
+namespace zoo {
+/* 数据根目录 */
+_zooExport extern std::string DATA_ROOT_DIR_ANSI;
+_zooExport extern std::string DATA_ROOT_DIR_UTF8;
+}
+
 #ifdef ZOO_USE_UTF8_FILENAME
 #define ZOO_DATA_ROOT_DIR zoo::DATA_ROOT_DIR_UTF8
 #else
@@ -47,6 +53,9 @@
 #define zoo_warning(format, ...)
 #define zoo_error(format, ...)
 #endif
+
+#define ZOO_STRING(PARAM) #PARAM
+#define ZOO_CONCAT(PARAM1, PARAM2) PARAM1##PARAM2
 
 #define ZOO_SERVICE(CLASS_TYPE) protected: CLASS_TYPE() : zoo::Service(#CLASS_TYPE, "") {}
 #define ZOO_SERVICE_FILTER(CLASS_TYPE, FILTER) protected: CLASS_TYPE() : zoo::Service(#CLASS_TYPE, #FILTER) {}

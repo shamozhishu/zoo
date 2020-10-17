@@ -1,11 +1,11 @@
 #include "WarCommander.h"
 #include "Battlefield.h"
 #include <zoo/DatabaseCSV.h>
+#include <zooCmdLoader/ZooCmdLoader.h>
 #include <QCoreApplication>
 #include <QFile>
 #include <zoo/Log.h>
 #include <zoo/Utils.h>
-#include <zooCmdLoader/ZooCmdLoader.h>
 #include "LuaExportClass.h"
 
 using namespace zoo;
@@ -89,7 +89,11 @@ Battlefield* WarCommander::getCurBattlefield()
 
 void WarCommander::tick()
 {
+	zooCmd_Refresh();
+
 	Input::getSingleton().poll();
 	if (_currentBattlefield)
 		_currentBattlefield->stepping();
+
+	zooCmd_Render();
 }

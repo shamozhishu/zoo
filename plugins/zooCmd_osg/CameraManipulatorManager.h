@@ -3,10 +3,11 @@
 
 #include <zooCmd_osg/OsgEarthSupport.h>
 
+class OsgEarthContext;
 class CameraManipulatorManager : public osgGA::KeySwitchMatrixManipulator
 {
 public:
-	CameraManipulatorManager();
+	CameraManipulatorManager(OsgEarthContext* context);
 	~CameraManipulatorManager();
 	bool isSwitchEnabled() const;
 	void setSwitchEnabled(bool enabled);
@@ -16,6 +17,7 @@ public:
 
 protected:
 	bool _switchEnabled;
+	OsgEarthContext* _context;
 };
 
 #endif // __CAMERA_MANIPULATOR_MANAGER_H__

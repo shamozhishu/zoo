@@ -5,20 +5,21 @@
 
 class OsgEarthContextImpl : public OsgEarthContext
 {
+	ZOO_REFLEX_DECLARE(OsgEarthContextImpl)
 public:
 	osg::Group* getSceneNode();
-	osgViewer::View* getOpView();
-	void setOpView(osgViewer::View* view);
-	osgEarth::MapNode* getOpMapNode();
-	void setOpMapNode(osgEarth::MapNode* mapNode);
-	osgEarth::Util::EarthManipulator* getOpManipulator();
-	void setOpManipulator(osgEarth::Util::EarthManipulator* manipulator);
+	osgViewer::View* getEarthView();
+	void setEarthView(osgViewer::View* view);
+	osgEarth::MapNode* getEarthMapNode();
+	void setEarthMapNode(osgEarth::MapNode* mapNode);
+	osgEarth::Util::EarthManipulator* getEarthManipulator();
+	void setEarthManipulator(osgEarth::Util::EarthManipulator* manipulator);
 
 private:
-	osg::ref_ptr<osg::Group> _scene;
-	osg::ref_ptr<osgViewer::View> _view;
-	osg::ref_ptr<osgEarth::MapNode> _mapNode;
-	osg::ref_ptr<osgEarth::Util::EarthManipulator> _manipulator;
+	osg::ref_ptr<osg::Group> _sceneNode;
+	osg::ref_ptr<osgViewer::View> _earthView;
+	osg::ref_ptr<osgEarth::MapNode> _earthMapNode;
+	osg::ref_ptr<osgEarth::Util::EarthManipulator> _earthManipu;
 };
 
 #endif // __OSG_EARTH_CONTEXT_IMPL_H__

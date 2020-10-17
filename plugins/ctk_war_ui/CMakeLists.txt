@@ -61,7 +61,6 @@ set(PLUGIN_MOC_SRCS
 set(PLUGIN_UI_FORMS
 	ComListWgt.ui
 	MeshWgt.ui
-	ShaderWgt.ui
 	TextureWgt.ui
 	MaterialWgt.ui
 	ArmyListWgt.ui

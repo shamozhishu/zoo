@@ -3,6 +3,7 @@
 #include <zoo/Utils.h>
 #include <zoo/ServiceLocator.h>
 #include <UniversalGlobalServices.h>
+#include <ctk_service/zoocmd_ui/Win32Service.h>
 #include <ctk_service/zoocmd_ui/UIManagerService.h>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -19,7 +20,6 @@
 #include "ui_EnvirPropertyWgt.h"
 #include "ui_MeshWgt.h"
 #include "ui_MaterialWgt.h"
-#include "ui_ShaderWgt.h"
 #include "ui_TextureWgt.h"
 #include "ui_ConfigTableWgt.h"
 
@@ -70,7 +70,9 @@ ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 			QString comImpl = _ui->tableWidget->item(item->row(), 1)->data(Qt::DisplayRole).toString();
 			if (_addComponentBtn) // 添加组件
 			{
-				zoo::Component* pCom = _operateEnt->addComponent(comName.toStdString(), comImpl.toStdString());
+				zoo::Component* pCom = (comName == "Camera")
+					? _operateEnt->addComponent<Camera, int>(comImpl.toStdString(), ZOOCMDWGT)
+					: _operateEnt->addComponent(comName.toStdString(), comImpl.toStdString());
 				if (pCom)
 				{
 					_propBoard->showCom(comName, pCom);
@@ -243,6 +245,7 @@ MeshWgt::MeshWgt(QWidget *parent)
 		{
 			_ui->lineEdit->setText(fileName);
 			_mesh->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
 			pUIMgr->starWindowTitle();
 		}
 	});
@@ -299,42 +302,6 @@ void MeshWgt::resetMesh(Mesh* mesh)
 		_ui->lineEdit->setText("");
 	else
 		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_modelFile).c_str()));
-}
-
-ShaderWgt::ShaderWgt(QWidget *parent, Material* mat, Material::ShaderType shaderType)
-	: QWidget(parent)
-	, _ui(new Ui::ShaderWgt)
-{
-	_ui->setupUi(this);
-	
-	_ui->label->setText(QString::fromLocal8Bit(mat->_shaderFiles[shaderType].first.c_str()));
-	string shaderPath = mat->_shaderFiles[shaderType].second;
-	if (shaderPath != "")
-		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + shaderPath).c_str()));
-
-	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
-	connect(_ui->toolButton_open, &QToolButton::clicked, [this, mat, shaderType, pUIMgr]
-	{
-		QString fileName = QFileDialog::getOpenFileName(this, tr("Shader文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("Shader(*.vert *.frag)"));
-		if (!fileName.isEmpty())
-		{
-			_ui->lineEdit->setText(fileName);
-			mat->_shaderFiles[shaderType].second = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
-			mat->getParent()->dirtyBit().addState(Material::Changed_);
-			pUIMgr->starWindowTitle();
-		}
-	});
-	connect(_ui->toolButton_edit, &QToolButton::clicked, [this]
-	{
-		QString filename = _ui->lineEdit->text();
-		if (!filename.isEmpty())
-			QDesktopServices::openUrl(QUrl::fromLocalFile(filename));
-	});
-}
-
-ShaderWgt::~ShaderWgt()
-{
-	delete _ui;
 }
 
 TextureWgt::TextureWgt(QWidget *parent, Material* mat, int texUnitNum)
@@ -406,16 +373,6 @@ MaterialWgt::MaterialWgt(QWidget *parent)
 
 		_wgtlist.clear();
 
-		for (int i = Material::VERTEX; i < Material::COUNT; ++i)
-		{
-			if (_material->_shaderFiles[i].first != "")
-			{
-				QWidget* pWgt = new ShaderWgt(this, _material, (Material::ShaderType)i);
-				_wgtlist.push_back(pWgt);
-				_ui->verticalLayout->addWidget(pWgt);
-			}
-		}
-
 		for (int i = 0; i < Material::TexUnitNum; ++i)
 		{
 			if (_material->_textureFiles[i].first != "")
@@ -433,7 +390,7 @@ MaterialWgt::MaterialWgt(QWidget *parent)
 			_ui->verticalLayout->addWidget(pWgt);
 			connect(pWgt, &ConfigTableWgt::keyValMapChanged, [this]
 			{
-				_material->getParent()->dirtyBit().addState(Material::Changed_);
+				_material->getParent()->dirtyBit().addState(Material::Uniform_);
 				_uiMgr->starWindowTitle();
 			});
 		}
@@ -616,7 +573,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		if (checked)
 		{
 			double lon, lat, height;
-			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertXYZToLLH(pDoF->_x, pDoF->_y, pDoF->_z, lon, lat, height))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertXYZToLLH(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_x, pDoF->_y, pDoF->_z, lon, lat, height))
 			{
 				_ui->doubleSpinBox_lon->setValue(lon);
 				_ui->doubleSpinBox_lat->setValue(lat);
@@ -631,7 +588,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
 		else
 		{
 			double X, Y, Z;
-			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertLLHToXYZ(pDoF->_x, pDoF->_y, pDoF->_z, X, Y, Z))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertLLHToXYZ(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_x, pDoF->_y, pDoF->_z, X, Y, Z))
 			{
 				_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(X));
 				_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(Y));
@@ -741,6 +698,10 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 	_ui->lineEdit_right->setValidator(pValidator);
 	_ui->lineEdit_bottom->setValidator(pValidator);
 	_ui->lineEdit_top->setValidator(pValidator);
+
+	pValidator->setRange(-1, 9999);
+	_ui->lineEdit_id->setValidator(pValidator);
+	_ui->lineEdit_breed->setValidator(pValidator);
 
 	QStringList manipulatorType;
 	manipulatorType << tr("地球") << tr("节点跟踪器") << tr("轨迹球") << tr("飞行") << tr("驾驶")
@@ -901,6 +862,36 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 			_uiMgr->starWindowTitle();
 		}
 	});
+	connect(_ui->lineEdit_id, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	{
+		int id = _ui->lineEdit_id->text().toInt();
+		if (COM_CAST(Camera)->_trackEntID != id)
+		{
+			COM_CAST(Camera)->_trackEntID = id;
+			_com->dirtyBit().addState(Camera::TrackEnt_);
+			_uiMgr->starWindowTitle();
+			Entity* ent = COM_CAST(Camera)->getEntity()->getSpawner()->gain(id, COM_CAST(Camera)->_trackEntBreed);
+			if (ent)
+				_ui->lineEdit_desc->setText(QString::fromLocal8Bit(ent->desc().c_str()));
+			else
+				_ui->lineEdit_desc->setText(tr(""));
+		}
+	});
+	connect(_ui->lineEdit_breed, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]()
+	{
+		int breed = _ui->lineEdit_breed->text().toInt();
+		if (COM_CAST(Camera)->_trackEntBreed != breed)
+		{
+			COM_CAST(Camera)->_trackEntBreed = breed;
+			_com->dirtyBit().addState(Camera::TrackEnt_);
+			_uiMgr->starWindowTitle();
+			Entity* ent = COM_CAST(Camera)->getEntity()->getSpawner()->gain(COM_CAST(Camera)->_trackEntID, breed);
+			if (ent)
+				_ui->lineEdit_desc->setText(QString::fromLocal8Bit(ent->desc().c_str()));
+			else
+				_ui->lineEdit_desc->setText(tr(""));
+		}
+	});
 }
 
 CameraPropertyWgt::~CameraPropertyWgt()
@@ -912,6 +903,8 @@ void CameraPropertyWgt::resetCom(zoo::Component* pCom)
 {
 	PropertyWgt::resetCom(pCom);
 	Camera* pCam = COM_CAST(Camera);
+	_ui->lineEdit_viewid->setText(QString("%1").arg(pCam->_viewID));
+
 	_ui->comboBox->setCurrentIndex(pCam->_manipulatorKey);
 	_ui->lineEdit_left->setText(FLOAT_TO_STRING(pCam->_lRatio * 100.0f));
 	_ui->lineEdit_right->setText(FLOAT_TO_STRING(pCam->_rRatio * 100.0f));

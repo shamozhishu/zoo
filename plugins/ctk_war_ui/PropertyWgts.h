@@ -65,16 +65,6 @@ private:
 	ConfigTableWgt* _configWgt;
 };
 
-class ShaderWgt : public QWidget
-{
-public:
-	ShaderWgt(QWidget *parent, Material* mat, Material::ShaderType shaderType);
-	~ShaderWgt();
-
-private:
-	Ui::ShaderWgt* _ui;
-};
-
 class TextureWgt : public QWidget
 {
 public:

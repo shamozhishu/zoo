@@ -11,13 +11,12 @@ enum LabelIndex
 	count_label_
 };
 
+class OsgEarthContext;
 class EarthControls
 {
 public:
-	EarthControls();
+	EarthControls(OsgEarthContext* context);
 	~EarthControls();
-	static EarthControls* getIns();
-	static void destroy();
 	bool isHasLabelControl(LabelIndex idx) const;
 	void addLabelTextDisplay(const string& text, LabelIndex idx);
 	void removeLabelTextDisplay(LabelIndex idx);

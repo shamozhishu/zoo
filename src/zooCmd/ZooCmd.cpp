@@ -1,6 +1,6 @@
 #include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
-#include <zooCmd/InputAdapter.h>
+#include <zooCmd/RenderAdapter.h>
 #include <zooCmd/Cmd.h>
 #include <zoo/Reflection.h>
 #include <zoo/Interlock.h>
@@ -11,7 +11,7 @@
 using namespace zooCmd;
 namespace zooCmd
 {
-	extern InputAdapter* g_inputAdapter;
+	extern RenderAdapter* g_renderAdapter;
 	extern std::thread::id g_renderThreadID;
 }
 
@@ -20,16 +20,16 @@ typedef const char* (*DllGetTypeName)(void);
 static bool s_isInited = false;
 static string s_inputAdapter = "";
 
-static bool s_AdaRegister(const char* input_adapter)
+static bool s_RegisterRenderAdapter(const char* render_adapter)
 {
-	if (g_inputAdapter)
+	if (g_renderAdapter)
 		return true;
 
 	DynLib* lib = nullptr;
 #ifdef _DEBUG
-	lib = CmdManager::getSingleton().load(string(input_adapter) + "d");
+	lib = CmdManager::getSingleton().load(string(render_adapter) + "d");
 #else
-	lib = CmdManager::getSingleton().load(string(input_adapter));
+	lib = CmdManager::getSingleton().load(string(render_adapter));
 #endif
 	if (!lib)
 		return false;
@@ -37,23 +37,23 @@ static bool s_AdaRegister(const char* input_adapter)
 	DllGetTypeName getTypeName = (DllGetTypeName)lib->getSymbol("dllGetTypeName");
 	if (!getTypeName)
 	{
-		zoo_error("%s: Input adapter is not registered!", input_adapter);
+		zoo_error("%s: Render adapter is not registered!", render_adapter);
 		return false;
 	}
 
-	g_inputAdapter = ReflexFactory<>::getInstance().create<InputAdapter>(getTypeName());
-	if (!g_inputAdapter)
+	g_renderAdapter = ReflexFactory<>::getInstance().create<RenderAdapter>(getTypeName());
+	if (!g_renderAdapter)
 	{
-		zoo_error("Input adapter %s does not exist!", getTypeName());
+		zoo_error("Render adapter %s does not exist!", getTypeName());
 		return false;
 	}
 
 	return true;
 }
 
-bool zooCmd_InitA(const char* input_adapter, const char* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+bool zooCmd_InitA(const char* render_adapter, const char* datadir)
 {
-	if (input_adapter == nullptr || 0 == strcmp(input_adapter, "") || datadir == nullptr || 0 == strcmp(datadir, ""))
+	if (render_adapter == nullptr || 0 == strcmp(render_adapter, "") || datadir == nullptr || 0 == strcmp(datadir, ""))
 		return false;
 
 	DATA_ROOT_DIR_ANSI = datadir;
@@ -65,25 +65,24 @@ bool zooCmd_InitA(const char* input_adapter, const char* datadir, int windowWidt
 
 	CmdManager* pCmdMgr = new CmdManager();
 
-	if (!s_AdaRegister(input_adapter))
+	if (!s_RegisterRenderAdapter(render_adapter))
 	{
 		zooCmd_Destroy();
 		return false;
 	}
 
-	g_inputAdapter->setup(windowWidth, windowHeight, windowScale);
 	pCmdMgr->initBuiltinCmd();
-	s_inputAdapter = input_adapter;
+	s_inputAdapter = render_adapter;
 	pCmdMgr->start();
 	s_isInited = true;
 	return true;
 }
 
-bool zooCmd_InitW(const char* input_adapter, const wchar_t* datadir, int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/)
+bool zooCmd_InitW(const char* input_adapter, const wchar_t* datadir)
 {
 	if (datadir == nullptr || 0 == wcscmp(datadir, L""))
 		return false;
-	return zooCmd_InitA(input_adapter, w2a_(datadir).c_str(), windowWidth, windowHeight, windowScale);
+	return zooCmd_InitA(input_adapter, w2a_(datadir).c_str());
 }
 
 bool zooCmd_IsInited()
@@ -165,10 +164,10 @@ int zooCmd_Run()
 	if (!s_isInited)
 		return -1;
 	g_renderThreadID = std::this_thread::get_id();
-	return g_inputAdapter->run();
+	return g_renderAdapter->run();
 }
 
-void zooCmd_Tick()
+void zooCmd_Refresh()
 {
 	if (s_isInited)
 		CmdManager::getSingleton().refresh();
@@ -180,7 +179,6 @@ void zooCmd_Destroy()
 	s_inputAdapter = "";
 	g_renderThreadID = std::thread::id();
 	delete CmdManager::getSingletonPtr();
-	InputAdapter::clearKeyboardMap();
 }
 
 void zooCmd_Render()
@@ -191,57 +189,16 @@ void zooCmd_Render()
 			g_renderThreadID = std::this_thread::get_id();
 
 		static zoo::Timer timer;
-		g_inputAdapter->frame(timer.elapsed());
+		g_renderAdapter->frame(timer.elapsed());
 		timer.reset();
 	}
 }
 
-void zooCmd_Resize(int windowWidth, int windowHeight, float windowScale)
+void* zooCmd_Setup(int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/, int windowID /*= 0*/)
 {
 	if (s_isInited)
-		g_inputAdapter->resize(windowWidth, windowHeight, windowScale);
-}
-
-void zooCmd_KeyPress(int key, unsigned int modkey)
-{
-	if (s_isInited)
-		g_inputAdapter->keyPress(key, modkey);
-}
-
-void zooCmd_KeyRelease(int key, unsigned int modkey)
-{
-	if (s_isInited)
-		g_inputAdapter->keyRelease(key, modkey);
-}
-
-void zooCmd_MousePress(int x, int y, unsigned int modkey, zooCmd_MouseButton button)
-{
-	if (s_isInited)
-		g_inputAdapter->mousePress(x, y, modkey, button);
-}
-
-void zooCmd_MouseRelease(int x, int y, unsigned int modkey, zooCmd_MouseButton button)
-{
-	if (s_isInited)
-		g_inputAdapter->mouseRelease(x, y, modkey, button);
-}
-
-void zooCmd_MouseDoubleClick(int x, int y, unsigned int modkey, zooCmd_MouseButton button)
-{
-	if (s_isInited)
-		g_inputAdapter->mouseDoubleClick(x, y, modkey, button);
-}
-
-void zooCmd_MouseMove(int x, int y, unsigned int modkey)
-{
-	if (s_isInited)
-		g_inputAdapter->mouseMove(x, y, modkey);
-}
-
-void zooCmd_Wheel(int x, int y, unsigned int modkey, zooCmd_Scroll scroll)
-{
-	if (s_isInited)
-		g_inputAdapter->wheel(x, y, modkey, scroll);
+		return g_renderAdapter->setup(windowWidth, windowHeight, windowScale, windowID);
+	return nullptr;
 }
 
 bool zooCmd_BoolValue(const char* variable, bool* value)
@@ -310,9 +267,4 @@ const char* zooCmd_TipMessage()
 	static std::string s_tipMessage;
 	s_tipMessage = CmdManager::getTipMessage().c_str();
 	return s_tipMessage.c_str();
-}
-
-void zooCmd_RemapKeyboard(zooCmd_Key key, int remapkey)
-{
-	InputAdapter::remapKeyboard(key, remapkey);
 }

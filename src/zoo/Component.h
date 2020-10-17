@@ -79,11 +79,45 @@ public:
 		return dynamic_cast<T*>(getComponentImpl(ReflexFactory<>::getTypeName(typeid(T).name())));
 	}
 
-	Component* addComponent(string className, string implName = "");
-	template<typename T>
-	T* addComponent(string implName = "")
+	template<typename T, typename ...Args>
+	T* addComponent(string implName = "", Args... args)
 	{
-		return dynamic_cast<T*>(addComponent(ReflexFactory<>::getTypeName(typeid(T).name()), implName));
+		return dynamic_cast<T*>(addComponent(ReflexFactory<Args...>::getTypeName(typeid(T).name()), implName, args...));
+	}
+
+	template<typename ...Args>
+	Component* addComponent(string className, string implName, Args... args)
+	{
+		Component* pComponent = getComponent(className);
+		if (pComponent)
+			return pComponent;
+
+		pComponent = ReflexFactory<Args...>::getInstance().create<Component>(className, args...);
+		if (!pComponent)
+		{
+			zoo_warning("Component type \"%s\" does not exist!", className.c_str());
+			return nullptr;
+		}
+
+		pComponent->_imp = nullptr;
+		pComponent->_entity = this;
+		_components[className] = pComponent;
+
+		if (implName != "")
+		{
+			ComponentImpl* pComponentImpl = ReflexFactory<>::getInstance().create<ComponentImpl>(implName);
+			if (pComponentImpl)
+			{
+				pComponentImpl->_component = pComponent;
+				pComponent->_imp = pComponentImpl;
+			}
+			else
+			{
+				zoo_warning("Component implement type \"%s\" does not exist!", implName.c_str());
+			}
+		}
+
+		return pComponent;
 	}
 
 	void removeComponent(string className);
@@ -123,8 +157,10 @@ class _zooExport Spawner : public Entity
 	~Spawner();
 	DISALLOW_COPY_AND_ASSIGN(Spawner)
 public:
-	static Spawner* create(int id, const string& desc = "");
+	class Context : public Type { public: virtual ~Context() {} };
+	static Spawner* create(int id, const string& context, const string& desc = "");
 	static Spawner* find(int id);
+	static void destroy(int id);
 	static void destroy(Spawner* spawner);
 	bool isSpawner() { return true; }
 	Entity* born(int id, int breed);
@@ -136,26 +172,20 @@ public:
 	bool load(const string& filename);
 	void save(const string& filename);
 	void setNull(const string& key);
-	template<typename T>
-	void setValue(const string& key, const T& value)
-	{
-		setValue(key, &value, typeid(value).name());
-	}
-	template<typename T>
-	void getValue(const string& key, T& value)
-	{
-		getValue(key, &value, typeid(value).name());
-	}
+	template<typename T> T* getContext() { return dynamic_cast<T*>(_relateContext); }
+	template<typename T> void setValue(const string& key, const T& value) { setValue(key, &value, typeid(value).name()); }
+	template<typename T> void getValue(const string& key, T& value) { getValue(key, (void*)&value, typeid(value).name()); }
 
 private:
 	Entity* fetch();
 	void discard(Entity* pEntity);
-	void setValue(const string& key, const void* val, const char* typeName);
-	void getValue(const string& key, void* val, const char* typeName);
+	void setValue(const string& key, const void* val, string typeName);
+	void getValue(const string& key, void* val, string typeName);
 
 private:
 	void* _parser;
 	Entity* _firstAvailable;
+	Context* _relateContext;
 	static unordered_map<int, Spawner*> _spawners;
 	unordered_map<int, unordered_map<int, Entity*>> _entitiesPool;
 };

@@ -6,6 +6,7 @@
 #ifndef __OSG_COMPONENTIMPLS_H__
 #define __OSG_COMPONENTIMPLS_H__
 
+#include <zooCmd_osg/OsgMaterial.h>
 #include <zooCmd_osg/OsgEarthSupport.h>
 #include <component/war/WarComponents.h>
 #include "CameraManipulatorManager.h"
@@ -23,9 +24,11 @@ public:
 class MaterialImpl
 {
 	string _lastUseMatName;
+	OsgMaterial* _currentOsgMat;
 	osg::ref_ptr<osg::StateSet> _defaultStateSet;
 public:
 	MaterialImpl();
+	void update(Material* material);
 	void update(Material* material, osg::Node* node);
 };
 
@@ -65,6 +68,7 @@ public:
 
 class CameraImpl : public ComponentImpl
 {
+	int _viewID;
 	typedef std::pair<osg::Camera*, osg::Texture2D*> Pass;
 	ZOO_REFLEX_DECLARE(CameraImpl)
 public:

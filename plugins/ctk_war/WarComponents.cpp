@@ -112,20 +112,6 @@ void Material::serialize(Spawner* spawner)
 {
 	spawner->setValue("material_name", _currentUseMatName);
 
-	// 序列化着色器
-	string shaders;
-	for (int i = 0; i < COUNT; ++i)
-	{
-		if (_shaderFiles[i].first != "")
-		{
-			stringstream ss;
-			ss << i << ":" << _shaderFiles[i].second << ";";
-			shaders += ss.str();
-		}
-	}
-
-	spawner->setValue("shaders", shaders);
-
 	// 序列化纹理单元
 	string textures;
 	for (int i = 0; i < TexUnitNum; ++i)
@@ -176,26 +162,6 @@ void Material::deserialize(Spawner* spawner)
 	vector<string> vars;
 	vector<string> container;
 
-	// 反序列化着色器
-	for (int i = 0; i < COUNT; ++i)
-		_shaderFiles[i] = make_pair("", "");
-
-	spawner->getValue("shaders", strin);
-	zoo::stringtok(container, strin, ";");
-	int siz = container.size();
-	if (siz > 0)
-	{
-		for (int i = 0; i < siz; ++i)
-		{
-			vars.clear();
-			zoo::stringtok(vars, container[i], ":");
-			if (vars.size() != 2)
-				continue;
-
-			_shaderFiles[atoi(vars[0].c_str())] = make_pair(vars[0], vars[1]);
-		}
-	}
-
 	// 反序列化纹理单元
 	for (int i = 0; i < TexUnitNum; ++i)
 		_textureFiles[i] = make_pair("", "");
@@ -203,7 +169,7 @@ void Material::deserialize(Spawner* spawner)
 	container.clear();
 	spawner->getValue("textures", strin);
 	zoo::stringtok(container, strin, ";");
-	siz = container.size();
+	size_t siz = container.size();
 	if (siz > 0)
 	{
 		for (int i = 0; i < siz; ++i)
@@ -623,9 +589,33 @@ void Animator::deserialize(Spawner* spawner)
 	spawner->getValue("traj_file", _trajFile);
 }
 //////////////////////////////////////////////////////////////////////////
+static int s_unique_viewID = 0;
 ZOO_REFLEX_IMPLEMENT(Camera);
+Reflex<Camera, int> Camera::_dynReflex_INT;
 Camera::Camera()
-	: _trackEntID(-1)
+	: _windowID(0)
+	, _viewID(s_unique_viewID++)
+	, _trackEntID(-1)
+	, _trackEntBreed(-1)
+	, _manipulatorKey(Terrain_)
+	, _lRatio(0)
+	, _rRatio(1)
+	, _bRatio(0)
+	, _tRatio(1)
+	, _red(0)
+	, _green(0)
+	, _blue(0)
+	, _alpha(255)
+{
+	_passes[0]._rt = Window_;
+	for (int i = 0; i < MaxPassCount; ++i)
+		_passes[i]._material.setParent(this);
+}
+
+Camera::Camera(int windowID)
+	: _windowID(windowID)
+	, _viewID(s_unique_viewID++)
+	, _trackEntID(-1)
 	, _trackEntBreed(-1)
 	, _manipulatorKey(Terrain_)
 	, _lRatio(0)
@@ -644,6 +634,7 @@ Camera::Camera()
 
 void Camera::serialize(Spawner* spawner)
 {
+	spawner->setValue("window_id", _windowID);
 	spawner->setValue("bgcolor_red", _red);
 	spawner->setValue("bgcolor_green", _green);
 	spawner->setValue("bgcolor_blue", _blue);
@@ -664,6 +655,7 @@ void Camera::serialize(Spawner* spawner)
 
 void Camera::deserialize(Spawner* spawner)
 {
+	spawner->getValue("window_id", _windowID);
 	spawner->getValue("bgcolor_red", _red);
 	spawner->getValue("bgcolor_green", _green);
 	spawner->getValue("bgcolor_blue", _blue);

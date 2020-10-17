@@ -30,11 +30,8 @@ void MaterialManager::getMaterialConfigInfo(string materialName, Material* mater
 {
 	material->_uniforms.clear();
 
-	for (int i = 0; i < Material::COUNT; ++i)
-		material->_shaderFiles[i] = make_pair("", false);
-
 	for (int i = 0; i < Material::TexUnitNum; ++i)
-		material->_textureFiles[i] = make_pair("", false);
+		material->_textureFiles[i] = make_pair("", "");
 
 	auto it = _materials.find(materialName);
 	if (it != _materials.end())
@@ -45,16 +42,16 @@ void MaterialManager::getMaterialConfigInfo(string materialName, Material* mater
 	}
 }
 
-bool MaterialManager::attach(Material* material, osg::Node* node)
+OsgMaterial* MaterialManager::attach(Material* material, osg::Node* node)
 {
 	if (!material || !node || material->_currentUseMatName == "Default")
-		return false;
+		return nullptr;
 
 	auto it = _materials.find(material->_currentUseMatName);
 	if (it == _materials.end())
 	{
 		zoo_warning("不存在的材质[%s]，默认使用缺省材质！", material->_currentUseMatName.c_str());
-		return false;
+		return nullptr;
 	}
 
 	OsgMaterial* pOsgMaterial = it->second;
@@ -80,7 +77,7 @@ bool MaterialManager::attach(Material* material, osg::Node* node)
 		}
 	}
 
-	return true;
+	return pOsgMaterial;
 }
 
 void MaterialManager::detach(const string& materialName, osg::Node* node)

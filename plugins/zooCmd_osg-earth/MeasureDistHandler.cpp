@@ -4,8 +4,9 @@
 
 using namespace osgEarth;
 
-MeasureDistHandler::MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator)
+MeasureDistHandler::MeasureDistHandler(osgEarth::MapNode* mapNode, osgEarth::Util::EarthManipulator* manipulator, EarthControls* controls)
 	: _totalDistance(0)
+	, _controls(controls)
 	, _mapNode(mapNode)
 	, _manipulator(manipulator)
 {
@@ -119,7 +120,7 @@ bool MeasureDistHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 						char szbuf[128];
 						sprintf_s(szbuf, sizeof(szbuf), "[Measure distance] Total distance: %.2f", _totalDistance);
-						EarthControls::getIns()->addLabelTextDisplay(szbuf, dist_label_);
+						_controls->addLabelTextDisplay(szbuf, dist_label_);
 					}
 
 				} while (0);

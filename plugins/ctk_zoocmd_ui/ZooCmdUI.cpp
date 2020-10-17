@@ -68,60 +68,29 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	QStringList cmdset = settings.value("activecmd").toStringList();
 	settings.endGroup();
 
-	bool mainThreadInit = false;
-	_mainWidget = new ZooCmdWgt(_inputAdaName, cmdset, datadir, mainThreadInit, this);
+	_mainWidget = new ZooCmdWgt(_inputAdaName, cmdset, datadir, this);
 	UIActivator::getPluginContext()->registerService<Win32Service>(_mainWidget);
 	_ui.gridLayout_center->addWidget(_mainWidget);
 	setCentralWidget(_mainWidget);
-	connect(_mainWidget, &ZooCmdWgt::inited, [this, mainThreadInit]
+	connect(_mainWidget, &ZooCmdWgt::cmdRegistered, [this]
 	{
-		if (!mainThreadInit)
+		_progressBar->setValue(0);
+		_progressBar->setVisible(true);
+
+		int i = 0;
+		while (true)
 		{
-			_progressBar->setValue(0);
-			_progressBar->setVisible(true);
-
-			int i = 0;
-			while (true)
+			if (_mainWidget->isCmdRegCompleted())
 			{
-				if (_mainWidget->isInitCmdCompleted())
-				{
-					_progressBar->setValue(100);
-					_progressBar->setVisible(false);
-					break;
-				}
-
-				QThread::msleep(5);
-				_progressBar->setValue(i++);
-				if (i > 100)
-					i = 0;
+				_progressBar->setValue(100);
+				_progressBar->setVisible(false);
+				break;
 			}
-		}
 
-		_cmdlineEdit->setEnabled(true);
-	});
-
-	connect(_mainWidget, &ZooCmdWgt::cmdRegistered, [this, mainThreadInit]
-	{
-		if (!mainThreadInit)
-		{
-			_progressBar->setValue(0);
-			_progressBar->setVisible(true);
-
-			int i = 0;
-			while (true)
-			{
-				if (_mainWidget->isRegCmdCompleted())
-				{
-					_progressBar->setValue(100);
-					_progressBar->setVisible(false);
-					break;
-				}
-
-				QThread::msleep(5);
-				_progressBar->setValue(i++);
-				if (i > 100)
-					i = 0;
-			}
+			QThread::msleep(5);
+			_progressBar->setValue(i++);
+			if (i > 100)
+				i = 0;
 		}
 
 		_cmdlineEdit->setEnabled(true);
@@ -133,6 +102,14 @@ ZooCmdUI::~ZooCmdUI()
 #ifdef _DEBUG
 	removeWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT);
 #endif
+}
+
+bool ZooCmdUI::needSavedScene()
+{
+	QString title = QMainWindow::windowTitle();
+	if (title.size() > 0 && title.right(1) == tr("*"))
+		return true;
+	return false;
 }
 
 void ZooCmdUI::setWindowTitle(QString windowTitle)
@@ -192,8 +169,12 @@ QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& strName, Q
 			pActionWnd->setCheckable(true);
 			pActionWnd->setChecked(isShow);
 			_ui.mainToolBar->addAction(pActionWnd);
-			connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(setVisible(bool)));
-			connect(pActionWnd, SIGNAL(triggered(bool)), dock, SLOT(raise()));
+			connect(pActionWnd, &QAction::triggered, [dock](bool isShow)
+			{
+				dock->setVisible(isShow);
+				if (isShow)
+					dock->raise();
+			});
 			_dockWgts.insert(wgtID, qMakePair(dock, pActionWnd));
 			if (hasSeparator)
 				_ui.mainToolBar->addSeparator();

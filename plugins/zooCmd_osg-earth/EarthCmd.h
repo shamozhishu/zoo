@@ -11,12 +11,15 @@ class EarthCmd : public zooCmd::Cmd
 public:
 	EarthCmd();
 	~EarthCmd();
-	bool init();
 	void handle(const zooCmd::Event& evt);
 	void help(zooCmd::CmdUsage* usage);
 	void parse(Signal& subcmd, zooCmd::CmdParser& cmdarg, zoo::UserData& returnValue);
 
 private:
+	EarthControls* getEarthControls();
+
+private:
+	EarthControls* _earthControls;
 	OsgEarthContext* _osgEarthContext;
 	osg::ref_ptr<LonLatDistHandler> _lonLatHandler;
 };

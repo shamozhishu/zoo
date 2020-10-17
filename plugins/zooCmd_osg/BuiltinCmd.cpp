@@ -1,12 +1,12 @@
 #include "BuiltinCmd.h"
-#include "InputDevice.h"
+#include "RenderDevice.h"
 #include <zoo/Utils.h>
 #include <zoo/Component.h>
 #include <zooCmd/CmdManager.h>
-#include <zooCmd_osg/OsgEarthContext.h>
 #include "OsgComponentImpls.h"
 #include "BuiltinEventHandler.h"
 #include "WindowCaptureCallback.h"
+#include <zooCmd_osg/OsgEarthContext.h>
 
 using namespace zooCmd;
 
@@ -22,11 +22,11 @@ bool BuiltinCmd::init()
 void BuiltinCmd::help(CmdUsage* usage)
 {
 	usage->setDescription("内建命令: osg相关命令");
-	usage->addCommandProcedureCall("home(string view_name)", "摄像机复位");
+	usage->addCommandProcedureCall("home(int view_id)", "摄像机复位");
 	usage->addCommandProcedureCall("focus(int ent_id, int ent_breed, int scene_id)", "将焦点设置到参数索引到的实体");
-	usage->addCommandProcedureCall("screenshot(string view_name, int count)", "截屏: count是截屏帧数, count==0表示禁用截屏, count<0表示不限次数的截屏");
-	usage->addCommandProcedureCall("posin(string view_name, bool show)", "显示当前光标在世界坐标系中和任意模型的交点位置(Ctrl+Left Mouse Button)");
-	usage->addCommandProcedureCall("rotate(string view_name, int ent_id, int ent_breed, int scene_id)", "使用姿态球对模型进行旋转");
+	usage->addCommandProcedureCall("screenshot(int view_id, int count)", "截屏: count是截屏帧数, count==0表示禁用截屏, count<0表示不限次数的截屏");
+	usage->addCommandProcedureCall("posin(int view_id, int scene_id, bool show)", "显示当前光标在世界坐标系中和任意模型的交点位置(Ctrl+Left Mouse Button)");
+	usage->addCommandProcedureCall("rotate(int view_id, int ent_id, int ent_breed, int scene_id)", "使用姿态球对模型进行旋转");
 	usage->addCommandProcedureCall("exit()", "退出程序");
 	usage->addCommandProcedureCall("bool(bool b) // bool& b", "测试布尔返回值");
 	usage->addCommandProcedureCall("int(int i) // int& i", "测试整型数返回值");
@@ -38,12 +38,12 @@ void BuiltinCmd::help(CmdUsage* usage)
 
 void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 {
-	std::function<osgViewer::View*(string)> getView = [](string viewName) -> osgViewer::View*
+	std::function<osgViewer::View*(int)> getView = [](int viewID) -> osgViewer::View*
 	{
-		osgViewer::View* pView = ServiceLocator<OsgDevice>::getService()->getView(viewName);
+		osgViewer::View* pView = ServiceLocator<OsgDevice>::getService()->getView(viewID);
 		if (!pView)
 		{
-			CmdManager::setTipMessage("视图[" + viewName + "]不存在！");
+			CmdManager::setTipMessage("视图[" + std::to_string(viewID) + "]不存在！");
 			return nullptr;
 		}
 
@@ -71,24 +71,24 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 
 	do
 	{
-		string viewname;
-		if (cmdarg.read("home", viewname))
+		int viewid;
+		if (cmdarg.read("home", viewid))
 		{
-			SignalTrigger::connect(subcmd, [viewname, getView]
+			SignalTrigger::connect(subcmd, [viewid, getView]
 			{
-				osgViewer::View* pView = getView(viewname);
+				osgViewer::View* pView = getView(viewid);
 				if (pView)
 					pView->getCameraManipulator()->home(2);
 			});
 			break;
 		}
 
-		int id, breed, sceneId;
-		if (cmdarg.read("focus", id, breed, sceneId))
+		int id, breed, sceneid;
+		if (cmdarg.read("focus", id, breed, sceneid))
 		{
-			SignalTrigger::connect(subcmd, [id, breed, sceneId, getEnt]
+			SignalTrigger::connect(subcmd, [id, breed, sceneid, getEnt]
 			{
-				Entity* pEnt = getEnt(id, breed, sceneId);
+				Entity* pEnt = getEnt(id, breed, sceneid);
 				if (!pEnt)
 					return;
 
@@ -105,11 +105,11 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		}
 
 		int count;
-		if (cmdarg.read("screenshot", viewname, count))
+		if (cmdarg.read("screenshot", viewid, count))
 		{
-			SignalTrigger::connect(subcmd, [this, viewname, count, getView]
+			SignalTrigger::connect(subcmd, [this, viewid, count, getView]
 			{
-				osgViewer::View* pView = getView(viewname);
+				osgViewer::View* pView = getView(viewid);
 				if (!pView)
 					return;
 
@@ -127,19 +127,26 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		}
 
 		bool show;
-		if (cmdarg.read("posin", viewname, show))
+		if (cmdarg.read("posin", viewid, sceneid, show))
 		{
-			SignalTrigger::connect(subcmd, [this, viewname, show, getView]
+			SignalTrigger::connect(subcmd, [this, viewid, sceneid, show, getView]
 			{
-				osgViewer::View* pView = getView(viewname);
+				osgViewer::View* pView = getView(viewid);
 				if (!pView)
 					return;
+
+				OsgEarthContext* context = Spawner::find(sceneid) ? Spawner::find(sceneid)->getContext<OsgEarthContext>() : nullptr;
+				if (!context)
+				{
+					CmdManager::setTipMessage("场景[" + std::to_string(sceneid) + "]不存在！");
+					return;
+				}
 
 				if (show)
 				{
 					if (!_showCursorWPosHandler)
 					{
-						_showCursorWPosHandler = new ShowCursorWPosHandler;
+						_showCursorWPosHandler = new ShowCursorWPosHandler(context);
 						pView->addEventHandler(_showCursorWPosHandler.get());
 					}
 				}
@@ -155,15 +162,15 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 			break;
 		}
 
-		if (cmdarg.read("rotate", viewname, id, breed, sceneId))
+		if (cmdarg.read("rotate", viewid, id, breed, sceneid))
 		{
-			SignalTrigger::connect(subcmd, [id, breed, sceneId, viewname, getView, getEnt]
+			SignalTrigger::connect(subcmd, [id, breed, sceneid, viewid, getView, getEnt]
 			{
-				osgViewer::View* pView = getView(viewname);
+				osgViewer::View* pView = getView(viewid);
 				if (!pView)
 					return;
 
-				Entity* pEnt = getEnt(id, breed, sceneId);
+				Entity* pEnt = getEnt(id, breed, sceneid);
 				if (!pEnt)
 					return;
 			});
@@ -174,7 +181,7 @@ void BuiltinCmd::parse(Signal& subcmd, CmdParser& cmdarg, UserData& returnValue)
 		{
 			SignalTrigger::connect(subcmd, []
 			{
-				ServiceLocator<OsgDevice>::getService()->as<InputAdapter>()->setDone(true);
+				ServiceLocator<OsgDevice>::getService()->as<RenderAdapter>()->setDone(true);
 				exit(0);
 			});
 			break;

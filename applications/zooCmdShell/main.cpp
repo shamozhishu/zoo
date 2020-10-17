@@ -107,12 +107,14 @@ int main(int argc, char* args[])
 	}
 
 	zooCmdL_Load();
-	if (!zooCmd_InitA("zooCmd_osg", datadir ? datadir : _getcwd(nullptr, 0), 0, 0, 1))
+	if (!zooCmd_InitA("zooCmd_osg", datadir ? datadir : _getcwd(nullptr, 0)))
 	{
 		if (cmdset)
 			delete[] cmdset;
 		return -1;
 	}
+
+	zooCmd_Setup(0, 0, 1, 0);
 
 	for (int i = 0; i < cmdcount; ++i)
 		zooCmd_Register(cmdset[i]);

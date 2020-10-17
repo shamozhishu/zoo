@@ -8,6 +8,7 @@
 class UIManagerService
 {
 public:
+	virtual bool needSavedScene() = 0;
 	virtual void setWindowTitle(QString windowTitle) = 0;
 	virtual void starWindowTitle() = 0;
 	virtual void unstarWindowTitle() = 0;

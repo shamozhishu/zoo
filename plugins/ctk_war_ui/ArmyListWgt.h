@@ -50,6 +50,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void onOpen();
+	void onClose();
 	void onSave();
 	void onSim(bool started);
 	void onPaused(bool paused);

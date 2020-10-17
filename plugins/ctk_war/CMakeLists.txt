@@ -21,15 +21,16 @@ IF(NOT GLM_INCLUDE_DIR)
 ENDIF()
 
 SET(TOLUA_INCLUDE_DIR "" CACHE PATH "Set to tolua++ include install path")
-SET(TOLUA_LIBRARY "" CACHE FILEPATH "Set to tolua++ lib install file")
-SET(TOLUA_LIBRARY_DEBUG "" CACHE FILEPATH "Set to tolua++ lib install file")
-
 IF(NOT TOLUA_INCLUDE_DIR)
 	message(FATAL_ERROR "TOLUA_INCLUDE_DIR need to set!!!")
 ENDIF()
+
+SET(TOLUA_LIBRARY "" CACHE FILEPATH "Set to tolua++ lib install file")
 IF(NOT TOLUA_LIBRARY)
 	message(FATAL_ERROR "TOLUA_LIBRARY need to set!!!")
 ENDIF()
+
+SET(TOLUA_LIBRARY_DEBUG "" CACHE FILEPATH "Set to tolua++ lib install file")
 IF(NOT TOLUA_LIBRARY_DEBUG)
 	message(FATAL_ERROR "TOLUA_LIBRARY_DEBUG need to set!!!")
 ENDIF()
@@ -74,7 +75,9 @@ else()
 	link_directories("${3RD_PARTY_DIR}/lib")
 endif()
 
-file(WRITE ${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp")
+	file(WRITE "${CMAKE_BINARY_DIR}/plugins/ctk_war/ToLuaWar.cpp")
+endif()
 
 file(GLOB CTK_PLUGIN_LIB_H "*.h")
 file(GLOB CTK_PLUGIN_LIB_CPP "*.cpp")

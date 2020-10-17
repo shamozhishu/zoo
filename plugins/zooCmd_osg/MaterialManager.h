@@ -18,7 +18,7 @@ public:
 	~MaterialManager();
 	vector<string> getMaterialList() const;
 	void getMaterialConfigInfo(string materialName, Material* material);
-	bool attach(Material* material, osg::Node* node);
+	OsgMaterial* attach(Material* material, osg::Node* node);
 	void detach(const string& materialName, osg::Node* node);
 	void addMaterial(OsgMaterial* osgMaterial);
 	void removeMaterial(OsgMaterial* osgMaterial);

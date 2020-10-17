@@ -14,6 +14,8 @@ protected:
 	Type() {}
 };
 
+_zooExport unordered_map<string, std::function<void()>>* getCreateFuncMap();
+
 template<typename ...Args>
 class ReflexFactory
 {
@@ -21,6 +23,7 @@ public:
 	static ReflexFactory& getInstance()
 	{
 		static ReflexFactory factory;
+		factory._createFuncMap = (unordered_map<string, function<Type*(Args...)>>*)getCreateFuncMap();
 		return factory;
 	}
 
@@ -51,10 +54,10 @@ public:
 
 	Type* create(const string& typeName, Args... args)
 	{
-		if (typeName.empty())
+		if (typeName == "")
 			return NULL;
-		typename unordered_map<string, function<Type*(Args...)>>::iterator it = _createFuncMap.find(typeName);
-		if (it == _createFuncMap.end())
+		typename unordered_map<string, function<Type*(Args...)>>::iterator it = _createFuncMap->find(typeName + typeid(function<Type*(Args...)>).name());
+		if (it == _createFuncMap->end())
 			return NULL;
 		return it->second(args...);
 	}
@@ -71,28 +74,28 @@ public:
 		return pRealObject;
 	}
 
-	bool enroll(const char* name, function<Type*(Args...)> func)
+	bool enroll(string name, function<Type*(Args...)> func)
 	{
-		if (NULL == name || 0 == strcmp(name, ""))
+		if (name == "")
 			return false;
-		string typeName = getTypeName(name);
-		return _createFuncMap.insert(make_pair(typeName, func)).second;
+		string typeName = getTypeName(name.c_str());
+		return _createFuncMap->insert(make_pair(typeName, func)).second;
 	}
 
-	bool unenroll(const char* name)
+	bool unenroll(string name)
 	{
-		if (NULL == name || 0 == strcmp(name, ""))
+		if (name == "")
 			return false;
-		string typeName = getTypeName(name);
-		auto it = _createFuncMap.find(typeName);
-		if (it == _createFuncMap.end())
+		string typeName = getTypeName(name.c_str());
+		auto it = _createFuncMap->find(typeName);
+		if (it == _createFuncMap->end())
 			return false;
-		_createFuncMap.erase(it);
+		_createFuncMap->erase(it);
 		return true;
 	}
 
 private:
-	unordered_map<string, function<Type*(Args...)>> _createFuncMap;
+	unordered_map<string, function<Type*(Args...)>>* _createFuncMap;
 };
 
 template<typename T, typename ...Args>
@@ -105,14 +108,14 @@ public:
 	}
 	Reflex()
 	{
-		if (!ReflexFactory<Args...>::getInstance().enroll(typeid(T).name(), dynCreate))
+		if (!ReflexFactory<Args...>::getInstance().enroll(string(typeid(T).name()) + typeid(function<Type*(Args...)>).name(), dynCreate))
 		{
 			ZOO_ASSERT(false && "ReflexFactory.enroll() has failed!");
 		}
 	}
 	~Reflex()
 	{
-		if (!ReflexFactory<Args...>::getInstance().unenroll(typeid(T).name()))
+		if (!ReflexFactory<Args...>::getInstance().unenroll(string(typeid(T).name()) + typeid(function<Type*(Args...)>).name()))
 		{
 			ZOO_ASSERT(false && "ReflexFactory.unenroll() has failed!");
 		}
