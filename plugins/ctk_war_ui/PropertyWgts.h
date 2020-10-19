@@ -166,6 +166,7 @@ public:
 
 private:
 	Ui::EnvirPropertyWgt* _ui;
+	QWidget* _skyboxTexWgts[6];
 };
 
 #endif // __PROPERTY_WGTS_H__

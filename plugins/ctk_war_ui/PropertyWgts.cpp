@@ -1090,6 +1090,9 @@ EnvirPropertyWgt::EnvirPropertyWgt(QWidget* parent)
 	, _ui(new Ui::EnvirPropertyWgt)
 {
 	_ui->setupUi(this);
+	for (int i = 0; i < 6; ++i)
+		_skyboxTexWgts[i] = nullptr;
+
 	QStringList weatherType;
 	weatherType << tr("Çç") << tr("Óê") << tr("Ñ©");
 	_ui->comboBox->addItems(weatherType);
@@ -1112,6 +1115,45 @@ EnvirPropertyWgt::EnvirPropertyWgt(QWidget* parent)
 			_uiMgr->starWindowTitle();
 		}
 	});
+	connect(_ui->checkBox, &QCheckBox::stateChanged, [this](int boxState)
+	{
+		for (int i = 0; i < 6; ++i)
+		{
+			if (_skyboxTexWgts[i])
+			{
+				_ui->verticalLayout->removeWidget(_skyboxTexWgts[i]);
+				_skyboxTexWgts[i]->deleteLater();
+				_skyboxTexWgts[i] = nullptr;
+			}
+		}
+
+		bool isShow = (boxState == Qt::Checked ? true : false);
+		if (isShow)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				QWidget* pWgt = new TextureWgt(this, &(COM_CAST(Environment)->_skyBox), i);
+				_skyboxTexWgts[i] = pWgt;
+				_ui->verticalLayout->addWidget(pWgt);
+			}
+
+			if (COM_CAST(Environment)->_skyBox._currentUseMatName != ZOO_STRING(SkyBox))
+			{
+				COM_CAST(Environment)->_skyBox._currentUseMatName = ZOO_STRING(SkyBox);
+				_com->dirtyBit().addState(Environment::SkyBox_);
+				_uiMgr->starWindowTitle();
+			}
+		}
+		else
+		{
+			if (COM_CAST(Environment)->_skyBox._currentUseMatName == ZOO_STRING(SkyBox))
+			{
+				COM_CAST(Environment)->_skyBox._currentUseMatName = "";
+				_com->dirtyBit().addState(Environment::SkyBox_);
+				_uiMgr->starWindowTitle();
+			}
+		}
+	});
 }
 
 EnvirPropertyWgt::~EnvirPropertyWgt()
@@ -1122,6 +1164,7 @@ EnvirPropertyWgt::~EnvirPropertyWgt()
 void EnvirPropertyWgt::resetCom(zoo::Component* pCom)
 {
 	PropertyWgt::resetCom(pCom);
+	_ui->checkBox->setCheckState(COM_CAST(Environment)->_skyBox._currentUseMatName == ZOO_STRING(SkyBox) ? Qt::Checked : Qt::Unchecked);
 	_ui->comboBox->setCurrentIndex(COM_CAST(Environment)->_type);
 	int pos = COM_CAST(Environment)->_intensity * _ui->horizontalSlider->maximum();
 	if (pos < _ui->horizontalSlider->minimum())

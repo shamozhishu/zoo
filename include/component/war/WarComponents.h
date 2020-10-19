@@ -254,13 +254,15 @@ public:
 
 struct Environment : public Component { // tolua_export
 	enum {
-		Weather_ = ESTATE_01
+		SkyBox_ = ESTATE_01,
+		Weather_ = ESTATE_02
 	};
 	// tolua_begin
 	enum Weather { Sunny_, Rain_, Snow_ };
 	// tolua_end
 	Weather _type;
 	float _intensity;
+	Material _skyBox;
 	ZOO_REFLEX_DECLARE(Environment)
 
 public:
@@ -270,6 +272,8 @@ public:
 
 public:
 	// tolua_begin
+	void showSkyBox();
+	void hideSkyBox();
 	void setWeather(Weather type, float intensity);
 };
 // tolua_end

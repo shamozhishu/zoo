@@ -9,6 +9,7 @@
 
 Mesh::Mesh()
 	: _currentUseMeshName("Default")
+	, _parent(nullptr)
 {
 }
 
@@ -102,9 +103,10 @@ void Mesh::changeParam(const string& var, const vector<double>& val)
 	_params[var] = val;
 	_parent->dirtyBit().addState(Mesh::Changed_);
 }
-
+//////////////////////////////////////////////////////////////////////////
 Material::Material()
 	: _currentUseMatName("Default")
+	, _parent(nullptr)
 {
 }
 
@@ -163,9 +165,6 @@ void Material::deserialize(Spawner* spawner)
 	vector<string> container;
 
 	// 反序列化纹理单元
-	for (int i = 0; i < TexUnitNum; ++i)
-		_textureFiles[i] = make_pair("", "");
-
 	container.clear();
 	spawner->getValue("textures", strin);
 	zoo::stringtok(container, strin, ";");
@@ -754,18 +753,46 @@ Environment::Environment()
 	: _type(Sunny_)
 	, _intensity(0.3f)
 {
+	_skyBox.setParent(this);
+	_skyBox._currentUseMatName = "";
+	_skyBox._textureFiles[0] = make_pair("+X：", "");
+	_skyBox._textureFiles[1] = make_pair("-X：", "");
+	_skyBox._textureFiles[2] = make_pair("+Y：", "");
+	_skyBox._textureFiles[3] = make_pair("-Y：", "");
+	_skyBox._textureFiles[4] = make_pair("+Z：", "");
+	_skyBox._textureFiles[5] = make_pair("-Z：", "");
 }
 
 void Environment::serialize(Spawner* spawner)
 {
 	spawner->setValue("weather", _type);
 	spawner->setValue("intensity", _intensity);
+	_skyBox.serialize(spawner);
 }
 
 void Environment::deserialize(Spawner* spawner)
 {
 	spawner->getValue("weather", _type);
 	spawner->getValue("intensity", _intensity);
+	_skyBox.deserialize(spawner);
+	_skyBox._textureFiles[0].first = "+X：";
+	_skyBox._textureFiles[1].first = "-X：";
+	_skyBox._textureFiles[2].first = "+Y：";
+	_skyBox._textureFiles[3].first = "-Y：";
+	_skyBox._textureFiles[4].first = "+Z：";
+	_skyBox._textureFiles[5].first = "-Z：";
+}
+
+void Environment::showSkyBox()
+{
+	_skyBox._currentUseMatName = ZOO_STRING(SkyBox);
+	_dirty.addState(SkyBox_);
+}
+
+void Environment::hideSkyBox()
+{
+	_skyBox._currentUseMatName = "";
+	_dirty.addState(SkyBox_);
 }
 
 void Environment::setWeather(Weather type, float intensity)
@@ -782,7 +809,6 @@ void Environment::setWeather(Weather type, float intensity)
 		_dirty.addState(Weather_);
 	}
 }
-
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Earth);
 Earth::Earth()

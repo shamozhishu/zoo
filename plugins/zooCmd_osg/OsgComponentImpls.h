@@ -102,6 +102,7 @@ public:
 
 public:
 	osg::ref_ptr<osg::Switch> _switch;
+	osg::ref_ptr<osg::Transform> _skyBox;
 };
 
 #ifdef NEED_OSGEARTH_LIBRARY

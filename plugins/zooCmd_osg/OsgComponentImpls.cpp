@@ -2,6 +2,7 @@
 #include "RenderDevice.h"
 #include <zoo/Utils.h>
 #include "StarrySky.h"
+#include "SkyBox.h"
 #include "WeatherEffect.h"
 #include <zooCmd/ZooCmd.h>
 #include <zooCmd/CmdManager.h>
@@ -396,7 +397,9 @@ CameraImpl::Pass CameraImpl::createDepthPass(osg::Node* scene)
 ZOO_REFLEX_IMPLEMENT(EnvironmentImpl);
 EnvironmentImpl::EnvironmentImpl()
 	: _switch(new osg::Switch)
+	, _skyBox(new SkyBox)
 {
+	_skyBox->getOrCreateStateSet()->setTextureAttributeAndModes(0, new osg::TexGen);
 }
 
 EnvironmentImpl::~EnvironmentImpl()
@@ -404,6 +407,8 @@ EnvironmentImpl::~EnvironmentImpl()
 	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
 	if (_switch)
 		pScene->removeChild(_switch.get());
+	if (_skyBox)
+		pScene->removeChild(_skyBox.get());
 }
 
 void EnvironmentImpl::awake()
@@ -414,19 +419,48 @@ void EnvironmentImpl::awake()
 	_switch->setAllChildrenOff();
 	if (_switch->getNumParents() == 0)
 		pOsgEarthContext->getSceneNode()->addChild(_switch);
+	if (_skyBox->getNumParents() == 0)
+		pOsgEarthContext->getSceneNode()->addChild(_skyBox);
 }
 
 void EnvironmentImpl::update()
 {
-	Environment* pEnvironment = getComponent<Environment>();
+	Environment* pEnvir = getComponent<Environment>();
+	if (pEnvir->dirtyBit().checkState(Environment::SkyBox_))
+	{
+		_skyBox->removeChildren(0, _skyBox->getNumChildren());
+		if (pEnvir->_skyBox._currentUseMatName == ZOO_STRING(SkyBox))
+		{
+			osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
+			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(0, 0, 0), pScene->getBound().radius())));
+			geode->setCullingActive(false);
+			osg::ref_ptr<osg::MatrixTransform> trans = new osg::MatrixTransform;
+			trans->setMatrix(osg::Matrix::rotate(osg::DegreesToRadians(-90.0f), osg::X_AXIS));
+			trans->addChild(geode.get());
+			_skyBox->addChild(trans.get());
+		}
+	}
+
+	if (pEnvir->dirtyBit().checkState(Material::Changed_))
+	{
+		((SkyBox*)_skyBox.get())->setEnvironmentMap(0,
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[0].second),
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[1].second),
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[2].second),
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[3].second),
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[4].second),
+			osgDB::readImageFile(ZOO_DATA_ROOT_DIR + pEnvir->_skyBox._textureFiles[5].second));
+	}
+
 	WeatherEffect* effect = dynamic_cast<WeatherEffect*>(_switch->getChild(0));
-	if (effect && pEnvironment->dirtyBit().checkState(Environment::Weather_))
+	if (effect && pEnvir->dirtyBit().checkState(Environment::Weather_))
 	{
 		_switch->setAllChildrenOff();
-		switch (pEnvironment->_type)
+		switch (pEnvir->_type)
 		{
-		case Environment::Rain_: effect->rain(pEnvironment->_intensity); _switch->setValue(0, true); break;
-		case Environment::Snow_: effect->snow(pEnvironment->_intensity); _switch->setValue(0, true); break;
+		case Environment::Rain_: effect->rain(pEnvir->_intensity); _switch->setValue(0, true); break;
+		case Environment::Snow_: effect->snow(pEnvir->_intensity); _switch->setValue(0, true); break;
 		}
 	}
 }
