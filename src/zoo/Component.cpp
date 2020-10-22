@@ -44,78 +44,6 @@ Entity::~Entity()
 	_components.clear();
 }
 
-Component* Entity::getComponent(string className)
-{
-	auto it = _components.find(className);
-	if (it != _components.end())
-		return it->second;
-
-	return nullptr;
-}
-
-ComponentImpl* Entity::getComponentImpl(string className)
-{
-	Component* pComponent = getComponent(className.substr(0, className.size() - 4));
-	if (pComponent)
-		return pComponent->_imp;
-	return nullptr;
-}
-
-void Entity::removeComponent(string className)
-{
-	if (className == "DoF")
-	{
-		zoo_warning("DOF component cannot be removed!");
-		return;
-	}
-
-	auto it = _components.find(className);
-	if (it != _components.end())
-	{
-		delete it->second;
-		_components.erase(it);
-	}
-}
-
-void Entity::removeComponent(Component* pComponent)
-{
-	removeComponent(pComponent->typeName());
-}
-
-void Entity::removeComponents()
-{
-	auto it = _components.begin();
-	while (it != _components.end())
-	{
-		if (it->first == "DoF")
-		{
-			++it;
-			continue;
-		}
-
-		delete it->second;
-		it = _components.erase(it);
-	}
-}
-
-void Entity::notifyComponents(bool cleanup/* = true*/)
-{
-	if (SignalTrigger::hasSignal(*this))
-	{
-		SignalTrigger::trigger(*this);
-		if (cleanup)
-		{
-			SignalTrigger::disconnect(*this);
-			userData().clear();
-		}
-	}
-}
-
-unordered_map<string, Component*> Entity::getComponents() const
-{
-	return _components;
-}
-
 void Entity::awakeAll()
 {
 	Component* pComponent;
@@ -216,6 +144,78 @@ void Entity::deserialize(Spawner* spawner)
 		if (pCom)
 			pCom->deserialize(spawner);
 	}
+}
+
+Component* Entity::getComponent(string className)
+{
+	auto it = _components.find(className);
+	if (it != _components.end())
+		return it->second;
+
+	return nullptr;
+}
+
+ComponentImpl* Entity::getComponentImpl(string className)
+{
+	Component* pComponent = getComponent(className.substr(0, className.size() - 4));
+	if (pComponent)
+		return pComponent->_imp;
+	return nullptr;
+}
+
+void Entity::removeComponent(string className)
+{
+	if (className == "DoF")
+	{
+		zoo_warning("DOF component cannot be removed!");
+		return;
+	}
+
+	auto it = _components.find(className);
+	if (it != _components.end())
+	{
+		delete it->second;
+		_components.erase(it);
+	}
+}
+
+void Entity::removeComponent(Component* pComponent)
+{
+	removeComponent(pComponent->typeName());
+}
+
+void Entity::removeComponents()
+{
+	auto it = _components.begin();
+	while (it != _components.end())
+	{
+		if (it->first == "DoF")
+		{
+			++it;
+			continue;
+		}
+
+		delete it->second;
+		it = _components.erase(it);
+	}
+}
+
+void Entity::notifyComponents(bool cleanup/* = true*/)
+{
+	if (SignalTrigger::hasSignal(*this))
+	{
+		SignalTrigger::trigger(*this);
+		if (cleanup)
+		{
+			SignalTrigger::disconnect(*this);
+			userData().clear();
+		}
+	}
+}
+
+unordered_map<string, Component*> Entity::getComponents() const
+{
+	return _components;
 }
 //////////////////////////////////////////////////////////////////////////
 std::unordered_map<int, Spawner*> Spawner::_spawners;

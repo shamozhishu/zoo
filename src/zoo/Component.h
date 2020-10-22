@@ -64,6 +64,10 @@ public:
 	string& desc() { return _desc; }
 	const string& desc() const { return _desc; }
 	virtual bool isSpawner() { return false; }
+	virtual void awakeAll();
+	virtual void updateAll();
+	virtual void serialize(Spawner* spawner);
+	virtual void deserialize(Spawner* spawner);
 
 	Component* getComponent(string className);
 	template<typename T>
@@ -125,12 +129,6 @@ public:
 	void removeComponents();
 	void notifyComponents(bool cleanup = true);
 	unordered_map<string, Component*> getComponents() const;
-
-private:
-	virtual void awakeAll();
-	virtual void updateAll();
-	virtual void serialize(Spawner* spawner);
-	virtual void deserialize(Spawner* spawner);
 
 private:
 	union

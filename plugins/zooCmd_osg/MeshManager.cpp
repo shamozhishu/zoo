@@ -27,7 +27,7 @@ vector<string> MeshManager::getMeshList() const
 	return meshList;
 }
 
-void MeshManager::getMeshConfigInfo(string meshName, Mesh* mesh)
+bool MeshManager::switchMesh(string meshName, Mesh* mesh)
 {
 	mesh->_params.clear();
 
@@ -38,6 +38,24 @@ void MeshManager::getMeshConfigInfo(string meshName, Mesh* mesh)
 		if (pOsgMesh)
 			pOsgMesh->getMeshConfigInfo(mesh);
 	}
+	else
+	{
+		meshName = "Default";
+	}
+
+	if (mesh->_currentUseMeshName != meshName)
+	{
+		mesh->_currentUseMeshName = meshName;
+		mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
+		return true;
+	}
+
+	return false;
+}
+
+bool MeshManager::compileMesh(string meshFile, Mesh* mesh)
+{
+	return false;
 }
 
 bool MeshManager::attach(Mesh* mesh, osg::Group* meshNode)

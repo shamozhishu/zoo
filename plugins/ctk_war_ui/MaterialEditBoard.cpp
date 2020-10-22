@@ -1,8 +1,11 @@
 #include "MaterialEditBoard.h"
 #include <QFileDialog>
 #include <QDesktopServices>
-#include "ui_MaterialEditBoard.h"
+#include <UniversalGlobalServices.h>
+#include <component/war/WarComponents.h>
+#include "PropertyWgts.h"
 #include "MaterialDisplayWgt.h"
+#include "ui_MaterialEditBoard.h"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
@@ -13,6 +16,9 @@ MaterialEditBoard::MaterialEditBoard()
 	, _matDisplayWgt(new MaterialDisplayWgt)
 {
 	_ui->setupUi(this);
+	_matWgt = new MaterialWgt(this, nullptr);
+	_matWgt->resetMat(_matDisplayWgt->getDisplayedMat());
+	_ui->verticalLayout->insertWidget(_ui->verticalLayout->count() - 1, _matWgt);
 	_ui->verticalLayout_mat->addWidget(_matDisplayWgt);
 	connect(_ui->toolButton_open, &QToolButton::clicked, [this]
 	{
@@ -30,7 +36,24 @@ MaterialEditBoard::MaterialEditBoard()
 	});
 	connect(_ui->toolButton_compile, &QToolButton::clicked, [this]
 	{
-		
+		QString str = _ui->lineEdit->text();
+		if (!str.isEmpty())
+		{
+			_matDisplayWgt->generateMaterialSphere(str.toLocal8Bit().data());
+			_matWgt->resetMat(_matDisplayWgt->getDisplayedMat());
+		}
+	});
+	connect(_matWgt, &MaterialWgt::materialChanged, [this]
+	{
+		_matDisplayWgt->refreshMaterialSphere(_ui->toolButton_light->isChecked());
+	});
+	connect(_ui->toolButton_light, &QToolButton::clicked, [this](bool checked)
+	{
+		_matDisplayWgt->refreshMaterialSphere(checked);
+		if (checked)
+			_ui->toolButton_light->setToolTip(tr("¹ØµÆ"));
+		else
+			_ui->toolButton_light->setToolTip(tr("¿ªµÆ"));
 	});
 }
 

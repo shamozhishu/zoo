@@ -2,7 +2,6 @@
 #define __MATERIAL_SCRIPT_H__
 
 #include <osgFX/Effect>
-#include <zoo/Utils.h>
 #include <zooCmd_osg/OsgMaterial.h>
 
 //------------------------------------------------------------------------
@@ -60,14 +59,12 @@ public:
 	MaterialScript(const string name);
 	string getMaterialName() const;
 	void refresh(const map<string, vector<double>>& uniforms);
-	bool reform(osg::Node* node);
-	void restore(osg::Node* node);
 	void getMaterialConfigInfo(Material* material);
 	osgFX::Effect* createEffect(Material* material);
 	void setMaterialEffect(MaterialEffect* effect);
 
 protected:
-	string _materialName;
+	const string _materialName;
 	osg::ref_ptr<MaterialEffect> _effect;
 };
 

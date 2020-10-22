@@ -1,33 +1,25 @@
 #include "MaterialDisplayWgt.h"
-#include <zooCmdLoader/ZooCmdLoader.h>
-#include <vector>
-#include <string>
-#include <QThread>
 #include <QScreen>
 #include <QWindow>
 #include <QLayout>
-#include <QSettings>
-#include <QKeyEvent>
-#include <QMessageBox>
-#include <QMouseEvent>
-#include <QWheelEvent>
-#include <QMainWindow>
 #include <QApplication>
-#include <QInputDialog>
 #include <zoo/Component.h>
-#include <zoo/ServiceLocator.h>
 #include <UniversalGlobalServices.h>
+#include <zooCmdLoader/ZooCmdLoader.h>
 #include <component/war/WarComponents.h>
 #include <ctk_service/zoocmd_ui/Win32Service.h>
-
-using namespace zoo;
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
 #endif
 
+#define MAT_DISPLAY_SCENEID (-99)
+
 MaterialDisplayWgt::MaterialDisplayWgt(QWidget* parent /*= Q_NULLPTR*/)
 	: QWidget(parent)
+	, _turnOnLight(false)
+	, _displayedMat(nullptr)
+	, _materialSphere(nullptr)
 {
 	setMouseTracking(true);
 	setFocusPolicy(Qt::ClickFocus);
@@ -41,20 +33,54 @@ MaterialDisplayWgt::MaterialDisplayWgt(QWidget* parent /*= Q_NULLPTR*/)
 		setLayout(new QHBoxLayout);
 		layout()->setMargin(0);
 		layout()->addWidget(pGLWgt);
-		Spawner* pSpawner = Spawner::create(-99, "OsgEarthContextImpl", "material sphere");
-		Entity* pMaterialSphere = pSpawner->born(1, 1);
-		Model* model = pMaterialSphere->addComponent<Model>("ModelImpl");
+		Spawner* pSpawner = Spawner::create(MAT_DISPLAY_SCENEID, "OsgEarthContextImpl", "material sphere");
+		_materialSphere = pSpawner->born(1, 1);
+		Model* model = _materialSphere->addComponent<Model>("ModelImpl");
 		model->_mesh._currentUseMeshName = "Sphere";
-		ServiceLocator<MeshList>().getService()->getMeshConfigInfo("Sphere", &model->_mesh);
-		Camera* cam = pMaterialSphere->addComponent<Camera, int>("CameraImpl", MATERIALDISPLAYWGT);
+		ServiceLocator<MeshList>().getService()->switchMesh("Sphere", &model->_mesh);
+		Camera* cam = _materialSphere->addComponent<Camera, int>("CameraImpl", MATERIALDISPLAYWGT);
 		cam->_manipulatorKey = Camera::NodeTracker_;
 		cam->_trackEntID = cam->_trackEntBreed = 1;
 		pSpawner->awakeAll();
 		pSpawner->updateAll();
+		_displayedMat = &model->_material;
 	}
 }
 
 MaterialDisplayWgt::~MaterialDisplayWgt()
 {
-	Spawner::destroy(-99);
+	Spawner::destroy(MAT_DISPLAY_SCENEID);
+}
+
+Material* MaterialDisplayWgt::getDisplayedMat() const
+{
+	return _displayedMat;
+}
+
+void MaterialDisplayWgt::refreshMaterialSphere(bool turnOnLight)
+{
+	if (_materialSphere)
+	{
+		if (_turnOnLight != turnOnLight)
+		{
+			_turnOnLight = turnOnLight;
+			Camera* pCam = _materialSphere->getComponent<Camera>();
+			if (pCam)
+			{
+				int clr = turnOnLight ? 255 : 0;
+				pCam->_red = clr;
+				pCam->_green = clr;
+				pCam->_blue = clr;
+				pCam->_alpha = 255;
+				pCam->dirtyBit().addState(Camera::Bgcolour_);
+			}
+		}
+
+		_materialSphere->updateAll();
+	}
+}
+
+void MaterialDisplayWgt::generateMaterialSphere(std::string materialFile)
+{
+	ServiceLocator<MaterialList>::getService()->compileMaterial(materialFile, _displayedMat);
 }

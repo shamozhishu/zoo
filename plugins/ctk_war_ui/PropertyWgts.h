@@ -42,7 +42,7 @@ class ConfigTableWgt : public QWidget
 {
 	Q_OBJECT
 public:
-	ConfigTableWgt(QWidget *parent, map<string, vector<double>>& keyValMap);
+	ConfigTableWgt(QWidget* parent, map<string, vector<double>>& keyValMap);
 	~ConfigTableWgt();
 
 signals:
@@ -54,10 +54,16 @@ private:
 
 class MeshWgt : public QWidget
 {
+	Q_OBJECT
 public:
-	MeshWgt(QWidget *parent);
+	MeshWgt(QWidget* parent, UIManagerService* uiMgr);
 	~MeshWgt();
 	void resetMesh(Mesh* mesh);
+
+signals:
+	void meshChanged();
+private:
+	void fillMeshList();
 
 private:
 	Mesh* _mesh;
@@ -67,9 +73,13 @@ private:
 
 class TextureWgt : public QWidget
 {
+	Q_OBJECT
 public:
-	TextureWgt(QWidget *parent, Material* mat, int texUnitNum);
+	TextureWgt(QWidget* parent, Material* mat, int texUnitNum, UIManagerService* uiMgr);
 	~TextureWgt();
+
+signals:
+	void textureChanged();
 
 private:
 	Ui::TextureWgt* _ui;
@@ -77,10 +87,16 @@ private:
 
 class MaterialWgt : public QWidget
 {
+	Q_OBJECT
 public:
-	MaterialWgt(QWidget *parent);
+	MaterialWgt(QWidget* parent, UIManagerService* uiMgr);
 	~MaterialWgt();
 	void resetMat(Material* material);
+
+signals:
+	void materialChanged();
+private:
+	void fillMaterialList();
 
 private:
 	Material* _material;
@@ -92,7 +108,7 @@ private:
 class PropertyWgt : public QWidget
 {
 public:
-	PropertyWgt(QWidget *parent);
+	PropertyWgt(QWidget* parent);
 	virtual void resetCom(zoo::Component* pCom);
 
 protected:
@@ -103,7 +119,7 @@ protected:
 class DoFPropertyWgt : public PropertyWgt
 {
 public:
-	DoFPropertyWgt(QWidget *parent);
+	DoFPropertyWgt(QWidget* parent);
 	~DoFPropertyWgt();
 	void resetCom(zoo::Component* pCom);
 

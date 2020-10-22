@@ -45,11 +45,42 @@ static const char* fragSource = {
 
 //////////////////////////////////////////////////////////////////////////
 
+class TestTextureUnitVisitor : public osg::NodeVisitor
+{
+	bool _hasTex;
+	int _texUnit;
+	string _material;
+public:
+	TestTextureUnitVisitor(string material, int texUnit) : _material(material), _texUnit(texUnit), _hasTex(true) {}
+	bool isHasTexture() const { return _hasTex; }
+	void apply(osg::Node& node) { traverse(node); }
+	void apply(osg::Geode& node)
+	{
+		if (!_hasTex)
+			return;
+		for (unsigned int i = 0; i < node.getNumDrawables(); ++i)
+		{
+			osg::Geometry* geom = dynamic_cast<osg::Geometry*>(node.getDrawable(i));
+			if (geom)
+			{
+				if (geom->getTexCoordArrayList().size() <= _texUnit || geom->getTexCoordArray(_texUnit) == nullptr)
+				{
+					_hasTex = false;
+					zoo_warning("材质[%s]绑定的节点几何体对象不存在纹理坐标属性[texture unit %d]！", _material.c_str(), _texUnit);
+					break;
+				}
+			}
+		}
+		traverse(node);
+	}
+};
+
 class ComputeTangentVisitor : public osg::NodeVisitor
 {
-	bool _generate;
+	int _mark;
 public:
-	ComputeTangentVisitor(bool isGenerate) : _generate(isGenerate) {}
+	enum { reform_, restore_ };
+	ComputeTangentVisitor(int mark) : _mark(mark) {}
 	void apply(osg::Node& node) { traverse(node); }
 
 	void apply(osg::Geode& node)
@@ -59,9 +90,9 @@ public:
 			osg::Geometry* geom = dynamic_cast<osg::Geometry*>(node.getDrawable(i));
 			if (geom)
 			{
-				if (_generate)
+				if (_mark == reform_)
 					generateTangentArray(geom);
-				else
+				else if (_mark == restore_)
 					dissolveTangentArray(geom);
 			}
 		}
@@ -97,15 +128,22 @@ string BumpMapping::getMaterialName() const
 
 bool BumpMapping::reform(osg::Node* node)
 {
-	ComputeTangentVisitor ctv(true);
-	ctv.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
-	node->accept(ctv);
-	return true;
+	TestTextureUnitVisitor ttuv(getMaterialName(), 0);
+	ttuv.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
+	node->accept(ttuv);
+	if (ttuv.isHasTexture())
+	{
+		ComputeTangentVisitor ctv(ComputeTangentVisitor::reform_);
+		ctv.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
+		node->accept(ctv);
+		return true;
+	}
+	return false;
 }
 
 void BumpMapping::restore(osg::Node* node)
 {
-	ComputeTangentVisitor ctv(false);
+	ComputeTangentVisitor ctv(ComputeTangentVisitor::restore_);
 	ctv.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
 	node->accept(ctv);
 }

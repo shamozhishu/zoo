@@ -75,6 +75,7 @@ MaterialEffect::MaterialEffect()
 MaterialEffect::MaterialEffect(const MaterialEffect& copy, const osg::CopyOp op /*= osg::CopyOp::SHALLOW_COPY*/)
 	: osgFX::Effect(copy, op)
 {
+	_techniques = copy._techniques;
 }
 
 void MaterialEffect::pushTechnique(MaterialTechnique* technique)
@@ -115,15 +116,6 @@ void MaterialScript::refresh(const map<string, vector<double>>& uniforms)
 		_effect->refresh(uniforms);
 }
 
-bool MaterialScript::reform(osg::Node* node)
-{
-	return false;
-}
-
-void MaterialScript::restore(osg::Node* node)
-{
-}
-
 void MaterialScript::getMaterialConfigInfo(Material* material)
 {
 }
@@ -131,7 +123,7 @@ void MaterialScript::getMaterialConfigInfo(Material* material)
 osgFX::Effect* MaterialScript::createEffect(Material* material)
 {
 	if (_effect.valid())
-		return _effect.get();
+		return new MaterialEffect(*_effect);
 	return nullptr;
 }
 

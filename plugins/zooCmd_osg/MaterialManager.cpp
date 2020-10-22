@@ -26,7 +26,7 @@ vector<string> MaterialManager::getMaterialList() const
 	return matList;
 }
 
-void MaterialManager::getMaterialConfigInfo(string materialName, Material* material)
+bool MaterialManager::switchMaterial(string materialName, Material* material)
 {
 	material->_uniforms.clear();
 
@@ -40,6 +40,25 @@ void MaterialManager::getMaterialConfigInfo(string materialName, Material* mater
 		if (pOsgMaterial)
 			pOsgMaterial->getMaterialConfigInfo(material);
 	}
+	else
+	{
+		materialName = "Default";
+	}
+
+	if (material->_currentUseMatName != materialName)
+	{
+		material->_currentUseMatName = materialName;
+		material->getParent()->dirtyBit().addState(Material::Changed_);
+		return true;
+	}
+
+	return false;
+}
+
+bool MaterialManager::compileMaterial(string materialFile, Material* material)
+{
+	extern string compileMaterialScript(const string& materialFile);
+	return compileMaterialScript(materialFile) != "Default";
 }
 
 OsgMaterial* MaterialManager::attach(Material* material, osg::Node* node)
@@ -64,8 +83,8 @@ OsgMaterial* MaterialManager::attach(Material* material, osg::Node* node)
 			pOsgMaterial->setupStateSet(material, ss);
 		}
 
-		osgFX::Effect* effect = pOsgMaterial->createEffect(material);
-		if (effect)
+		osg::ref_ptr<osgFX::Effect> effect = pOsgMaterial->createEffect(material);
+		if (effect.valid())
 		{
 			osg::Group* parent = node->getParent(0);
 			if (parent)
@@ -94,6 +113,7 @@ void MaterialManager::detach(const string& materialName, osg::Node* node)
 	if (effect)
 	{
 		osg::Group* parent = effect->getParent(0);
+		effect->removeChild(node);
 		parent->addChild(node);
 		parent->removeChild(effect);
 	}
@@ -105,18 +125,24 @@ void MaterialManager::detach(const string& materialName, osg::Node* node)
 
 void MaterialManager::addMaterial(OsgMaterial* osgMaterial)
 {
-	auto it = _materials.find(osgMaterial->getMaterialName());
-	if (it != _materials.end())
-		delete it->second;
-	_materials[osgMaterial->getMaterialName()] = osgMaterial;
+	if (osgMaterial)
+	{
+		auto it = _materials.find(osgMaterial->getMaterialName());
+		if (it != _materials.end())
+			delete it->second;
+		_materials[osgMaterial->getMaterialName()] = osgMaterial;
+	}
 }
 
 void MaterialManager::removeMaterial(OsgMaterial* osgMaterial)
 {
-	auto it = _materials.find(osgMaterial->getMaterialName());
-	if (it != _materials.end())
+	if (osgMaterial)
 	{
-		delete it->second;
-		_materials.erase(it);
+		auto it = _materials.find(osgMaterial->getMaterialName());
+		if (it != _materials.end())
+		{
+			delete it->second;
+			_materials.erase(it);
+		}
 	}
 }

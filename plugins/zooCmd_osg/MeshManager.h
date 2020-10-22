@@ -16,7 +16,8 @@ public:
 	MeshManager();
 	~MeshManager();
 	vector<string> getMeshList() const;
-	void getMeshConfigInfo(string meshName, Mesh* mesh);
+	bool switchMesh(string meshName, Mesh* mesh);
+	bool compileMesh(string meshFile, Mesh* mesh);
 	bool attach(Mesh* mesh, osg::Group* meshNode);
 	void detach(osg::Group* meshNode);
 	void addMesh(OsgMesh* osgMesh);

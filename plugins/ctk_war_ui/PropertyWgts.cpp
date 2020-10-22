@@ -166,11 +166,12 @@ bool ComListWgt::eventFilter(QObject *o, QEvent *e)
 	return false;
 }
 
-ConfigTableWgt::ConfigTableWgt(QWidget *parent, map<string, vector<double>>& keyValMap)
+ConfigTableWgt::ConfigTableWgt(QWidget* parent, map<string, vector<double>>& keyValMap)
 	: QWidget(parent)
 	, _ui(new Ui::ConfigTableWgt)
 {
 	_ui->setupUi(this);
+	_ui->tableWidget->setItemDelegate(new NoFocusDelegate());
 	int rowCnt = keyValMap.size();
 	if (rowCnt > 0)
 	{
@@ -220,25 +221,15 @@ ConfigTableWgt::~ConfigTableWgt()
 	delete _ui;
 }
 
-MeshWgt::MeshWgt(QWidget *parent)
+MeshWgt::MeshWgt(QWidget* parent, UIManagerService* uiMgr)
 	: QWidget(parent)
 	, _mesh(nullptr)
 	, _ui(new Ui::MeshWgt)
 	, _configWgt(nullptr)
 {
 	_ui->setupUi(this);
-
-	QStringList renderMesh;
-	vector<string> meshList = ServiceLocator<MeshList>().getService()->getMeshList();
-	auto it = meshList.begin();
-	auto itEnd = meshList.end();
-	for (; it != itEnd; ++it)
-		renderMesh << (*it).c_str();
-
-	_ui->comboBox->addItems(renderMesh);
-
-	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
-	connect(_ui->toolButton_open, &QToolButton::clicked, [this, pUIMgr]
+	fillMeshList();
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this, uiMgr]
 	{
 		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
 		if (!fileName.isEmpty())
@@ -246,12 +237,22 @@ MeshWgt::MeshWgt(QWidget *parent)
 			_ui->lineEdit->setText(fileName);
 			_mesh->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
 			_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
-			pUIMgr->starWindowTitle();
+			emit meshChanged();
+			if (uiMgr)
+				uiMgr->starWindowTitle();
 		}
 	});
-	connect(_ui->comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), [this, pUIMgr](const QString& meshName)
+	connect(_ui->comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), [this, uiMgr](const QString& meshName)
 	{
-		ServiceLocator<MeshList>().getService()->getMeshConfigInfo(meshName.toStdString(), _mesh);
+		if (!_mesh)
+			return;
+
+		if (ServiceLocator<MeshList>().getService()->switchMesh(meshName.toStdString(), _mesh))
+		{
+			emit meshChanged();
+			if (uiMgr)
+				uiMgr->starWindowTitle();
+		}
 
 		if (_configWgt)
 		{
@@ -264,23 +265,18 @@ MeshWgt::MeshWgt(QWidget *parent)
 		{
 			_configWgt = new ConfigTableWgt(this, _mesh->_params);
 			_ui->verticalLayout->addWidget(_configWgt);
-			connect(_configWgt, &ConfigTableWgt::keyValMapChanged, [this, pUIMgr]
+			connect(_configWgt, &ConfigTableWgt::keyValMapChanged, [this, uiMgr]
 			{
 				_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
-				pUIMgr->starWindowTitle();
+				emit meshChanged();
+				if (uiMgr)
+					uiMgr->starWindowTitle();
 			});
 		}
 
 		bool isShow = (meshName == "Default");
 		_ui->lineEdit->setVisible(isShow);
 		_ui->toolButton_open->setVisible(isShow);
-
-		if (QString(_mesh->_currentUseMeshName.c_str()) != meshName)
-		{
-			_mesh->_currentUseMeshName = meshName.toStdString();
-			_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
-			pUIMgr->starWindowTitle();
-		}
 	});
 }
 
@@ -291,32 +287,48 @@ MeshWgt::~MeshWgt()
 
 void MeshWgt::resetMesh(Mesh* mesh)
 {
-	_mesh = mesh;
-	_ui->comboBox->setCurrentText(mesh->_currentUseMeshName.c_str());
+	fillMeshList();
+	if (mesh)
+	{
+		_mesh = mesh;
+		_ui->comboBox->setCurrentText(mesh->_currentUseMeshName.c_str());
 
-	bool isShow = (mesh->_currentUseMeshName == "Default");
-	_ui->lineEdit->setVisible(isShow);
-	_ui->toolButton_open->setVisible(isShow);
+		bool isShow = (mesh->_currentUseMeshName == "Default");
+		_ui->lineEdit->setVisible(isShow);
+		_ui->toolButton_open->setVisible(isShow);
 
-	if (mesh->_modelFile == "")
-		_ui->lineEdit->setText("");
-	else
-		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_modelFile).c_str()));
+		if (mesh->_modelFile == "")
+			_ui->lineEdit->setText("");
+		else
+			_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_modelFile).c_str()));
+	}
 }
 
-TextureWgt::TextureWgt(QWidget *parent, Material* mat, int texUnitNum)
+void MeshWgt::fillMeshList()
+{
+	_mesh = nullptr;
+	QStringList renderMesh;
+	vector<string> meshList = ServiceLocator<MeshList>().getService()->getMeshList();
+	auto it = meshList.begin();
+	auto itEnd = meshList.end();
+	for (; it != itEnd; ++it)
+		renderMesh << (*it).c_str();
+
+	_ui->comboBox->clear();
+	_ui->comboBox->addItems(renderMesh);
+}
+
+TextureWgt::TextureWgt(QWidget* parent, Material* mat, int texUnitNum, UIManagerService* uiMgr)
 	: QWidget(parent)
 	, _ui(new Ui::TextureWgt)
 {
 	_ui->setupUi(this);
-
 	_ui->label->setText(QString::fromLocal8Bit(mat->_textureFiles[texUnitNum].first.c_str()));
 	string texPath = mat->_textureFiles[texUnitNum].second;
 	if (texPath != "")
 		_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + texPath).c_str()));
 
-	UIManagerService* pUIMgr = UIActivator::getService<UIManagerService>();
-	connect(_ui->toolButton_open, &QToolButton::clicked, [this, mat, texUnitNum, pUIMgr]
+	connect(_ui->toolButton_open, &QToolButton::clicked, [this, mat, texUnitNum, uiMgr]
 	{
 		QString fileName = QFileDialog::getOpenFileName(this, tr("纹理文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("texture(*.png *.jpeg *.jpg)"));
 		if (!fileName.isEmpty())
@@ -324,7 +336,9 @@ TextureWgt::TextureWgt(QWidget *parent, Material* mat, int texUnitNum)
 			_ui->lineEdit->setText(fileName);
 			mat->_textureFiles[texUnitNum].second = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
 			mat->getParent()->dirtyBit().addState(Material::Changed_);
-			pUIMgr->starWindowTitle();
+			emit textureChanged();
+			if (uiMgr)
+				uiMgr->starWindowTitle();
 		}
 	});
 	connect(_ui->toolButton_view, &QToolButton::clicked, [this]
@@ -340,29 +354,25 @@ TextureWgt::~TextureWgt()
 	delete _ui;
 }
 
-MaterialWgt::MaterialWgt(QWidget *parent)
+MaterialWgt::MaterialWgt(QWidget* parent, UIManagerService* uiMgr)
 	: QWidget(parent)
 	, _material(nullptr)
 	, _ui(new Ui::MaterialWgt)
-	, _uiMgr(UIActivator::getService<UIManagerService>())
+	, _uiMgr(uiMgr)
 {
 	_ui->setupUi(this);
-
-	QStringList renderPipeline;
-	vector<string> matList = ServiceLocator<MaterialList>().getService()->getMaterialList();
-	auto it = matList.begin();
-	auto itEnd = matList.end();
-	for (; it != itEnd; ++it)
-		renderPipeline << (*it).c_str();
-
-	_ui->comboBox->addItems(renderPipeline);
-
+	fillMaterialList();
 	connect(_ui->comboBox, static_cast<void(QComboBox::*)(const QString&)>(&QComboBox::currentIndexChanged), [this](const QString& matName)
 	{
 		if (!_material)
 			return;
 
-		ServiceLocator<MaterialList>().getService()->getMaterialConfigInfo(matName.toStdString(), _material);
+		if (ServiceLocator<MaterialList>().getService()->switchMaterial(matName.toStdString(), _material))
+		{
+			emit materialChanged();
+			if (_uiMgr)
+				_uiMgr->starWindowTitle();
+		}
 
 		int len = _wgtlist.length();
 		for (int i = 0; i < len; ++i)
@@ -377,9 +387,13 @@ MaterialWgt::MaterialWgt(QWidget *parent)
 		{
 			if (_material->_textureFiles[i].first != "")
 			{
-				QWidget* pWgt = new TextureWgt(this, _material, i);
+				TextureWgt* pWgt = new TextureWgt(this, _material, i, _uiMgr);
 				_wgtlist.push_back(pWgt);
 				_ui->verticalLayout->addWidget(pWgt);
+				connect(pWgt, &TextureWgt::textureChanged, [this]
+				{
+					emit materialChanged();
+				});
 			}
 		}
 
@@ -391,15 +405,10 @@ MaterialWgt::MaterialWgt(QWidget *parent)
 			connect(pWgt, &ConfigTableWgt::keyValMapChanged, [this]
 			{
 				_material->getParent()->dirtyBit().addState(Material::Uniform_);
-				_uiMgr->starWindowTitle();
+				emit materialChanged();
+				if (_uiMgr)
+					_uiMgr->starWindowTitle();
 			});
-		}
-
-		if (QString(_material->_currentUseMatName.c_str()) != matName)
-		{
-			_material->_currentUseMatName = matName.toStdString();
-			_material->getParent()->dirtyBit().addState(Material::Changed_);
-			_uiMgr->starWindowTitle();
 		}
 	});
 }
@@ -411,11 +420,29 @@ MaterialWgt::~MaterialWgt()
 
 void MaterialWgt::resetMat(Material* material)
 {
-	_material = material;
-	_ui->comboBox->setCurrentText(material->_currentUseMatName.c_str());
+	fillMaterialList();
+	if (material)
+	{
+		_material = material;
+		_ui->comboBox->setCurrentText(material->_currentUseMatName.c_str());
+	}
 }
 
-PropertyWgt::PropertyWgt(QWidget *parent)
+void MaterialWgt::fillMaterialList()
+{
+	_material = nullptr;
+	QStringList renderPipeline;
+	vector<string> matList = ServiceLocator<MaterialList>().getService()->getMaterialList();
+	auto it = matList.begin();
+	auto itEnd = matList.end();
+	for (; it != itEnd; ++it)
+		renderPipeline << (*it).c_str();
+
+	_ui->comboBox->clear();
+	_ui->comboBox->addItems(renderPipeline);
+}
+
+PropertyWgt::PropertyWgt(QWidget* parent)
 	: QWidget(parent)
 	, _com(nullptr)
 {
@@ -427,7 +454,7 @@ void PropertyWgt::resetCom(zoo::Component* pCom)
 	_com = pCom;
 }
 
-DoFPropertyWgt::DoFPropertyWgt(QWidget *parent)
+DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	: PropertyWgt(parent)
 	, _ui(new Ui::DoFPropertyWgt)
 {
@@ -655,8 +682,8 @@ ModelPropertyWgt::ModelPropertyWgt(QWidget* parent)
 	, _ui(new Ui::ModelPropertyWgt)
 {
 	_ui->setupUi(this);
-	_meshWgt = new MeshWgt(this);
-	_matWgt = new MaterialWgt(this);
+	_meshWgt = new MeshWgt(this, _uiMgr);
+	_matWgt = new MaterialWgt(this, _uiMgr);
 	_ui->verticalLayout->insertWidget(1, _meshWgt);
 	_ui->verticalLayout->addWidget(_matWgt);
 
@@ -1132,7 +1159,7 @@ EnvirPropertyWgt::EnvirPropertyWgt(QWidget* parent)
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				QWidget* pWgt = new TextureWgt(this, &(COM_CAST(Environment)->_skyBox), i);
+				QWidget* pWgt = new TextureWgt(this, &(COM_CAST(Environment)->_skyBox), i, _uiMgr);
 				_skyboxTexWgts[i] = pWgt;
 				_ui->verticalLayout->addWidget(pWgt);
 			}

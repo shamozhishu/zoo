@@ -17,6 +17,24 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QToolButton" name="toolButton_light">
+       <property name="toolTip">
+        <string>开灯</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="ctk_war_ui.qrc">
+         <normaloff>:/images/Resources/images/light_off.png</normaloff>
+         <normalon>:/images/Resources/images/light_on.png</normalon>:/images/Resources/images/light_off.png</iconset>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="lineEdit">
        <property name="readOnly">
         <bool>true</bool>

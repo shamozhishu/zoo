@@ -80,15 +80,7 @@ void Mesh::deserialize(Spawner* spawner)
 
 void Mesh::changeMesh(const string& name)
 {
-	if (_currentUseMeshName != name)
-	{
-		if (name == "")
-			_currentUseMeshName = "Default";
-		else
-			_currentUseMeshName = name;
-		_parent->dirtyBit().addState(Mesh::Changed_);
-		ServiceLocator<MeshList>().getService()->getMeshConfigInfo(_currentUseMeshName, this);
-	}
+	ServiceLocator<MeshList>().getService()->switchMesh(name, this);
 }
 
 void Mesh::changeParam(const string& var, const vector<double>& val)
@@ -212,15 +204,7 @@ void Material::deserialize(Spawner* spawner)
 
 void Material::changeMat(const string& name)
 {
-	if (_currentUseMatName != name)
-	{
-		if (name == "")
-			_currentUseMatName = "Default";
-		else
-			_currentUseMatName = name;
-		_parent->dirtyBit().addState(Material::Changed_);
-		ServiceLocator<MaterialList>().getService()->getMaterialConfigInfo(_currentUseMatName, this);
-	}
+	ServiceLocator<MaterialList>().getService()->switchMaterial(name, this);
 }
 
 void Material::changeUniform(const string& uniform, const vector<double>& val)

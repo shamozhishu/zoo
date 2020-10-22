@@ -129,9 +129,6 @@ HWND ZooCmdWgt::getWnd()
 
 bool ZooCmdWgt::isFocus()
 {
-	/*QWidget* focusWgt = focusWidget();
-	if (focusWgt)
-		focusWgt->hasFocus();*/
 	return isActiveWindow();
 }
 

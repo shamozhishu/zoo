@@ -16,6 +16,19 @@ static char *st_string_literal_buffer = NULL;
 static int st_string_literal_buffer_size = 0;
 static int st_string_literal_buffer_alloc_size = 0;
 
+extern "C" int yywrap(void)
+{
+	return 1;
+}
+
+void reset_string_literal_buffer(void)
+{
+	free(st_string_literal_buffer);
+	st_string_literal_buffer = NULL;
+	st_string_literal_buffer_size = 0;
+	st_string_literal_buffer_alloc_size = 0;
+}
+
 static void open_string_literal(void)
 {
 	st_string_literal_buffer_size = 0;
@@ -32,29 +45,10 @@ static void add_string_literal(int letter)
 	st_string_literal_buffer_size++;
 }
 
-static void reset_string_literal_buffer(void)
-{
-	free(st_string_literal_buffer);
-	st_string_literal_buffer = NULL;
-	st_string_literal_buffer_size = 0;
-	st_string_literal_buffer_alloc_size = 0;
-}
-
 static char* close_string_literal(void)
 {
-	char *new_str;
-
-	new_str = (char*)malloc(st_string_literal_buffer_size + 1);
-
-	memcpy(new_str, st_string_literal_buffer, st_string_literal_buffer_size);
-	new_str[st_string_literal_buffer_size] = '\0';
-
-	return new_str;
-}
-
-extern "C" int yywrap(void)
-{
-	return 1;
+	st_string_literal_buffer[st_string_literal_buffer_size] = '\0';
+	return st_string_literal_buffer;
 }
 %}
 %start COMMENT STRING_LITERAL_STATE
@@ -88,10 +82,10 @@ extern "C" int yywrap(void)
 	open_string_literal();
 	BEGIN STRING_LITERAL_STATE;
 }
-<INITIAL>\\\\ BEGIN COMMENT;
-<COMMENT>\n   BEGIN INITIAL;
-<COMMENT>.                 ;
-<INITIAL>[ \t]             ;
+<INITIAL>#  BEGIN COMMENT;
+<COMMENT>\n BEGIN INITIAL;
+<COMMENT>.               ;
+<INITIAL>[ \t\r\n]       ;
 <INITIAL>. {
 	fprintf(stderr, "lexical error.\n");
 	exit(1);
