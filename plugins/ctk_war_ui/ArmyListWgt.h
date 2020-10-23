@@ -44,6 +44,7 @@ Q_SIGNALS:
 	void createItem(zoo::Entity* ent);
 	void sceneOpendSucceed();
 	void sceneOpendFailed();
+	void sceneClosed();
 	void simStarted();
 	void simPaused();
 	void simStoped();

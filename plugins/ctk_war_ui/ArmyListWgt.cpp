@@ -419,6 +419,7 @@ void ArmyListWgt::onClose()
 		_rootItem = nullptr;
 		_ui->treeWidget->clear();
 		service->closeScene();
+		emit sceneClosed();
 		uiMgr->setWindowTitle(tr("Õ½³¡±à¼­Æ÷"));
 	}
 }

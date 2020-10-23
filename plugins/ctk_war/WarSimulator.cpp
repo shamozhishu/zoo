@@ -72,11 +72,14 @@ void WarSimulator::stepping()
 
 void WarSimulator::transition(ESimState simState)
 {
-	if (_currentState)
-		_currentState->exit();
-	_currentState = &WarSimulator::_simStates[simState];
-	if (_currentState)
-		_currentState->enter();
+	if (_currentState != &WarSimulator::_simStates[simState])
+	{
+		if (_currentState)
+			_currentState->exit();
+		_currentState = &WarSimulator::_simStates[simState];
+		if (_currentState)
+			_currentState->enter();
+	}
 }
 
 void WarSimulator::addBehavior(Behavior* behavior)

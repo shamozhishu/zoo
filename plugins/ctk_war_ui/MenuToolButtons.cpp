@@ -36,6 +36,10 @@ void MenuToolButtons::create(UIManagerService* service, EMenu menutype, QObject*
 		{
 			act->setEnabled(false);
 		});
+		QObject::connect(qobject_cast<ArmyListWgt*>(receiver), &ArmyListWgt::sceneClosed, [act]
+		{
+			act->setEnabled(false);
+		});
 	}
 	break;
 	case simulation_:
@@ -62,6 +66,17 @@ void MenuToolButtons::create(UIManagerService* service, EMenu menutype, QObject*
 		});
 
 		QObject::connect(qobject_cast<ArmyListWgt*>(receiver), &ArmyListWgt::sceneOpendFailed, [actStart, actPause]
+		{
+			actStart->setEnabled(false);
+			actPause->setEnabled(false);
+
+			actStart->setText("¿ªÊ¼");
+			actStart->setIcon(QIcon(QPixmap(":/images/Resources/images/start.png")));
+			actStart->setChecked(false);
+			actPause->setChecked(false);
+		});
+
+		QObject::connect(qobject_cast<ArmyListWgt*>(receiver), &ArmyListWgt::sceneClosed, [actStart, actPause]
 		{
 			actStart->setEnabled(false);
 			actPause->setEnabled(false);
