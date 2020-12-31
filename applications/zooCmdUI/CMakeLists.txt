@@ -6,18 +6,10 @@
 set(OUT_NAME zooCmdUI)
 
 set(ZOOCMDUI_CPP
+	main.cpp
 	resource.h
 	ZooCmdUI.rc
-	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
-
-add_executable(
-	${OUT_NAME}
-	${ZOOCMDUI_CPP}
-)
-
-Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 IF(Qt5Widgets_FOUND)
     SET(LIB_MOC_SRCS)
@@ -33,6 +25,14 @@ ENDIF()
 IF(QT_INCLUDES)
 	include_directories(${QT_INCLUDES})
 ENDIF()
+
+add_executable(
+	${OUT_NAME}
+	${ZOOCMDUI_CPP}
+)
+
+Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+Set_Target_Properties(${OUT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 target_link_libraries(
 	${OUT_NAME} 

@@ -26,17 +26,17 @@ public:
 		(void)logContent;
 		switch (level)
 		{
-		case zoo::ELL_DEBUG: _logColor = "<font color=\"#000000\">"; break;
+		case zoo::ELL_DEBUG: _logColor = "<font>"; break;
 		case zoo::ELL_INFO: _logColor = "<font color=\"#00AA00\">"; break;
 		case zoo::ELL_WARNING: _logColor = "<font color=\"#AAAA00\">"; break;
 		case zoo::ELL_ERROR: _logColor = "<font color=\"#AA0000\">"; break;
-		default: _logColor = "<font color=\"#000000\">"; break;
+		default: _logColor = "<font>"; break;
 		}
 	}
 
 	static void recoverLogColor(zoo::ELogLevel level, const char* logContent)
 	{
-		_logColor = "<font color=\"#000000\">";
+		_logColor = "<font>";
 	}
 
 protected:

@@ -41,6 +41,7 @@ MaterialEditBoard::MaterialEditBoard()
 		{
 			_matDisplayWgt->generateMaterialSphere(str.toLocal8Bit().data());
 			_matWgt->resetMat(_matDisplayWgt->getDisplayedMat());
+			_matDisplayWgt->refreshMaterialSphere(_ui->toolButton_light->isChecked());
 		}
 	});
 	connect(_matWgt, &MaterialWgt::materialChanged, [this]

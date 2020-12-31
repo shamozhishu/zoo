@@ -58,6 +58,8 @@ bool MaterialManager::switchMaterial(string materialName, Material* material)
 bool MaterialManager::compileMaterial(string materialFile, Material* material)
 {
 	extern string compileMaterialScript(const string& materialFile);
+	if (material->getParent())
+		material->getParent()->dirtyBit().addState(Material::Changed_);
 	return compileMaterialScript(materialFile) != "Default";
 }
 

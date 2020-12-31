@@ -1,5 +1,6 @@
 #include <QFile>
 #include <QDebug>
+#include <QSettings>
 #include <QApplication>
 #include <QPluginLoader>
 #include <ctk_service/PluginfwAdminInterface.h>
@@ -23,6 +24,22 @@ int main(int argc, char *argv[])
 	{
 		qCritical() << pluginLoader.errorString();
 		return -1;
+	}
+
+	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+	settings.beginGroup("UI_CONFIG");
+	QString qssPath = settings.value("skin").toString();
+	settings.endGroup();
+	QFile file(qssPath);
+	if (file.open(QFile::ReadOnly))
+	{
+		QString styleSheet = QLatin1String(file.readAll());
+		a.setStyleSheet(styleSheet);
+		file.close();
+	}
+	else
+	{
+		qInfo() << "Main UI use default skin!";
 	}
 
 	fwAdmin->addPluginPath(bootPluginPath + "/plugins");
