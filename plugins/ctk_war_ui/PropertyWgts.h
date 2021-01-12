@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QHBoxLayout>
-#include <component/war/WarComponents.h>
+#include <component/WarComponents.h>
 
 namespace Ui
 {

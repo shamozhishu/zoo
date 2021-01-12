@@ -122,7 +122,7 @@ ZooCmdWgt::~ZooCmdWgt()
 	delete _renderThread;
 }
 
-HWND ZooCmdWgt::getWnd()
+void* ZooCmdWgt::getWnd()
 {
 	return (HWND)winId();
 }

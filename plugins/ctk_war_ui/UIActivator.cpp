@@ -5,7 +5,7 @@
 #include "MaterialEditBoard.h"
 #include <QMessageBox>
 #include <zooCmdLoader/ZooCmdLoader.h>
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <ctk_service/UIManagerService.h>
 
 // Qt5ÖÐÎÄÂÒÂë
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))

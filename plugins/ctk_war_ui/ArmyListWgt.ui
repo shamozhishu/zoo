@@ -23,43 +23,9 @@
    <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QToolButton" name="toolButton_readyScript">
+      <widget class="QToolButton" name="toolButton_script">
        <property name="toolTip">
-        <string>仿真就绪</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="ctk_war_ui.qrc">
-         <normaloff>:/images/Resources/images/ready.png</normaloff>:/images/Resources/images/ready.png</iconset>
-       </property>
-       <property name="autoRaise">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButton_pausedScript">
-       <property name="toolTip">
-        <string>仿真暂停</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="ctk_war_ui.qrc">
-         <normaloff>:/images/Resources/images/paused.png</normaloff>:/images/Resources/images/paused.png</iconset>
-       </property>
-       <property name="autoRaise">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButton_runningScript">
-       <property name="toolTip">
-        <string>仿真执行</string>
+        <string>仿真脚本</string>
        </property>
        <property name="text">
         <string/>

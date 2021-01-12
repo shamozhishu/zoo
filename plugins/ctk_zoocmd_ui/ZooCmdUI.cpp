@@ -1,6 +1,7 @@
 #include "ZooCmdUI.h"
+#include <zoo/Log.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
-#include <ctk_service/war/WarService.h>
+#include <ctk_service/WarService.h>
 #include <QLabel>
 #include <QThread>
 #include <QLineEdit>
@@ -40,18 +41,21 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	toolBtn->setAutoRaise(true);
 	toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/cmd.png")));
 	connect(toolBtn, SIGNAL(clicked()), this, SLOT(onSetup()));
-#ifdef _DEBUG
-	QDockWidget* pLogPrintDock = addWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT, tr("日志打印"), new LogPrintWgt(this), QIcon(), Qt::BottomDockWidgetArea,
-		Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea, false, false, false);
-	toolBtn = new QToolButton;
-	_ui.statusBar->addWidget(toolBtn);
-	toolBtn->setAutoRaise(true);
-	toolBtn->setCheckable(true);
-	toolBtn->setChecked(false);
-	toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/log.png")));
-	connect(toolBtn, &QToolButton::clicked, [pLogPrintDock](bool checked)
-	{ pLogPrintDock->setVisible(checked); if (checked) pLogPrintDock->lower(); });
-#endif
+
+	if (zoo::Log::console())
+	{
+		QDockWidget* pLogPrintDock = addWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT, tr("日志打印"), new LogPrintWgt(this), QIcon(), Qt::BottomDockWidgetArea,
+			Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea, false, false, false);
+		toolBtn = new QToolButton;
+		_ui.statusBar->addWidget(toolBtn);
+		toolBtn->setAutoRaise(true);
+		toolBtn->setCheckable(true);
+		toolBtn->setChecked(false);
+		toolBtn->setIcon(QIcon(QPixmap(":/images/Resources/images/log.png")));
+		connect(toolBtn, &QToolButton::clicked, [pLogPrintDock](bool checked)
+		{ pLogPrintDock->setVisible(checked); if (checked) pLogPrintDock->lower(); });
+	}
+
 	_progressBar = new QProgressBar;
 	_ui.statusBar->addWidget(_progressBar);
 	_progressBar->setMinimum(0);
@@ -99,9 +103,7 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 
 ZooCmdUI::~ZooCmdUI()
 {
-#ifdef _DEBUG
 	removeWidget(CTK_ZOOCMD_UI_LOG_PRINT_WGT);
-#endif
 }
 
 bool ZooCmdUI::needSavedScene()
@@ -151,13 +153,13 @@ void ZooCmdUI::raiseWidget(const QString& wgtID)
 		dock->raise();
 }
 
-QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& wgtTitle, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
 	Qt::DockWidgetAreas areas /*= Qt::AllDockWidgetAreas*/, bool isShow /*= true*/, bool hasToolBtn /*= true*/, bool hasSeparator /*= false*/)
 {
 	QDockWidget* dock = _dockWgts.value(wgtID).first;
 	if (!dock)
 	{
-		dock = new QDockWidget(strName);
+		dock = new QDockWidget(wgtTitle);
 		addDockWidget(area, dock);
 		dock->setAllowedAreas(area | areas);
 		dock->setWidget(pWidget);
@@ -165,7 +167,7 @@ QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& strName, Q
 		dock->setFeatures(QDockWidget::DockWidgetMovable);
 		if (hasToolBtn)
 		{
-			QAction* pActionWnd = new QAction(icon, strName, this);
+			QAction* pActionWnd = new QAction(icon, wgtTitle, this);
 			pActionWnd->setCheckable(true);
 			pActionWnd->setChecked(isShow);
 			_ui.mainToolBar->addAction(pActionWnd);
@@ -186,14 +188,17 @@ QDockWidget* ZooCmdUI::addWidget(const QString& wgtID, const QString& strName, Q
 
 void ZooCmdUI::removeWidget(const QString& wgtID)
 {
-	QDockWidget* dock = _dockWgts.value(wgtID).first;
-	if (dock)
+	if (_dockWgts.contains(wgtID))
 	{
-		delete dock->widget();
-		removeDockWidget(dock);
-		dock->deleteLater();
-		_dockWgts.remove(wgtID);
-		_ui.mainToolBar->removeAction(_dockWgts.value(wgtID).second);
+		QDockWidget* dock = _dockWgts.value(wgtID).first;
+		if (dock)
+		{
+			delete dock->widget();
+			removeDockWidget(dock);
+			dock->deleteLater();
+			_dockWgts.remove(wgtID);
+			_ui.mainToolBar->removeAction(_dockWgts.value(wgtID).second);
+		}
 	}
 }
 

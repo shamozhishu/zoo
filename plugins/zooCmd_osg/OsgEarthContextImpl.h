@@ -3,6 +3,15 @@
 
 #include <zooCmd_osg/OsgEarthContext.h>
 
+class OsgContextImpl : public OsgContext
+{
+	ZOO_REFLEX_DECLARE(OsgContextImpl)
+public:
+	osg::Group* getSceneNode();
+private:
+	osg::ref_ptr<osg::Group> _sceneNode;
+};
+
 class OsgEarthContextImpl : public OsgEarthContext
 {
 	ZOO_REFLEX_DECLARE(OsgEarthContextImpl)

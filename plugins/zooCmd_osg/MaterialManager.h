@@ -3,9 +3,9 @@
 
 #include <zoo/Singleton.h>
 #include <UniversalGlobalServices.h>
+#include <component/WarComponents.h>
 #include <zooCmd_osg/OsgMaterial.h>
 #include <zooCmd_osg/OsgEarthSupport.h>
-#include <component/war/WarComponents.h>
 //------------------------------------------------------------------------
 // 描述: 材质管理器，创建的材质对象可以赋给任意的模型组件或摄像机组件使用
 // 作者: shamozhishu

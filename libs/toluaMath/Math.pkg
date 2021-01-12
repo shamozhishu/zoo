@@ -1,0 +1,66 @@
+/************************************************************************
+    osg/Math
+*************************************************************************/
+inline float absolute(float v);
+
+/** return true if float lhs and rhs are equivalent,
+  * meaning that the difference between them is less than an epsilon value
+  * which defaults to 1e-6.
+*/
+inline bool equivalent(float lhs, float rhs, float epsilon = 1e-6);
+
+/** return true if double lhs and rhs are equivalent,
+  * meaning that the difference between them is less than an epsilon value
+  * which defaults to 1e-6.
+*/
+inline bool equivalent(double lhs, double rhs, double epsilon = 1e-6);
+
+/** return the minimum of two values, equivalent to std::min.
+  * std::min not used because of STL implementation under IRIX not containing
+  * std::min.
+*/
+inline float minimum(float lhs, float rhs);
+
+/** return the maximum of two values, equivalent to std::max.
+  * std::max not used because of STL implementation under IRIX not containing
+  * std::max.
+*/
+inline float maximum(float lhs, float rhs);
+
+inline float clampTo(float v, float minimum, float maximum);
+
+inline float clampAbove(float v, float minimum);
+
+inline float clampBelow(float v, float maximum);
+
+inline float clampBetween(float v, float minimum, float maximum);
+
+inline float sign(float v);
+
+inline float signOrZero(float v);
+
+inline float square(float v);
+
+inline float signedSquare(float v);
+
+inline double inDegrees(double angle);
+
+inline float inRadians(float angle);
+
+inline double DegreesToRadians(double angle);
+
+inline double RadiansToDegrees(double angle);
+
+inline bool isNaN(double v);
+
+/** Convert a ascii number to a double, ignoring locale settings.*/
+extern double asciiToDouble(const char* str);
+
+/** Convert a ascii number to a float, ignoring locale settings.*/
+inline float asciiToFloat(const char* str);
+
+/** Detect first ascii POSITIVE number in string and convert to double.*/
+extern double findAsciiToDouble(const char* str);
+
+/** Detect first ascii POSITIVE number in string and convert to double.*/
+inline float findAsciiToFloat(const char* str);

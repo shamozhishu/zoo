@@ -2,7 +2,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <UniversalGlobalServices.h>
-#include <component/war/WarComponents.h>
+#include <component/WarComponents.h>
 #include "PropertyWgts.h"
 #include "MaterialDisplayWgt.h"
 #include "ui_MaterialEditBoard.h"

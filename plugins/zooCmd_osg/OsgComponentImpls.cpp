@@ -1,4 +1,3 @@
-#include "OsgComponentImpls.h"
 #include "RenderDevice.h"
 #include <zoo/Utils.h>
 #include "StarrySky.h"
@@ -8,9 +7,11 @@
 #include <zooCmd/CmdManager.h>
 #include <UniversalGlobalServices.h>
 #include <zooCmd_osg/OsgEarthContext.h>
+#include <zooCmd_osg/OsgComponentImpls.h>
 #include "PublicFunctions.h"
 #include "MeshManager.h"
 #include "MaterialManager.h"
+#include "CameraManipulatorMgr.h"
 
 using namespace osgGA;
 using namespace zooCmd_osg;
@@ -116,20 +117,28 @@ void DoFImpl::locate(DoF* dof)
 	{
 #ifdef NEED_OSGEARTH_LIBRARY
 		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
-		osgEarth::MapNode* pMapNode = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getEarthMapNode();
-		if (pOsgEarthUtils && pMapNode)
+		OsgEarthContext* osgearthContext = getEntity()->getSpawner()->getContext<OsgEarthContext>();
+		if (osgearthContext)
 		{
-			double x, y, z;
-			pOsgEarthUtils->convertLLHToXYZ(getEntity()->getSpawner()->getContext<OsgEarthContext>(), dof->_x, dof->_y, dof->_z, x, y, z);
-			osg::Matrix mat;
-			osgEarth::GeoPoint mapPoint;
-			mapPoint.fromWorld(pMapNode->getMapSRS(), osg::Vec3d(x, y, z));
-			mapPoint.createLocalToWorld(mat);
-			_transWorld->setMatrix(mat);
+			osgEarth::MapNode* pMapNode = osgearthContext->getEarthMapNode();
+			if (pOsgEarthUtils && pMapNode)
+			{
+				double x, y, z;
+				pOsgEarthUtils->convertLLHToXYZ(osgearthContext, dof->_x, dof->_y, dof->_z, x, y, z);
+				osg::Matrix mat;
+				osgEarth::GeoPoint mapPoint;
+				mapPoint.fromWorld(pMapNode->getMapSRS(), osg::Vec3d(x, y, z));
+				mapPoint.createLocalToWorld(mat);
+				_transWorld->setMatrix(mat);
+			}
+			else
+			{
+				zoo_warning("DoFImpl: Map node does not exist!");
+			}
 		}
 		else
 		{
-			zoo_warning("DoFImpl: Map node does not exist!");
+			zoo_warning("DoFImpl: OsgEarth Context does not exist!");
 		}
 #else
 		zoo_error("need osgearth library!");
@@ -151,7 +160,7 @@ void DoFImpl::changeParent(DoF* dof)
 	remove();
 	if (dof->_lonLatHeight)
 	{
-		osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
+		osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode();
 		pScene->addChild(_transWorld.get());
 	}
 	else
@@ -250,12 +259,14 @@ void CameraImpl::awake()
 	cam->dirtyBit().eraseState(Camera::Viewport_);
 	cam->dirtyBit().eraseState(Camera::Bgcolour_);
 
-	_manipulatorMgr = new CameraManipulatorManager(getEntity()->getSpawner()->getContext<OsgEarthContext>());
+	Spawner* pSpawner = getEntity()->getSpawner();
+	bool isEarth = pSpawner->breed() != 0;
+	_manipulatorMgr = new CameraManipulatorMgr(pSpawner->getContext<OsgContext>(), isEarth);
 	_view->setCameraManipulator(_manipulatorMgr);
 	_view->setSceneData(_root);
 
-	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
-	osg::Node* pWorld = getEntity()->getSpawner()->getComponentImpl<DoFImpl>()->_transWorld;
+	osg::Group* pScene = pSpawner->getContext<OsgContext>()->getSceneNode();
+	osg::Node* pWorld = pSpawner->getComponentImpl<DoFImpl>()->_transWorld;
 	if (pWorld->getNumParents() == 0)
 		pScene->addChild(pWorld);
 
@@ -345,18 +356,18 @@ void CameraImpl::changePassRT(Camera::PassIndex idx)
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
 		_multiPasses[idx] = make_pair(_view->getCamera(), nullptr);
-		_passGroups[idx]->addChild(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
+		_passGroups[idx]->addChild(getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode());
 		break;
 	case Camera::TextureColor_:
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
-		_multiPasses[idx] = createColorPass(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
+		_multiPasses[idx] = createColorPass(getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode());
 		_passGroups[idx]->addChild(_multiPasses[idx].first);
 		break;
 	case Camera::TextureDepth_:
 		_passGroups[idx]->setAllChildrenOn();
 		_passGroups[idx]->removeChildren(0, 1);
-		_multiPasses[idx] = createDepthPass(getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode());
+		_multiPasses[idx] = createDepthPass(getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode());
 		_passGroups[idx]->addChild(_multiPasses[idx].first);
 		break;
 	case Camera::HeadUpDisplay_:
@@ -404,7 +415,7 @@ EnvironmentImpl::EnvironmentImpl()
 
 EnvironmentImpl::~EnvironmentImpl()
 {
-	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
+	osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode();
 	if (_switch)
 		pScene->removeChild(_switch.get());
 	if (_skyBox)
@@ -413,14 +424,14 @@ EnvironmentImpl::~EnvironmentImpl()
 
 void EnvironmentImpl::awake()
 {
-	OsgEarthContext* pOsgEarthContext = getEntity()->getSpawner()->getContext<OsgEarthContext>();
+	OsgContext* pOsgContext = getEntity()->getSpawner()->getContext<OsgContext>();
 	_switch->removeChildren(0, _switch->getNumChildren());
-	_switch->addChild(new WeatherEffect(pOsgEarthContext), false);
+	_switch->addChild(new WeatherEffect(pOsgContext), false);
 	_switch->setAllChildrenOff();
 	if (_switch->getNumParents() == 0)
-		pOsgEarthContext->getSceneNode()->addChild(_switch);
+		pOsgContext->getSceneNode()->addChild(_switch);
 	if (_skyBox->getNumParents() == 0)
-		pOsgEarthContext->getSceneNode()->addChild(_skyBox);
+		pOsgContext->getSceneNode()->addChild(_skyBox);
 }
 
 void EnvironmentImpl::update()
@@ -431,7 +442,7 @@ void EnvironmentImpl::update()
 		_skyBox->removeChildren(0, _skyBox->getNumChildren());
 		if (pEnvir->_skyBox._currentUseMatName == ZOO_STRING(SkyBox))
 		{
-			osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgEarthContext>()->getSceneNode();
+			osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode();
 			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(0, 0, 0), pScene->getBound().radius())));
 			geode->setCullingActive(false);

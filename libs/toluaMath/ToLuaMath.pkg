@@ -1,0 +1,34 @@
+$#include "MathWrapper.h"
+
+$using namespace osg;
+
+$pfile "Math.pkg"
+$pfile "Vec2f.pkg"
+$pfile "Vec2d.pkg"
+$pfile "Vec3f.pkg"
+$pfile "Vec3d.pkg"
+$pfile "Vec4f.pkg"
+$pfile "Vec4d.pkg"
+$pfile "Matrixf.pkg"
+$pfile "Matrixd.pkg"
+$pfile "Quat.pkg"
+
+inline Vec3f Cross(const Vec3f& lhs, const Vec3f& rhs);
+inline float Dot(const Vec3f& lhs, const Vec4f& rhs);
+inline float Dot(const Vec4f& lhs, const Vec3f& rhs);
+inline double Dot(const Vec3d& lhs, const Vec4d& rhs);
+inline double Dot(const Vec3f& lhs, const Vec4d& rhs);
+inline double Dot(const Vec3d& lhs, const Vec4f& rhs);
+inline double Dot(const Vec4d& lhs, const Vec3d& rhs);
+inline double Dot(const Vec4d& lhs, const Vec3f& rhs);
+inline double Dot(const Vec4f& lhs, const Vec3d& rhs);
+inline float GetBy(const Matrixf& mat, int row, int col);
+inline double GetBy(const Matrixd& mat, int row, int col);
+inline Vec3f PreMult(const Vec3f& v, const Matrixf& m);
+inline Vec3d PreMult(const Vec3d& v, const Matrixf& m);
+inline Vec4f PreMult(const Vec4f& v, const Matrixf& m);
+inline Vec4d PreMult(const Vec4d& v, const Matrixf& m);
+inline Vec3f PreMult(const Vec3f& v, const Matrixd& m);
+inline Vec3d PreMult(const Vec3d& v, const Matrixd& m);
+inline Vec4f PreMult(const Vec4f& v, const Matrixd& m);
+inline Vec4d PreMult(const Vec4d& v, const Matrixd& m);

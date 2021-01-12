@@ -4,7 +4,7 @@
 #                                                                         #
 ###########################################################################
 project(ctk_zoocmd_ui)
-
+set(OUT_NAME ctk_zoocmd_ui)
 set(CMAKE_DEBUG_POSTFIX "")
 set(PLUGIN_export_directive "ctk_zoocmd_ui_EXPORT")
 
@@ -97,3 +97,6 @@ add_custom_command(TARGET ${PROJECT_NAME}
         "${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>/plugins"
 )
 ENDIF()
+
+INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib/$<CONFIGURATION>)
+INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>/plugins)

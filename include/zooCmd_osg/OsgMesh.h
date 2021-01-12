@@ -8,7 +8,7 @@
 
 #include <osg/Geode>
 #include <zoo/ServiceLocator.h>
-#include <component/war/WarComponents.h>
+#include <component/WarComponents.h>
 
 //------------------------------------------------------------------------
 // 描述: 在子类构造函数中将其addMesh进网格管理器，无需delete，由网格管理器释放内存
@@ -35,11 +35,11 @@ public:
 	virtual void getMeshConfigInfo(Mesh* mesh) = 0;
 	/* 功能: 配置网格模型
 	 * 参数: 获取外部的网格模型配置信息,用于网格的初始化工作
-	 * 返回值: 返回包含了网格模型的叶子节点
+	 * 返回值: 返回包含了网格模型的节点
 	 * 作者: shamozhishu
 	 * 日期: 2020.9.16
 	 */
-	virtual osg::Geode* setupMeshModel(Mesh* mesh) { (void)mesh; return nullptr; }
+	virtual osg::Node* setupMeshModel(Mesh* mesh) { (void)mesh; return nullptr; }
 };
 //------------------------------------------------------------------------
 // 描述: 网格管理器服务

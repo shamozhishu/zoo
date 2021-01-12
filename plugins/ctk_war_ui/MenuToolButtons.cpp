@@ -1,6 +1,6 @@
 #include "MenuToolButtons.h"
 #include "ArmyListWgt.h"
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <ctk_service/UIManagerService.h>
 #include <QMenu>
 #include <QMessageBox>
 

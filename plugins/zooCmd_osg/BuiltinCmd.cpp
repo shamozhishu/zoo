@@ -3,10 +3,10 @@
 #include <zoo/Utils.h>
 #include <zoo/Component.h>
 #include <zooCmd/CmdManager.h>
-#include "OsgComponentImpls.h"
 #include "BuiltinEventHandler.h"
 #include "WindowCaptureCallback.h"
 #include <zooCmd_osg/OsgEarthContext.h>
+#include <zooCmd_osg/OsgComponentImpls.h>
 
 using namespace zooCmd;
 

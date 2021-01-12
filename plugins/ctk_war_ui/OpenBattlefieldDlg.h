@@ -8,7 +8,7 @@ namespace Ui
 	class OpenBattlefieldDlg;
 }
 
-enum EBattlefieldFileType { SceneFile_, ReadyScript_, RunningScript_, PausedScript_, FileCount_ };
+enum EBattlefieldFileType { SceneFile_ = 0, ScriptFile_, FileCount_ };
 
 class OpenBattlefieldDlg : public QDialog
 {
@@ -17,10 +17,12 @@ public:
 	OpenBattlefieldDlg();
 	~OpenBattlefieldDlg();
 	int getCurBattlefieldID() const;
+	int getCurBattlefieldBreed() const;
 	static QString getCurBattlefieldFile(EBattlefieldFileType fileType);
 
 private:
 	int _curBattlefieldID;
+	int _curBattlefieldBreed;
 	Ui::OpenBattlefieldDlg* _ui;
 	static QString _curBattlefieldFile[FileCount_];
 };

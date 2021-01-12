@@ -3,8 +3,8 @@
 #include <zoo/Utils.h>
 #include <zoo/ServiceLocator.h>
 #include <UniversalGlobalServices.h>
-#include <ctk_service/zoocmd_ui/Win32Service.h>
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <ctk_service/Win32Service.h>
+#include <ctk_service/UIManagerService.h>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QColorDialog>
@@ -231,11 +231,11 @@ MeshWgt::MeshWgt(QWidget* parent, UIManagerService* uiMgr)
 	fillMeshList();
 	connect(_ui->toolButton_open, &QToolButton::clicked, [this, uiMgr]
 	{
-		QString fileName = QFileDialog::getOpenFileName(this, tr("模型文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.ive *.flt)"));
+		QString fileName = QFileDialog::getOpenFileName(this, tr("资源文件打开"), ZOO_DATA_ROOT_DIR.c_str(), tr("models(*.osg *.osgt *.ive *.flt);;images(*.png *.jpg *.rgba)"));
 		if (!fileName.isEmpty())
 		{
 			_ui->lineEdit->setText(fileName);
-			_mesh->_modelFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
+			_mesh->_resourceFile = fileName.replace(QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()), tr("")).toLocal8Bit();
 			_mesh->getParent()->dirtyBit().addState(Mesh::Changed_);
 			emit meshChanged();
 			if (uiMgr)
@@ -274,9 +274,8 @@ MeshWgt::MeshWgt(QWidget* parent, UIManagerService* uiMgr)
 			});
 		}
 
-		bool isShow = (meshName == "Default");
-		_ui->lineEdit->setVisible(isShow);
-		_ui->toolButton_open->setVisible(isShow);
+		_ui->lineEdit->setVisible(_mesh->_enableResource);
+		_ui->toolButton_open->setVisible(_mesh->_enableResource);
 	});
 }
 
@@ -292,15 +291,13 @@ void MeshWgt::resetMesh(Mesh* mesh)
 	{
 		_mesh = mesh;
 		_ui->comboBox->setCurrentText(mesh->_currentUseMeshName.c_str());
+		_ui->lineEdit->setVisible(_mesh->_enableResource);
+		_ui->toolButton_open->setVisible(_mesh->_enableResource);
 
-		bool isShow = (mesh->_currentUseMeshName == "Default");
-		_ui->lineEdit->setVisible(isShow);
-		_ui->toolButton_open->setVisible(isShow);
-
-		if (mesh->_modelFile == "")
+		if (mesh->_resourceFile == "")
 			_ui->lineEdit->setText("");
 		else
-			_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_modelFile).c_str()));
+			_ui->lineEdit->setText(QString::fromLocal8Bit((ZOO_DATA_ROOT_DIR + mesh->_resourceFile).c_str()));
 	}
 }
 
@@ -595,7 +592,7 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 			return;
 
 		_uiMgr->starWindowTitle();
-		pDoF->_lonLatHeight = checked;
+		const_cast<bool&>(pDoF->_lonLatHeight) = checked;
 		_ui->stackedWidget->setCurrentIndex(checked ? 1 : 0);
 		if (checked)
 		{
@@ -730,10 +727,10 @@ CameraPropertyWgt::CameraPropertyWgt(QWidget* parent)
 	_ui->lineEdit_id->setValidator(pValidator);
 	_ui->lineEdit_breed->setValidator(pValidator);
 
-	QStringList manipulatorType;
-	manipulatorType << tr("地球") << tr("节点跟踪器") << tr("轨迹球") << tr("飞行") << tr("驾驶")
-		<< tr("地形") << tr("轨道") << tr("第一人称视角") << tr("球面") << tr("定制");
-	_ui->comboBox->addItems(manipulatorType);
+	QStringList manipulatorTypes;
+	manipulatorTypes << tr("默认") << tr("节点跟踪器") << tr("轨迹球") << tr("飞行") << tr("驾驶")
+		<< tr("轨道") << tr("第一人称视角") << tr("球面") << tr("定制");
+	_ui->comboBox->addItems(manipulatorTypes);
 
 	QStringList rtStrList;
 	rtStrList << tr("空") << tr("窗口") << tr("颜色纹理") << tr("深度纹理") << tr("平视显示器");

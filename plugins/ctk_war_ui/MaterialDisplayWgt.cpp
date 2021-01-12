@@ -6,8 +6,8 @@
 #include <zoo/Component.h>
 #include <UniversalGlobalServices.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
-#include <component/war/WarComponents.h>
-#include <ctk_service/zoocmd_ui/Win32Service.h>
+#include <component/WarComponents.h>
+#include <ctk_service/Win32Service.h>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
@@ -33,7 +33,7 @@ MaterialDisplayWgt::MaterialDisplayWgt(QWidget* parent /*= Q_NULLPTR*/)
 		setLayout(new QHBoxLayout);
 		layout()->setMargin(0);
 		layout()->addWidget(pGLWgt);
-		Spawner* pSpawner = Spawner::create(MAT_DISPLAY_SCENEID, "OsgEarthContextImpl", "material sphere");
+		Spawner* pSpawner = Spawner::create(MAT_DISPLAY_SCENEID, 0, "DoF", "OsgContextImpl", "material sphere");
 		_materialSphere = pSpawner->born(1, 1);
 		Model* model = _materialSphere->addComponent<Model>("ModelImpl");
 		model->_mesh._currentUseMeshName = "Sphere";

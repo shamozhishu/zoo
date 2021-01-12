@@ -4,8 +4,8 @@ set target_path=D:\Code\_git\zoo
 echo copy[%source_path%]to[%target_path%]:
 pause
 
-echo ----------------------------------------src catalog
-xcopy /y /s /e %source_path%\src\*.* %target_path%\src\
+echo ----------------------------------------libs catalog
+xcopy /y /s /e %source_path%\libs\*.* %target_path%\libs\
 
 echo ----------------------------------------plugins catalog
 xcopy /y /s /e %source_path%\plugins\*.* %target_path%\plugins\

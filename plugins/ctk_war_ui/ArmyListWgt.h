@@ -2,7 +2,7 @@
 #define __ARMY_LIST_WGT_H__
 
 #include <QTreeWidget>
-#include <component/war/WarComponents.h>
+#include <component/WarComponents.h>
 
 namespace Ui
 {

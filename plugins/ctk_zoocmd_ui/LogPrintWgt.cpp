@@ -77,7 +77,7 @@ private:
 	QTextEdit*      _logWindow;
 };
 
-QString DebugStream::_logColor = "<font color=\"#000000\">";
+QString DebugStream::_logColor = "<font>";
 
 LogPrintWgt::LogPrintWgt(QWidget* parent)
 	: QWidget(parent)
@@ -85,6 +85,11 @@ LogPrintWgt::LogPrintWgt(QWidget* parent)
 	, _printOut(nullptr)
 {
 	_ui->setupUi(this);
+#if _DEBUG
+	zoo::Log::level(zoo::ELL_DEBUG);
+#else
+	zoo::Log::level(zoo::ELL_INFO);
+#endif
 	zoo::Log::listen(&DebugStream::extractLogColor, &DebugStream::recoverLogColor);
 	_printOut = new DebugStream(std::cout, _ui->textBrowser);
 	connect(_ui->toolButton, SIGNAL(clicked()), this, SLOT(onCleanLog()));

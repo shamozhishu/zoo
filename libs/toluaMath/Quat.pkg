@@ -1,0 +1,149 @@
+/************************************************************************
+    osg/Quat
+*************************************************************************/
+/** A quaternion class. It can be used to represent an orientation in 3D space.*/
+class Quat
+{
+public:
+	inline Quat();
+
+	inline Quat(double x, double y, double z, double w);
+
+	inline Quat(const Vec4f& v);
+
+	inline Quat(const Vec4d& v);
+
+	inline Quat(double angle, const Vec3f& axis);
+
+	inline Quat(double angle, const Vec3d& axis);
+
+	inline Quat(double angle1, const Vec3f& axis1, double angle2, const Vec3f& axis2, double angle3, const Vec3f& axis3);
+
+	inline Quat(double angle1, const Vec3d& axis1, double angle2, const Vec3d& axis2, double angle3, const Vec3d& axis3);
+
+	inline bool operator == (const Quat& v) const;
+
+	inline bool operator <  (const Quat& v) const;
+
+    /* ----------------------------------
+        Methods to access data members
+    ---------------------------------- */
+
+	inline Vec4d asVec4() const;
+
+	inline Vec3d asVec3() const;
+
+	inline void set(double x, double y, double z, double w);
+
+	inline void set(const osg::Vec4f& v);
+
+	inline void set(const osg::Vec4d& v);
+
+    void set(const Matrixf& matrix);
+
+    void set(const Matrixd& matrix);
+
+    void get(Matrixf& matrix) const;
+
+    void get(Matrixd& matrix) const;
+
+	inline double x() const;
+	inline double y() const;
+	inline double z() const;
+	inline double w() const;
+
+    /** return true if the Quat represents a zero rotation, and therefore can be ignored in computations.*/
+	bool zeroRotation() const;
+
+    /* -------------------------------------------------------------
+                BASIC ARITHMETIC METHODS
+    Implemented in terms of Vec4s.  Some Vec4 operators, e.g.
+    operator* are not appropriate for quaternions (as
+    mathematical objects) so they are implemented differently.
+    Also define methods for conjugate and the multiplicative inverse.
+    ------------------------------------------------------------- */
+    // Multiply by scalar
+	inline Quat operator*(double rhs) const;
+
+    // Binary multiply
+	inline Quat operator*(const Quat& rhs) const;
+
+    // Divide by scalar
+	inline Quat operator / (double rhs) const;
+
+    // Binary divide
+	inline Quat operator/(const Quat& denom) const;
+
+    // Binary addition
+	inline Quat operator + (const Quat& rhs) const;
+
+    // Binary subtraction
+	inline Quat operator - (const Quat& rhs) const;
+
+    /** Negation operator - returns the negative of the quaternion.
+    Basically just calls operator - () on the Vec4 */
+	inline Quat operator - () const;
+
+    // Length of the quaternion = sqrt( vec . vec )
+	double length() const;
+
+    // Length of the quaternion = vec . vec
+	double length2() const;
+
+    // Conjugate
+	inline Quat conj() const;
+
+    // Multiplicative inverse method: q^(-1) = q^*/(q.q^*)
+	inline Quat inverse() const;
+
+    /* --------------------------------------------------------
+            METHODS RELATED TO ROTATIONS
+    Set a quaternion which will perform a rotation of an
+    angle around the axis given by the vector (x,y,z).
+    Should be written to also accept an angle and a Vec3?
+
+    Define Spherical Linear interpolation method also
+
+    Not inlined - see the Quat.cpp file for implementation
+    -------------------------------------------------------- */
+	void makeRotate(double angle, double x, double y, double z);
+	void makeRotate(double angle, const Vec3f& vec);
+	void makeRotate(double angle, const Vec3d& vec);
+
+	void makeRotate(double angle1, const Vec3f& axis1, double angle2, const Vec3f& axis2, double angle3, const Vec3f& axis3);
+	void makeRotate(double angle1, const Vec3d& axis1, double angle2, const Vec3d& axis2, double angle3, const Vec3d& axis3);
+
+    /** Make a rotation Quat which will rotate vec1 to vec2.
+        Generally take a dot product to get the angle between these
+        and then use a cross product to get the rotation axis
+        Watch out for the two special cases when the vectors
+        are co-incident or opposite in direction.*/
+	void makeRotate(const Vec3f& vec1, const Vec3f& vec2);
+    /** Make a rotation Quat which will rotate vec1 to vec2.
+        Generally take a dot product to get the angle between these
+        and then use a cross product to get the rotation axis
+        Watch out for the two special cases of when the vectors
+        are co-incident or opposite in direction.*/
+	void makeRotate(const Vec3d& vec1, const Vec3d& vec2);
+
+	void makeRotate_original(const Vec3d& vec1, const Vec3d& vec2);
+
+    /** Return the angle and vector components represented by the quaternion.*/
+	void getRotate(double & angle, double & x, double & y, double & z) const;
+
+    /** Return the angle and vector represented by the quaternion.*/
+	void getRotate(double & angle, Vec3f& vec) const;
+
+    /** Return the angle and vector represented by the quaternion.*/
+	void getRotate(double & angle, Vec3d& vec) const;
+
+    /** Spherical Linear Interpolation.
+    As t goes from 0 to 1, the Quat object goes from "from" to "to". */
+	void slerp(double  t, const Quat& from, const Quat& to);
+
+    /** Rotate a vector by this quaternion.*/
+	Vec3f operator* (const Vec3f& v) const;
+
+    /** Rotate a vector by this quaternion.*/
+	Vec3d operator* (const Vec3d& v) const;
+};

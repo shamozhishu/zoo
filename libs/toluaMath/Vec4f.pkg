@@ -1,0 +1,78 @@
+/************************************************************************
+    osg/Vec4f
+*************************************************************************/
+class Vec4f
+{
+public:
+    /** Number of vector components. */
+    enum { num_components = 4 };
+
+    // Methods are defined here so that they are implicitly inlined
+
+    /** Constructor that sets all components of the vector to zero */
+	Vec4f();
+
+	Vec4f(float x, float y, float z, float w);
+
+	Vec4f(const Vec3f& v3, float w);
+
+	inline bool operator == (const Vec4f& v) const;
+
+	inline bool operator <  (const Vec4f& v) const;
+
+	inline void set(float x, float y, float z, float w);
+
+	inline float x() const;
+	inline float y() const;
+	inline float z() const;
+	inline float w() const;
+
+	inline float r() const;
+	inline float g() const;
+	inline float b() const;
+	inline float a() const;
+
+	inline unsigned int asABGR() const;
+
+	inline unsigned int asRGBA() const;
+
+    /** Returns true if all components have values that are not NaN. */
+	inline bool valid() const;
+    /** Returns true if at least one component has value NaN. */
+	inline bool isNaN() const;
+
+    /** Dot product. */
+	inline float operator * (const Vec4f& rhs) const;
+
+    /** Multiply by scalar. */
+	inline Vec4f operator * (float rhs) const;
+
+    /** Divide by scalar. */
+	inline Vec4f operator / (float rhs) const;
+
+    /** Binary vector add. */
+	inline Vec4f operator + (const Vec4f& rhs) const;
+
+    /** Binary vector subtract. */
+	inline Vec4f operator - (const Vec4f& rhs) const;
+
+    /** Negation operator. Returns the negative of the Vec4f. */
+	inline Vec4f operator - () const;
+
+    /** Length of the vector = sqrt( vec . vec ) */
+	inline float length() const;
+
+    /** Length squared of the vector = vec . vec */
+	inline float length2() const;
+
+    /** Normalize the vector so that it has length unity.
+        * Returns the previous length of the vector.
+    */
+	inline float normalize();
+};
+
+/** multiply by vector components. */
+inline Vec4f componentMultiply(const Vec4f& lhs, const Vec4f& rhs);
+
+/** divide rhs components by rhs vector components. */
+inline Vec4f componentDivide(const Vec4f& lhs, const Vec4f& rhs);

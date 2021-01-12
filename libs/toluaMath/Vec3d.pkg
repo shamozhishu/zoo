@@ -1,0 +1,70 @@
+/************************************************************************
+	osg/Vec3d
+*************************************************************************/
+class Vec3d
+{
+public:
+    /** Number of vector components. */
+    enum { num_components = 3 };
+
+    /** Constructor that sets all components of the vector to zero */
+	Vec3d();
+
+	inline Vec3d(const Vec3f& vec);
+
+	Vec3d(double x, double y, double z);
+	Vec3d(const Vec2d& v2, double zz);
+
+	inline bool operator == (const Vec3d& v) const;
+
+	inline bool operator <  (const Vec3d& v) const;
+
+	inline void set(double x, double y, double z);
+
+	inline void set(const Vec3d& rhs);
+
+	inline double x() const;
+	inline double y() const;
+	inline double z() const;
+
+    /** Returns true if all components have values that are not NaN. */
+	inline bool valid() const;
+    /** Returns true if at least one component has value NaN. */
+	inline bool isNaN() const;
+
+    /** Dot product. */
+	inline double operator * (const Vec3d& rhs) const;
+
+    /** Multiply by scalar. */
+	inline Vec3d operator * (double rhs) const;
+
+    /** Divide by scalar. */
+	inline Vec3d operator / (double rhs) const;
+
+    /** Binary vector add. */
+	inline Vec3d operator + (const Vec3d& rhs) const;
+
+    /** Binary vector subtract. */
+	inline Vec3d operator - (const Vec3d& rhs) const;
+
+    /** Negation operator. Returns the negative of the Vec3d. */
+	inline Vec3d operator - () const;
+
+    /** Length of the vector = sqrt( vec . vec ) */
+	inline double length() const;
+
+    /** Length squared of the vector = vec . vec */
+	inline double length2() const;
+
+    /** Normalize the vector so that it has length unity.
+        * Returns the previous length of the vector.
+        * If the vector is zero length, it is left unchanged and zero is returned.
+    */
+	inline double normalize();
+};
+
+/** multiply by vector components. */
+inline Vec3d componentMultiply(const Vec3d& lhs, const Vec3d& rhs);
+
+/** divide rhs components by rhs vector components. */
+inline Vec3d componentDivide(const Vec3d& lhs, const Vec3d& rhs);

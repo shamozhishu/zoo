@@ -1,14 +1,16 @@
 #include "Battlefield.h"
 #include <zoo/Utils.h>
 #include <zoo/DatabaseCSV.h>
-#include "LuaScript.h"
 #include "WarCommander.h"
 
 Battlefield::Battlefield(int id, TableCSV* table)
-	: _id(id)
+	: WarSimulator(table->item2str(id, "script_file"))
+	, _id(id)
 	, _table(table)
 {
-	_spawner = Spawner::create(id, "OsgEarthContextImpl", table->item2str(id, "description"));
+	int sceneBreed = table->item2int(id, "breed");
+	string context = sceneBreed == 0 ? "OsgContextImpl" : "OsgEarthContextImpl";
+	_spawner = Spawner::create(id, sceneBreed, "DoF", context, table->item2str(id, "description"));
 }
 
 Battlefield::~Battlefield()
@@ -28,9 +30,6 @@ bool Battlefield::load()
 	if (sceneFile != "" && _spawner->load(ZOO_DATA_ROOT_DIR + sceneFile))
 	{
 		_spawner->awakeAll();
-		_simStates[ready_].init(_table->item2str(_id, "ready"), this);
-		_simStates[running_].init(_table->item2str(_id, "running"), this);
-		_simStates[paused_].init(_table->item2str(_id, "paused"), this);
 		return true;
 	}
 

@@ -1,6 +1,5 @@
 $cfile "Battlefield.h"
 $cfile "WarComponents.h"
-$cfile "LuaExportClass.h"
 
 class Log
 {

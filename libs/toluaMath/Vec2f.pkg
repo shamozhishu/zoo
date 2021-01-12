@@ -1,0 +1,62 @@
+/************************************************************************
+    osg/Vec2f
+*************************************************************************/
+class Vec2f
+{
+public:
+    /** Number of vector components. */
+    enum { num_components = 2 };
+
+    /** Constructor that sets all components of the vector to zero */
+	Vec2f();
+	Vec2f(float x, float y);
+
+	inline bool operator == (const Vec2f& v) const;
+	inline bool operator <  (const Vec2f& v) const;
+
+	inline void set(float x, float y);
+	inline void set(const Vec2f& rhs);
+
+	inline float x() const;
+	inline float y() const;
+
+    /** Returns true if all components have values that are not NaN. */
+	inline bool valid() const;
+    /** Returns true if at least one component has value NaN. */
+	inline bool isNaN() const;
+
+    /** Dot product. */
+    inline float operator * (const Vec2f& rhs) const;
+
+    /** Multiply by scalar. */
+	inline Vec2f operator * (float rhs) const;
+
+    /** Divide by scalar. */
+	inline Vec2f operator / (float rhs) const;
+
+    /** Binary vector add. */
+	inline Vec2f operator + (const Vec2f& rhs) const;
+
+    /** Binary vector subtract. */
+	inline Vec2f operator - (const Vec2f& rhs) const;
+
+    /** Negation operator. Returns the negative of the Vec2f. */
+	inline Vec2f operator - () const;
+
+    /** Length of the vector = sqrt( vec . vec ) */
+	inline float length() const;
+
+    /** Length squared of the vector = vec . vec */
+	inline float length2(void) const;
+
+    /** Normalize the vector so that it has length unity.
+        * Returns the previous length of the vector.
+    */
+	inline float normalize();
+};
+
+/** multiply by vector components. */
+inline Vec2f componentMultiply(const Vec2f& lhs, const Vec2f& rhs);
+
+/** divide rhs components by rhs vector components. */
+inline Vec2f componentDivide(const Vec2f& lhs, const Vec2f& rhs);

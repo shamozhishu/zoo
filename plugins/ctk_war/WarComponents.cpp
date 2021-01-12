@@ -1,14 +1,83 @@
-#include <component/war/WarComponents.h>
-#include "LuaScript.h"
+#include <component/WarComponents.h>
+#include <luaScript/LuaScriptStack.h>
+#include <toluaInput/Input.h>
 #include <zoo/Utils.h>
 #include "WarCommander.h"
 #include "Battlefield.h"
-#include "LuaExportClass.h"
 #include <zoo/ServiceLocator.h>
 #include <UniversalGlobalServices.h>
 
+TOLUA_OPEN_FUNC_EXTERN(ToLuaWar);
+TOLUA_OPEN_FUNC_EXTERN(ToLuaInput);
+TOLUA_OPEN_FUNC g_func[] = { TOLUA_OPEN_FUNC_PTR(ToLuaWar), TOLUA_OPEN_FUNC_PTR(ToLuaInput), nullptr };
+ZOO_REFLEX_IMPLEMENT(Behavior);
+Behavior::Behavior()
+	: _scriptValid(false)
+	, _scriptInited(false)
+	, _script(new LuaScriptStack(g_func))
+	, _btfield(WarCommander::getSingleton().getCurBattlefield())
+{
+	_btfield->addBehavior(this);
+}
+
+Behavior::~Behavior()
+{
+	_btfield->removeBehavior(this);
+	SAFE_DELETE(_script);
+}
+
+void Behavior::exec(const char* func)
+{
+	if (!_scriptInited)
+	{
+		_scriptInited = true;
+		_scriptValid = false;
+		if (_scriptFile != "")
+		{
+			LuaScriptStack::clearScriptFileName2ContentCache(ZOO_DATA_ROOT_DIR + _scriptFile);
+			_scriptValid = _script->executeScriptFile(ZOO_DATA_ROOT_DIR + _scriptFile);
+			if (_scriptValid)
+			{
+				Entity* pEnt = getEntity();
+				auto components = pEnt->getComponents();
+				auto it = components.begin();
+				for (; it != components.end(); ++it)
+				{
+					if (it->first != "Behavior")
+						_script->setVariable(zoo::strToLower(it->first).c_str(), it->first.c_str(), it->second);
+				}
+
+				static Log logger;
+				_script->setVariable("logger", "Log", &logger);
+				_script->setVariable("this", "Entity", getEntity());
+				_script->setVariable("input", "Input", WarCommander::getSingleton().getInputDevice());
+				_script->executeGlobalFunction("Init");
+			}
+		}
+	}
+
+	if (_scriptValid)
+		_script->executeGlobalFunction(func);
+}
+
+void Behavior::reset()
+{
+	_scriptInited = false;
+}
+
+void Behavior::serialize(Spawner* spawner)
+{
+	spawner->setValue("script", _scriptFile);
+}
+
+void Behavior::deserialize(Spawner* spawner)
+{
+	spawner->getValue("script", _scriptFile);
+}
+//////////////////////////////////////////////////////////////////////////
 Mesh::Mesh()
 	: _currentUseMeshName("Default")
+	, _enableResource(true)
 	, _parent(nullptr)
 {
 }
@@ -16,7 +85,8 @@ Mesh::Mesh()
 void Mesh::serialize(Spawner* spawner)
 {
 	spawner->setValue("mesh_name", _currentUseMeshName);
-	spawner->setValue("model_file", _modelFile);
+	spawner->setValue("resource_file", _resourceFile);
+	spawner->setValue("enable_resource", _enableResource);
 
 	string params;
 	auto it = _params.begin();
@@ -48,7 +118,8 @@ void Mesh::serialize(Spawner* spawner)
 void Mesh::deserialize(Spawner* spawner)
 {
 	spawner->getValue("mesh_name", _currentUseMeshName);
-	spawner->getValue("model_file", _modelFile);
+	spawner->getValue("resource_file", _resourceFile);
+	spawner->getValue("enable_resource", _enableResource);
 
 	_params.clear();
 	string params;
@@ -219,76 +290,13 @@ void Material::changeUniform(const string& uniform, const vector<double>& val)
 	_uniforms[uniform] = val;
 }
 //////////////////////////////////////////////////////////////////////////
-ZOO_REFLEX_IMPLEMENT(Behavior);
-Behavior::Behavior()
-	: _scriptValid(false)
-	, _scriptInited(false)
-	, _script(new LuaScript)
-{
-	WarCommander::getSingleton().getCurBattlefield()->addBehavior(this);
-}
-
-Behavior::~Behavior()
-{
-	WarCommander::getSingleton().getCurBattlefield()->removeBehavior(this);
-	SAFE_DELETE(_script);
-}
-
-void Behavior::exec()
-{
-	if (!_scriptInited)
-	{
-		_scriptInited = true;
-		_scriptValid = false;
-		if (_scriptFile != "")
-		{
-			LuaScript::clearScriptFileName2ContentCache(ZOO_DATA_ROOT_DIR + _scriptFile);
-			_scriptValid = _script->executeScriptFile(ZOO_DATA_ROOT_DIR + _scriptFile);
-			if (_scriptValid)
-			{
-				Entity* pEnt = getEntity();
-				auto components = pEnt->getComponents();
-				auto it = components.begin();
-				for (; it != components.end(); ++it)
-				{
-					if (it->first != "Behavior")
-						_script->setVariable(zoo::strToLower(it->first).c_str(), it->first.c_str(), it->second);
-				}
-
-				_script->setVariable("this", "Entity", getEntity());
-				_script->setVariable("input", "Input", Input::getSingletonPtr());
-				static Log logger;
-				_script->setVariable("logger", "Log", &logger);
-				_script->executeGlobalFunction("Init");
-			}
-		}
-	}
-
-	if (_scriptValid)
-		_script->executeGlobalFunction("Update");
-}
-
-void Behavior::reset()
-{
-	_scriptInited = false;
-}
-
-void Behavior::serialize(Spawner* spawner)
-{
-	spawner->setValue("script", _scriptFile);
-}
-
-void Behavior::deserialize(Spawner* spawner)
-{
-	spawner->getValue("script", _scriptFile);
-}
-//////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(DoF);
 DoF::DoF()
 	: _parent(nullptr)
+	, _sceneType(-1)
+	, _lonLatHeight(false)
 	, _mountEntID(-1)
 	, _mountEntBreed(-1)
-	, _lonLatHeight(false)
 	, _x(0)
 	, _y(0)
 	, _z(0)
@@ -313,6 +321,12 @@ DoF::~DoF()
 		if (child)
 			child->setParent(nullptr);
 	}
+}
+
+void DoF::init()
+{
+	const_cast<int&>(_sceneType) = getEntity()->getSpawner()->breed();
+	const_cast<bool&>(_lonLatHeight) = _sceneType == 0 ? false : true;
 }
 
 void DoF::serialize(Spawner* spawner)
@@ -380,9 +394,9 @@ void DoF::setPos(double x, double y, double z, bool lon_lat_height /*= false*/)
 		_dirty.addState(Dof_);
 	}
 
-	if (_lonLatHeight != lon_lat_height)
+	if (_sceneType != 0 && _lonLatHeight != lon_lat_height)
 	{
-		_lonLatHeight = lon_lat_height;
+		const_cast<bool&>(_lonLatHeight) = lon_lat_height;
 		_dirty.addState(Parent_);
 	}
 }
@@ -600,7 +614,7 @@ Camera::Camera(int windowID)
 	, _viewID(s_unique_viewID++)
 	, _trackEntID(-1)
 	, _trackEntBreed(-1)
-	, _manipulatorKey(Terrain_)
+	, _manipulatorKey(0)
 	, _lRatio(0)
 	, _rRatio(1)
 	, _bRatio(0)
@@ -659,8 +673,8 @@ void Camera::deserialize(Spawner* spawner)
 
 void Camera::setManipulator(int key)
 {
-	if (key < Earth_)
-		key = Earth_;
+	if (key < 0)
+		key = 0;
 
 	if (_manipulatorKey != key)
 	{

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "Battlefield.h"
-#include <ctk_service/war/WarService.h>
+#include <ctk_service/WarService.h>
 
 class WarServiceImpl : public QObject, public WarService
 {

@@ -2,11 +2,13 @@
 #include "Battlefield.h"
 #include <zoo/DatabaseCSV.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
+#include <ctk_service/Win32Service.h>
+#include <toluaInput/Input.h>
 #include <QCoreApplication>
 #include <QFile>
 #include <zoo/Log.h>
 #include <zoo/Utils.h>
-#include "LuaExportClass.h"
+#include "WarActivator.h"
 
 using namespace zoo;
 
@@ -16,9 +18,9 @@ WarCommander::WarCommander(string cmd, string table)
 	, _currentBattlefield(nullptr)
 {
 	new DatabaseCSV();
-	new Input();
+	_inputDevice = new Input(WarActivator::getService<Win32Service>()->getWnd());
 	string csvTablePath = table;
-	size_t pos = csvTablePath.find_last_of(L'/', csvTablePath.length());
+	size_t pos = csvTablePath.find_last_of('/', csvTablePath.length());
 	csvTablePath = csvTablePath.substr(0, pos + 1);
 	DatabaseCSV::getSingleton().init(csvTablePath);
 	_battlefieldTable = DatabaseCSV::getSingleton().getTable(table);
@@ -30,7 +32,7 @@ WarCommander::~WarCommander()
 {
 	_tickTimer.stop();
 	SAFE_DELETE(_currentBattlefield);
-	delete Input::getSingletonPtr();
+	SAFE_DELETE(_inputDevice);
 	delete DatabaseCSV::getSingletonPtr();
 }
 
@@ -82,18 +84,22 @@ void WarCommander::saveCurBattlefield()
 	_currentBattlefield->save();
 }
 
-Battlefield* WarCommander::getCurBattlefield()
+Input* WarCommander::getInputDevice() const
+{
+	return _inputDevice;
+}
+
+Battlefield* WarCommander::getCurBattlefield() const
 {
 	return _currentBattlefield;
 }
 
 void WarCommander::tick()
 {
-	zooCmd_Refresh();
-
-	Input::getSingleton().poll();
+	_inputDevice->poll();
 	if (_currentBattlefield)
 		_currentBattlefield->stepping();
 
+	zooCmd_Refresh();
 	zooCmd_Render();
 }

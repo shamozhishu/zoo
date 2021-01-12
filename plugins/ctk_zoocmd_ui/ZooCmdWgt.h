@@ -2,7 +2,7 @@
 #define __ZOO_CMD_WGT_H__
 
 #include <QtWidgets/QWidget>
-#include <ctk_service/zoocmd_ui/Win32Service.h>
+#include <ctk_service/Win32Service.h>
 
 class RenderThread;
 class CmdRegThread;
@@ -13,7 +13,7 @@ class ZooCmdWgt : public QWidget, public Win32Service
 public:
 	ZooCmdWgt(QString renderAdaName, QStringList cmdset, QString datadir = "", QWidget* parent = Q_NULLPTR);
 	~ZooCmdWgt();
-	HWND getWnd();
+	void* getWnd();
 	bool isFocus();
 	void resgisterCmdset(QStringList cmdset);
 	bool isCmdRegCompleted() const;

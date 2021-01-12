@@ -8,6 +8,17 @@
 
 #include <zooCmd_osg/OsgMesh.h>
 
+class DefaultMesh : public OsgMesh
+{
+public:
+	DefaultMesh();
+	string getMeshName() const;
+	void getMeshConfigInfo(Mesh* mesh);
+	osg::Node* setupMeshModel(Mesh* mesh);
+
+protected:
+	string _resourceFile;
+};
 //------------------------------------------------------------------------
 // 描述: 球体网格
 // 作者: shamozhishu
@@ -19,7 +30,7 @@ public:
 	SphereMesh();
 	string getMeshName() const;
 	void getMeshConfigInfo(Mesh* mesh);
-	osg::Geode* setupMeshModel(Mesh* mesh);
+	osg::Node* setupMeshModel(Mesh* mesh);
 
 protected:
 	float _radius;
@@ -36,11 +47,27 @@ public:
 	BoxMesh();
 	string getMeshName() const;
 	void getMeshConfigInfo(Mesh* mesh);
-	osg::Geode* setupMeshModel(Mesh* mesh);
+	osg::Node* setupMeshModel(Mesh* mesh);
 
 protected:
 	osg::Vec3 _center;
 	float _lengthX, _lengthY, _lengthZ;
+};
+//------------------------------------------------------------------------
+// 描述: 布告板网格
+// 作者: shamozhishu
+// 日期: 2021/01/03
+//------------------------------------------------------------------------
+class BillboardMesh : public OsgMesh
+{
+public:
+	BillboardMesh();
+	string getMeshName() const;
+	void getMeshConfigInfo(Mesh* mesh);
+	osg::Node* setupMeshModel(Mesh* mesh);
+
+protected:
+	string _resourceFile;
 };
 
 #endif // __BUILTIN_MESH_H__

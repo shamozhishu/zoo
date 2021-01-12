@@ -5,6 +5,7 @@
 #include <zoo/Support.h>
 #include <zoo/Singleton.h>
 
+class Input;
 class Battlefield;
 class WarCommander : public QObject, public zoo::Singleton<WarCommander>
 {
@@ -16,7 +17,8 @@ public:
 	bool enterBattlefield(int id);
 	void exitCurBattlefield();
 	void saveCurBattlefield();
-	Battlefield* getCurBattlefield();
+	Input* getInputDevice() const;
+	Battlefield* getCurBattlefield() const;
 
 protected slots:
 	void tick();
@@ -24,6 +26,7 @@ protected slots:
 private:
 	string _cmd;
 	QTimer _tickTimer;
+	Input* _inputDevice;
 	zoo::TableCSV* _battlefieldTable;
 	Battlefield* _currentBattlefield;
 };

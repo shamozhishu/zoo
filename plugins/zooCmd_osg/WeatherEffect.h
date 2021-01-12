@@ -4,11 +4,11 @@
 #include <osg/CoordinateSystemNode>
 #include <osgParticle/PrecipitationEffect>
 
-class OsgEarthContext;
+class OsgContext;
 class WeatherEffect : public osgParticle::PrecipitationEffect
 {
 public:
-	WeatherEffect(OsgEarthContext* context);
+	WeatherEffect(OsgContext* context);
 	WeatherEffect(const WeatherEffect& copy, const osg::CopyOp& copyop = osg::CopyOp::SHALLOW_COPY);
 	~WeatherEffect();
 
@@ -47,7 +47,7 @@ protected:
 	osg::Vec3 _weatherPos;
 	float _weatherHeight; // 高度
 	osg::Vec4 _weatherRange; // 范围，如果是经纬高则等价于最小经度、最大经度、最小纬度、最大纬度
-	OsgEarthContext* _earthContext;
+	OsgContext* _osgContext;
 };
 
 #endif // __WEATHER_EFFECT_H__

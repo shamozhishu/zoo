@@ -6,7 +6,7 @@
 set(OUT_NAME zooCmd_osg)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/libs)
 
 include_directories("${3RD_PARTY_DIR}/include")
 include_directories("${OSG_DIR}/include")

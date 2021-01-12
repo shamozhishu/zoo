@@ -1,0 +1,294 @@
+/************************************************************************
+	osg/Matrixd
+*************************************************************************/
+class Matrixd
+{
+public:
+	inline Matrixd();
+	inline Matrixd(const Matrixd& mat);
+	Matrixd(const Matrixf& mat);
+	inline explicit Matrixd(const Quat& quat);
+
+	Matrixd(double a00, double a01, double a02, double a03,
+		double a10, double a11, double a12, double a13,
+		double a20, double a21, double a22, double a23,
+		double a30, double a31, double a32, double a33);
+
+	~Matrixd();
+
+	int compare(const Matrixd& m) const;
+
+	bool operator < (const Matrixd& m) const;
+	bool operator == (const Matrixd& m) const;
+
+	inline bool valid() const;
+	inline bool isNaN() const;
+
+	inline void set(const Matrixd& rhs);
+
+	void set(const Matrixf& rhs);
+
+	void set(double a00, double a01, double a02, double a03,
+		double a10, double a11, double a12, double a13,
+		double a20, double a21, double a22, double a23,
+		double a30, double a31, double a32, double a33);
+
+	bool isIdentity() const;
+
+	void makeIdentity();
+
+	void makeScale(const Vec3f&);
+	void makeScale(const Vec3d&);
+	void makeScale(double, double, double);
+
+	void makeTranslate(const Vec3f&);
+	void makeTranslate(const Vec3d&);
+	void makeTranslate(double, double, double);
+
+	void makeRotate(const Vec3f& from, const Vec3f& to);
+	void makeRotate(const Vec3d& from, const Vec3d& to);
+	void makeRotate(double angle, const Vec3f& axis);
+	void makeRotate(double angle, const Vec3d& axis);
+	void makeRotate(double angle, double x, double y, double z);
+	void makeRotate(const Quat&);
+	void makeRotate(double angle1, const Vec3f& axis1,
+		double angle2, const Vec3f& axis2,
+		double angle3, const Vec3f& axis3);
+	void makeRotate(double angle1, const Vec3d& axis1,
+		double angle2, const Vec3d& axis2,
+		double angle3, const Vec3d& axis3);
+
+    /** decompose the matrix into translation, rotation, scale and scale orientation.*/
+	void decompose(osg::Vec3f& translation,
+		osg::Quat& rotation,
+		osg::Vec3f& scale,
+		osg::Quat& so) const;
+
+    /** decompose the matrix into translation, rotation, scale and scale orientation.*/
+	void decompose(osg::Vec3d& translation,
+		osg::Quat& rotation,
+		osg::Vec3d& scale,
+		osg::Quat& so) const;
+
+    /** Set to an orthographic projection.
+        * See glOrtho for further details.
+    */
+	void makeOrtho(double left, double right,
+		double bottom, double top,
+		double zNear, double zFar);
+
+    /** Get the orthographic settings of the orthographic projection matrix.
+        * Note, if matrix is not an orthographic matrix then invalid values
+        * will be returned.
+    */
+	bool getOrtho(double& left, double& right,
+		double& bottom, double& top,
+		double& zNear, double& zFar) const;
+
+    /** float version of getOrtho(..) */
+	bool getOrtho(float& left, float& right,
+		float& bottom, float& top,
+		float& zNear, float& zFar) const;
+
+    /** Set to a 2D orthographic projection.
+        * See glOrtho2D for further details.
+    */
+	inline void makeOrtho2D(double left, double right, double bottom, double top);
+
+    /** Set to a perspective projection.
+        * See glFrustum for further details.
+    */
+	void makeFrustum(double left, double right,
+		double bottom, double top,
+		double zNear, double zFar);
+
+    /** Get the frustum settings of a perspective projection matrix.
+        * Note, if matrix is not a perspective matrix then invalid values
+        * will be returned.
+    */
+	bool getFrustum(double& left, double& right,
+		double& bottom, double& top,
+		double& zNear, double& zFar) const;
+
+    /** float version of getFrustum(..) */
+	bool getFrustum(float& left, float& right,
+		float& bottom, float& top,
+		float& zNear, float& zFar) const;
+
+    /** Set to a symmetrical perspective projection.
+        * See gluPerspective for further details.
+        * Aspect ratio is defined as width/height.
+    */
+	void makePerspective(double fovy, double aspectRatio, double zNear, double zFar);
+
+    /** Get the frustum settings of a symmetric perspective projection
+        * matrix.
+        * Return false if matrix is not a perspective matrix,
+        * where parameter values are undefined.
+        * Note, if matrix is not a symmetric perspective matrix then the
+        * shear will be lost.
+        * Asymmetric matrices occur when stereo, power walls, caves and
+        * reality center display are used.
+        * In these configuration one should use the AsFrustum method instead.
+    */
+	bool getPerspective(double& fovy, double& aspectRatio, double& zNear, double& zFar) const;
+
+    /** float version of getPerspective(..) */
+	bool getPerspective(float& fovy, float& aspectRatio, float& zNear, float& zFar) const;
+
+    /** Set the position and orientation to be a view matrix,
+        * using the same convention as gluLookAt.
+    */
+	void makeLookAt(const Vec3d& eye, const Vec3d& center, const Vec3d& up);
+
+    /** Get to the position and orientation of a modelview matrix,
+        * using the same convention as gluLookAt.
+    */
+	void getLookAt(Vec3f& eye, Vec3f& center, Vec3f& up, double lookDistance = 1.0f) const;
+
+    /** Get to the position and orientation of a modelview matrix,
+        * using the same convention as gluLookAt.
+    */
+	void getLookAt(Vec3d& eye, Vec3d& center, Vec3d& up, double lookDistance = 1.0f) const;
+
+    /** invert the matrix rhs, automatically select invert_4x3 or invert_4x4. */
+	inline bool invert(const Matrixd& rhs);
+
+    /** 4x3 matrix invert, not right hand column is assumed to be 0,0,0,1. */
+	bool invert_4x3(const Matrixd& rhs);
+
+    /** full 4x4 matrix invert. */
+	bool invert_4x4(const Matrixd& rhs);
+
+    /** transpose a matrix */
+	//bool transpose(const Matrixd&rhs);
+
+    /** transpose orthogonal part of the matrix **/
+	//bool transpose3x3(const Matrixd&rhs);
+
+    /** ortho-normalize the 3x3 rotation & scale matrix */
+	void orthoNormalize(const Matrixd& rhs);
+
+    // basic utility functions to create new matrices
+	inline static Matrixd identity(void);
+	inline static Matrixd scale(const Vec3f& sv);
+	inline static Matrixd scale(const Vec3d& sv);
+	inline static Matrixd scale(double sx, double sy, double sz);
+	inline static Matrixd translate(const Vec3f& dv);
+	inline static Matrixd translate(const Vec3d& dv);
+	inline static Matrixd translate(double x, double y, double z);
+	inline static Matrixd rotate(const Vec3f& from, const Vec3f& to);
+	inline static Matrixd rotate(const Vec3d& from, const Vec3d& to);
+	inline static Matrixd rotate(double angle, double x, double y, double z);
+	inline static Matrixd rotate(double angle, const Vec3f& axis);
+	inline static Matrixd rotate(double angle, const Vec3d& axis);
+	inline static Matrixd rotate(double angle1, const Vec3f& axis1,
+		double angle2, const Vec3f& axis2,
+		double angle3, const Vec3f& axis3);
+	inline static Matrixd rotate(double angle1, const Vec3d& axis1,
+		double angle2, const Vec3d& axis2,
+		double angle3, const Vec3d& axis3);
+	inline static Matrixd rotate(const Quat& quat);
+	inline static Matrixd inverse(const Matrixd& matrix);
+	inline static Matrixd orthoNormal(const Matrixd& matrix);
+    /** Create an orthographic projection matrix.
+        * See glOrtho for further details.
+    */
+	inline static Matrixd ortho(double left, double right,
+		double bottom, double top,
+		double zNear, double zFar);
+
+    /** Create a 2D orthographic projection.
+        * See glOrtho for further details.
+    */
+	inline static Matrixd ortho2D(double left, double right, double bottom, double top);
+
+    /** Create a perspective projection.
+        * See glFrustum for further details.
+    */
+	inline static Matrixd frustum(double left, double right,
+		double bottom, double top,
+		double zNear, double zFar);
+
+    /** Create a symmetrical perspective projection.
+        * See gluPerspective for further details.
+        * Aspect ratio is defined as width/height.
+    */
+	inline static Matrixd perspective(double fovy, double aspectRatio, double zNear, double zFar);
+
+    /** Create the position and orientation as per a camera,
+        * using the same convention as gluLookAt.
+    */
+	inline static Matrixd lookAt(const Vec3f& eye, const Vec3f& center, const Vec3f& up);
+
+    /** Create the position and orientation as per a camera,
+        * using the same convention as gluLookAt.
+    */
+	inline static Matrixd lookAt(const Vec3d& eye, const Vec3d& center, const Vec3d& up);
+
+	inline Vec3f preMult(const Vec3f& v) const;
+	inline Vec3d preMult(const Vec3d& v) const;
+	inline Vec3f postMult(const Vec3f& v) const;
+	inline Vec3d postMult(const Vec3d& v) const;
+	inline Vec3f operator* (const Vec3f& v) const;
+	inline Vec3d operator* (const Vec3d& v) const;
+	inline Vec4f preMult(const Vec4f& v) const;
+	inline Vec4d preMult(const Vec4d& v) const;
+	inline Vec4f postMult(const Vec4f& v) const;
+	inline Vec4d postMult(const Vec4d& v) const;
+	inline Vec4f operator* (const Vec4f& v) const;
+	inline Vec4d operator* (const Vec4d& v) const;
+
+	void setRotate(const Quat& q);
+    /** Get the matrix rotation as a Quat. Note that this function
+        * assumes a non-scaled matrix and will return incorrect results
+        * for scaled matrixces. Consider decompose() instead.
+        */
+	Quat getRotate() const;
+
+	void setTrans(double tx, double ty, double tz);
+	void setTrans(const Vec3f& v);
+	void setTrans(const Vec3d& v);
+
+	inline Vec3d getTrans() const;
+
+	inline Vec3d getScale() const;
+
+    /** apply a 3x3 transform of v*M[0..2,0..2]. */
+	inline static Vec3f transform3x3(const Vec3f& v, const Matrixd& m);
+
+    /** apply a 3x3 transform of v*M[0..2,0..2]. */
+	inline static Vec3d transform3x3(const Vec3d& v, const Matrixd& m);
+
+    /** apply a 3x3 transform of M[0..2,0..2]*v. */
+	inline static Vec3f transform3x3(const Matrixd& m, const Vec3f& v);
+
+    /** apply a 3x3 transform of M[0..2,0..2]*v. */
+	inline static Vec3d transform3x3(const Matrixd& m, const Vec3d& v);
+
+    // basic Matrixd multiplication, our workhorse methods.
+	void mult(const Matrixd&, const Matrixd&);
+	void preMult(const Matrixd&);
+	void postMult(const Matrixd&);
+
+    /** Optimized version of preMult(translate(v)); */
+	inline void preMultTranslate(const Vec3d& v);
+	inline void preMultTranslate(const Vec3f& v);
+    /** Optimized version of postMult(translate(v)); */
+	inline void postMultTranslate(const Vec3d& v);
+	inline void postMultTranslate(const Vec3f& v);
+
+    /** Optimized version of preMult(scale(v)); */
+	inline void preMultScale(const Vec3d& v);
+	inline void preMultScale(const Vec3f& v);
+    /** Optimized version of postMult(scale(v)); */
+	inline void postMultScale(const Vec3d& v);
+	inline void postMultScale(const Vec3f& v);
+
+    /** Optimized version of preMult(rotate(q)); */
+	inline void preMultRotate(const Quat& q);
+    /** Optimized version of postMult(rotate(q)); */
+	inline void postMultRotate(const Quat& q);
+
+	inline Matrixd operator * (const Matrixd &m) const;
+};

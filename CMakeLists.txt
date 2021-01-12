@@ -83,8 +83,8 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/include)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-add_subdirectory(src)
+include_directories(${CMAKE_SOURCE_DIR}/libs)
+add_subdirectory(libs)
 add_subdirectory(plugins)
 add_subdirectory(applications)
 

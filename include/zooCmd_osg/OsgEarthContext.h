@@ -10,10 +10,15 @@ namespace zooCmd_osg
 	const string EVENT_RESET_OSGEARTH_CONTEXT = "event.reset.osgearth.context";
 }
 
-class OsgEarthContext : public Spawner::Context, public CoordTransformUtil::Converter
+class OsgContext : public Spawner::Context
 {
 public:
 	virtual osg::Group* getSceneNode() = 0;
+};
+
+class OsgEarthContext : public OsgContext, public CoordTransformUtil::Converter
+{
+public:
 	virtual osgViewer::View* getEarthView() = 0;
 	virtual void setEarthView(osgViewer::View* view) = 0;
 	virtual osgEarth::MapNode* getEarthMapNode() = 0;

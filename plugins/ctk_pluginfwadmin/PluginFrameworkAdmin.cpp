@@ -11,7 +11,9 @@
 #include <ctkPluginFrameworkFactory.h>
 #include <ctkPluginFrameworkLauncher.h>
 
-#define MAIN_PLUGIN "ctk_zoocmd_ui"
+namespace {
+	QString MAIN_PLUGIN = "ctk_zoocmd_ui";
+}
 
 class PluginFrameworkAdminPrivate
 {
@@ -19,6 +21,7 @@ class PluginFrameworkAdminPrivate
 public:
 	long _mainPluginId;
 	QString _mainPluginName;
+	QStringList _excludePlugins;
 	ctkPluginContext* _context;
 	ctkPluginFrameworkFactory* _fwFactory;
 	QVector<long> _dependencyPlugins;
@@ -43,7 +46,8 @@ public:
 			dirIter.next();
 			pluginName = dirIter.fileName().mid(3);   // strip the "lib" prefix.
 			pluginName.truncate(pluginName.lastIndexOf('.')); // remove the suffix.
-			_pluginList.insert(pluginName, dirIter.filePath());
+			if (!_excludePlugins.contains(pluginName, Qt::CaseInsensitive))
+				_pluginList.insert(pluginName, dirIter.filePath());
 		}
 
 		if (_mainPluginId == -1)
@@ -51,14 +55,14 @@ public:
 			pluginFile = _pluginList.value(MAIN_PLUGIN);
 			if (pluginFile.isEmpty())
 			{
-				zoo_error("The main UI plug-in \"ctk_zoocmd_ui\" does not exist!");
+				zoo_error("The main UI plug-in \"%s\" does not exist!", MAIN_PLUGIN.toStdString().c_str());
 				exit(-1);
 			}
 
 			QSharedPointer<ctkPlugin> plugin = installThenStart(MAIN_PLUGIN);
 			_mainPluginName = MAIN_PLUGIN;
 			_mainPluginId = plugin->getPluginId();
-			zoo_debug("Install main plug-in %s: %s", MAIN_PLUGIN, pluginFile.toStdString().c_str());
+			zoo_debug("Install main plug-in %s: %s", MAIN_PLUGIN.toStdString().c_str(), pluginFile.toStdString().c_str());
 		}
 
 		auto it = _pluginList.begin();
@@ -195,10 +199,18 @@ PluginFrameworkAdmin::PluginFrameworkAdmin()
 	ctkProperties fwProps;
 	QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 	settings.beginGroup("CTK_PLUGIN_FRAMEWORK_PROPS");
+
+	QString mainPlugin = settings.value("main_plugin").toString();
+	if (!mainPlugin.isEmpty())
+		MAIN_PLUGIN = mainPlugin;
+
+	d_ptr->_excludePlugins = settings.value("exclude_plugins").toStringList();
+
 	QStringList keys = settings.childKeys();
 	int len = keys.size();
 	for (int i = 0; i < len; ++i)
 		fwProps.insert(keys[i], settings.value(keys[i]));
+
 	settings.endGroup();
 
 	Q_D(PluginFrameworkAdmin);
@@ -246,7 +258,8 @@ void PluginFrameworkAdmin::onPluginEvent(ctkPluginEvent pluginEvt)
 	if (pluginEvt.getType() == ctkPluginEvent::STARTED)
 	{
 		Q_D(PluginFrameworkAdmin);
-		if (pluginEvt.getPlugin()->getSymbolicName() != "ctk.zoocmd.ui")
+		QString mainPluginSymbol = MAIN_PLUGIN;
+		if (pluginEvt.getPlugin()->getSymbolicName() != mainPluginSymbol.replace("_", "."))
 			d->_dependencyPlugins.push_back(pluginEvt.getPlugin()->getPluginId());
 	}
 }

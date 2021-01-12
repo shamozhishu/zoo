@@ -64,8 +64,10 @@ RenderDevice::RenderDevice()
 	//-------------------------------------------
 	// 初始化网格管理器和所有的内建网格
 	new MeshManager;
+	new DefaultMesh;
 	new SphereMesh;
 	new BoxMesh;
+	new BillboardMesh;
 	//-------------------------------------------
 	// 初始化材质管理器和所有的内建材质
 	new MaterialManager;

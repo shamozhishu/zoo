@@ -1,9 +1,38 @@
 #include "BuiltinMesh.h"
 #include <zoo/Utils.h>
+#include <osg/Geometry>
 #include <osg/ShapeDrawable>
+#include <osg/Billboard>
+#include <osg/Texture2D>
+#include <osgDB/ReadFile>
 
 using namespace osg;
 
+DefaultMesh::DefaultMesh()
+{
+	ServiceLocator<OsgMeshManager>().getService()->addMesh(this);
+}
+
+std::string DefaultMesh::getMeshName() const
+{
+	return "Default";
+}
+
+void DefaultMesh::getMeshConfigInfo(Mesh* mesh)
+{
+	mesh->_enableResource = true;
+	mesh->_resourceFile = _resourceFile;
+}
+
+osg::Node* DefaultMesh::setupMeshModel(Mesh* mesh)
+{
+	osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + mesh->_resourceFile);
+	if (node.valid())
+		return node.release();
+	zoo_warning("Read resource file [%s] failed!", mesh->_resourceFile.c_str());
+	return nullptr;
+}
+//////////////////////////////////////////////////////////////////////////
 SphereMesh::SphereMesh()
 	: _radius(1)
 	, _center(0, 0, 0)
@@ -18,6 +47,7 @@ std::string SphereMesh::getMeshName() const
 
 void SphereMesh::getMeshConfigInfo(Mesh* mesh)
 {
+	mesh->_enableResource = false;
 	vector<double> val;
 	val.push_back(_center.x());
 	val.push_back(_center.y());
@@ -28,7 +58,7 @@ void SphereMesh::getMeshConfigInfo(Mesh* mesh)
 	mesh->_params["radius"] = val;
 }
 
-Geode* SphereMesh::setupMeshModel(Mesh* mesh)
+Node* SphereMesh::setupMeshModel(Mesh* mesh)
 {
 	vector<double> val = mesh->_params["center"];
 	_center.set(val[0], val[1], val[2]);
@@ -58,6 +88,7 @@ std::string BoxMesh::getMeshName() const
 
 void BoxMesh::getMeshConfigInfo(Mesh* mesh)
 {
+	mesh->_enableResource = false;
 	vector<double> val;
 	val.push_back(_center.x());
 	val.push_back(_center.y());
@@ -74,7 +105,7 @@ void BoxMesh::getMeshConfigInfo(Mesh* mesh)
 	mesh->_params["lengthZ"] = val;
 }
 
-osg::Geode* BoxMesh::setupMeshModel(Mesh* mesh)
+osg::Node* BoxMesh::setupMeshModel(Mesh* mesh)
 {
 	vector<double> val = mesh->_params["center"];
 	_center.set(val[0], val[1], val[2]);
@@ -90,4 +121,39 @@ osg::Geode* BoxMesh::setupMeshModel(Mesh* mesh)
 	ref_ptr<ShapeDrawable> shape = new ShapeDrawable(box.get());
 	geode->addDrawable(shape);
 	return geode.release();
+}
+//////////////////////////////////////////////////////////////////////////
+BillboardMesh::BillboardMesh()
+	: _resourceFile("material/texture/tree.rgba")
+{
+	ServiceLocator<OsgMeshManager>().getService()->addMesh(this);
+}
+
+std::string BillboardMesh::getMeshName() const
+{
+	return "Billboard";
+}
+
+void BillboardMesh::getMeshConfigInfo(Mesh* mesh)
+{
+	mesh->_enableResource = true;
+	mesh->_resourceFile = _resourceFile;
+}
+
+osg::Node* BillboardMesh::setupMeshModel(Mesh* mesh)
+{
+	ref_ptr<Billboard> treeGeode = new osg::Billboard;
+	treeGeode->setMode(osg::Billboard::POINT_ROT_EYE);
+	treeGeode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	treeGeode->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	ref_ptr<osg::Texture2D> texture = new osg::Texture2D(osgDB::readImageFile(ZOO_DATA_ROOT_DIR + _resourceFile));
+	if (texture.valid())
+	{
+		ref_ptr<osg::Drawable> tree = osg::createTexturedQuadGeometry(osg::Vec3(0, 0, 0), osg::Vec3(1, 0, 0), osg::Vec3(0, 0, 1));
+		tree->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
+		treeGeode->addDrawable(tree);
+		return treeGeode.release();
+	}
+
+	return nullptr;
 }

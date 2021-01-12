@@ -3,7 +3,7 @@
 
 #include "ui_ZooCmdUI.h"
 #include <QtWidgets/QMainWindow>
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <ctk_service/UIManagerService.h>
 
 class ZooCmdWgt;
 class QLineEdit;
@@ -22,7 +22,7 @@ public:
 	void finishWindowLaunch();
 	QWidget* getWidget(const QString& wgtID);
 	void raiseWidget(const QString& wgtID);
-	QDockWidget* addWidget(const QString& wgtID, const QString& strName, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
+	QDockWidget* addWidget(const QString& wgtID, const QString& wgtTitle, QWidget* pWidget, const QIcon& icon, Qt::DockWidgetArea area,
 		Qt::DockWidgetAreas areas = Qt::AllDockWidgetAreas, bool isShow = true, bool hasToolBtn = true, bool hasSeparator = false);
 	void removeWidget(const QString& wgtID);
 	void tabifyWidget(const QString& firstWgtID, const QString& secondWgtID);

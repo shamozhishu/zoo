@@ -1,39 +1,34 @@
 #ifndef __WAR_SIMULATOR_H__
 #define __WAR_SIMULATOR_H__
 
-#include "WarComponents.h"
+#include <component/WarComponents.h>
 
-enum ESimState { uninited_ = 0, ready_, running_, paused_, count_ };
+enum ESimState { null_ = 0, ready_, running_, paused_ };
 
-class LuaScript;
-class WarSimulator;
-class SimState
-{
-	bool _scriptValid;
-	LuaScript* _script;
-public:
-	SimState();
-	~SimState();
-	bool init(string scriptFile, WarSimulator* simulator);
-	void enter();
-	void stepping();
-	void exit();
-};
-
+class LuaScriptStack;
 class WarSimulator : zoo::Type
 {	
 public:
-	WarSimulator();
+	WarSimulator(string scriptFile);
+	~WarSimulator();
+	void resetSimuScene();
 	virtual void stepping();
+	ESimState getCurSimState() const;
 	void transition(ESimState simState);
 	void addBehavior(Behavior* behavior);
 	void removeBehavior(Behavior* behavior);
 
 protected:
-	friend class SimState;
-	SimState* _currentState;
+	void execBehaviors(const char* func);
+	void execSimuScene(const char* func);
+
+protected:
+	bool _scriptValid;
+	bool _scriptInited;
+	string _scriptFile;
+	LuaScriptStack* _script;
+	ESimState _currentState;
 	list<Behavior*> _behaviors;
-	static SimState _simStates[count_];
 };
 
 #endif // __WAR_SIMULATOR_H__

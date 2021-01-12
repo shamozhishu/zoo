@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <component/war/WarComponents.h>
+#include <component/WarComponents.h>
 
 namespace Ui {
 	class ComPropertyBoard;
@@ -24,6 +24,12 @@ public:
 
 private:
 	void hideAll();
+	PropertyWgt* createPropertyWgtForTerrainScene(QString comTypeName);
+	PropertyWgt* createPropertyWgtForTerrainEntity(QString comTypeName);
+	PropertyWgt* createPropertyWgtForEarthScene(QString comTypeName);
+	PropertyWgt* createPropertyWgtForEarthEntity(QString comTypeName);
+	PropertyWgt* createPropertyWgtForMapScene(QString comTypeName);
+	PropertyWgt* createPropertyWgtForMapEntity(QString comTypeName);
 
 private:
 	zoo::Entity* _curSelEnt;

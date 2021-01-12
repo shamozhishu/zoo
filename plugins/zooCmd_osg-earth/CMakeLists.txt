@@ -19,16 +19,15 @@ file(GLOB ZOOCMD_PLUGIN_LIB_H "*.h")
 file(GLOB ZOOCMD_PLUGIN_LIB_CPP "*.cpp")
     
 add_library(
-    	${OUT_NAME} SHARED 
-    	${ZOOCMD_PLUGIN_LIB_H}
-    	${ZOOCMD_PLUGIN_LIB_CPP}
+	${OUT_NAME} SHARED 
+	${ZOOCMD_PLUGIN_LIB_H}
+	${ZOOCMD_PLUGIN_LIB_CPP}
 )
 ADD_DEFINITIONS(-DNEED_OSGEARTH_LIBRARY)
 target_link_libraries(
-		${OUT_NAME}
-		zoo
-		zooCmd
-		zooCmd_osg
+	${OUT_NAME}
+	zoo
+	zooCmd
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)

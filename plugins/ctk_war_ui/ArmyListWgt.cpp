@@ -8,9 +8,9 @@
 #include <QDrag>
 #include <QMenu>
 #include <QMouseEvent>
-#include <ctk_service/war/WarService.h>
-#include <ctk_service/zoocmd_ui/Win32Service.h>
-#include <ctk_service/zoocmd_ui/UIManagerService.h>
+#include <ctk_service/WarService.h>
+#include <ctk_service/Win32Service.h>
+#include <ctk_service/UIManagerService.h>
 #include "ComPropertyBoard.h"
 #include "OpenBattlefieldDlg.h"
 
@@ -25,6 +25,7 @@ public:
 	ArmyTreeItem(zoo::Entity* ent, QTreeWidget* parent)
 		: QTreeWidgetItem(parent)
 		, _ent(ent)
+		, _earthCom(nullptr)
 		, _uiMgr(UIActivator::getService<UIManagerService>())
 	{
 		setText(0, QString::fromLocal8Bit(ent->desc().c_str()));
@@ -37,12 +38,24 @@ public:
 			_mainCam->getImp()->awake();
 			_uiMgr->starWindowTitle();
 		}
+
+		if (ent->isSpawner() && ent->breed() != 0)
+		{
+			_earthCom = ent->getComponent<Earth>();
+			if (!_earthCom)
+			{
+				_earthCom = ent->addComponent<Earth>("EarthImpl");
+				_earthCom->getImp()->awake();
+				_uiMgr->starWindowTitle();
+			}
+		}
 	}
 
 	ArmyTreeItem(zoo::Entity* ent, ArmyTreeItem* parent)
 		: QTreeWidgetItem(parent)
 		, _ent(ent)
 		, _mainCam(nullptr)
+		, _earthCom(nullptr)
 		, _uiMgr(UIActivator::getService<UIManagerService>())
 	{
 		setText(0, QString::fromLocal8Bit(ent->desc().c_str()));
@@ -91,6 +104,7 @@ public:
 private:
 	DoF* _doF;
 	Camera* _mainCam;
+	Earth* _earthCom;
 	zoo::Entity* _ent;
 	UIManagerService* _uiMgr;
 };
@@ -102,6 +116,7 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 	_rightClickMenu = new QMenu(this);
 	QAction* pAct = new QAction(tr("删除"), this);
 	_rightClickMenu->addAction(pAct);
+	setItemDelegate(new NoFocusDelegate());
 	connect(pAct, &QAction::triggered, [this]
 	{
 		ArmyTreeItem* pItem = dynamic_cast<ArmyTreeItem*>(currentItem());
@@ -144,7 +159,20 @@ ArmyTreeWgt::ArmyTreeWgt(QWidget* parent /*= Q_NULLPTR*/)
 				zoo::Entity* pEnt = pItem->getEnt();
 				pPropBoard->showCurEntComs(pEnt);
 				QString strId = pEnt->id() == -1 ? "null" : QString::number(pEnt->id());
-				QString strBreed = pEnt->breed() == -1 ? "null" : QString::number(pEnt->breed());
+				QString strBreed = "null";
+				if (pEnt->isSpawner())
+				{
+					switch (pEnt->breed())
+					{
+					case 0: strBreed = "地形"; break;
+					case 1: strBreed = "地球"; break;
+					case 2: strBreed = "地图"; break;
+					}
+				}
+				else
+				{
+					strBreed = pEnt->breed() == -1 ? "null" : QString::number(pEnt->breed());
+				}
 				QString strDesc = pEnt->desc() == "" ? "null" : QString::fromLocal8Bit(pEnt->desc().c_str());
 				setHeaderLabels(QStringList() << QString(tr("编号：%1    类别：%2    描述：%3").arg(strId, strBreed, strDesc)));
 			}
@@ -310,44 +338,18 @@ ArmyListWgt::ArmyListWgt()
 		ent->desc() = _ui->lineEdit_desc->text().toLocal8Bit();
 		emit createItem(ent);
 	});
-	connect(_ui->toolButton_readyScript, &QToolButton::clicked, [this]
+	connect(_ui->toolButton_script, &QToolButton::clicked, [this]
 	{
-		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(ReadyScript_);
+		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(ScriptFile_);
 		if (filename.isEmpty())
 		{
-			QMessageBox::warning(this, tr("警告"), tr("仿真就绪脚本不存在！"));
+			QMessageBox::warning(this, tr("警告"), tr("仿真脚本不存在！"));
 			return;
 		}
 
 		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
 		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
-			QMessageBox::warning(this, tr("警告"), tr("打开仿真就绪脚本文件%1失败！").arg(filename));
-	});
-	connect(_ui->toolButton_pausedScript, &QToolButton::clicked, [this]
-	{
-		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(PausedScript_);
-		if (filename.isEmpty())
-		{
-			QMessageBox::warning(this, tr("警告"), tr("仿真暂停脚本不存在！"));
-			return;
-		}
-
-		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
-		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
-			QMessageBox::warning(this, tr("警告"), tr("打开仿真暂停脚本文件%1失败！").arg(filename));
-	});
-	connect(_ui->toolButton_runningScript, &QToolButton::clicked, [this]
-	{
-		QString filename = OpenBattlefieldDlg::getCurBattlefieldFile(RunningScript_);
-		if (filename.isEmpty())
-		{
-			QMessageBox::warning(this, tr("警告"), tr("仿真执行脚本不存在！"));
-			return;
-		}
-
-		filename = QString::fromLocal8Bit(ZOO_DATA_ROOT_DIR.c_str()) + filename;
-		if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
-			QMessageBox::warning(this, tr("警告"), tr("打开仿真执行脚本文件%1失败！").arg(filename));
+			QMessageBox::warning(this, tr("警告"), tr("打开仿真脚本文件%1失败！").arg(filename));
 	});
 }
 

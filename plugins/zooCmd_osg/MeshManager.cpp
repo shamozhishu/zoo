@@ -18,11 +18,10 @@ MeshManager::~MeshManager()
 
 vector<string> MeshManager::getMeshList() const
 {
-	vector<string> meshList(_meshs.size() + 1);
-	meshList[0] = "Default";
+	vector<string> meshList(_meshs.size());
 	auto it = _meshs.begin();
 	auto itEnd = _meshs.end();
-	for (int i = 1; it != itEnd; ++it, ++i)
+	for (int i = 0; it != itEnd; ++it, ++i)
 		meshList[i] = it->first;
 	return meshList;
 }
@@ -62,19 +61,6 @@ bool MeshManager::attach(Mesh* mesh, osg::Group* meshNode)
 {
 	if (!mesh || !meshNode)
 		return false;
-
-	if (mesh->_currentUseMeshName == "Default")
-	{
-		osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(ZOO_DATA_ROOT_DIR + mesh->_modelFile);
-		if (node.get())
-		{
-			meshNode->addChild(node);
-			return true;
-		}
-
-		zoo_warning("Read node file [%s] failed!", mesh->_modelFile.c_str());
-		return false;
-	}
 
 	auto it = _meshs.find(mesh->_currentUseMeshName);
 	if (it == _meshs.end())

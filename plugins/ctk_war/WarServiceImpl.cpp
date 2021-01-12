@@ -2,7 +2,7 @@
 #include "WarCommander.h"
 
 WarServiceImpl::WarServiceImpl()
-	: _simuState(uninited_)
+	: _simuState(null_)
 {
 }
 
@@ -23,8 +23,8 @@ bool WarServiceImpl::openScene(int id)
 		WarSimulator* pWarSimulator = WarCommander::getSingleton().getCurBattlefield();
 		if (pWarSimulator)
 		{
-			_simuState = uninited_;
-			pWarSimulator->transition(uninited_);
+			_simuState = null_;
+			pWarSimulator->transition(null_);
 		}
 	}
 
@@ -36,8 +36,8 @@ void WarServiceImpl::closeScene()
 	WarSimulator* pWarSimulator = WarCommander::getSingleton().getCurBattlefield();
 	if (pWarSimulator)
 	{
-		_simuState = uninited_;
-		pWarSimulator->transition(uninited_);
+		_simuState = null_;
+		pWarSimulator->transition(null_);
 	}
 
 	WarCommander::getSingleton().exitCurBattlefield();

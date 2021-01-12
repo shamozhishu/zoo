@@ -6,7 +6,7 @@
 set(OUT_NAME zooCmdShell)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/libs)
 
 file(GLOB ZOOCMDSHELL_CPP "*.cpp")
            

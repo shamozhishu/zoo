@@ -8,8 +8,8 @@
 
 #include <osgFX/Effect>
 #include <zoo/ServiceLocator.h>
+#include <component/WarComponents.h>
 #include <zooCmd_osg/OsgEarthSupport.h>
-#include <component/war/WarComponents.h>
 //------------------------------------------------------------------------
 // 描述: OSG实现的材质类(内存释放交由材质管理器负责)
 // 作者: shamozhishu

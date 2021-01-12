@@ -1,4 +1,13 @@
 #include "OsgEarthContextImpl.h"
+#include <zooCmd_osg/OsgComponentImpls.h>
+
+ZOO_REFLEX_IMPLEMENT(OsgContextImpl);
+osg::Group* OsgContextImpl::getSceneNode()
+{
+	if (!_sceneNode)
+		_sceneNode = new osg::Group;
+	return _sceneNode;
+}
 
 ZOO_REFLEX_IMPLEMENT(OsgEarthContextImpl);
 osg::Group* OsgEarthContextImpl::getSceneNode()
