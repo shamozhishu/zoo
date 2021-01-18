@@ -2,19 +2,15 @@
 #define __ZOO_CMD_WGT_H__
 
 #include <QtWidgets/QWidget>
-#include <ctk_service/Win32Service.h>
 
 class RenderThread;
 class CmdRegThread;
-class ZooCmdWgt : public QWidget, public Win32Service
+class ZooCmdWgt : public QWidget
 {
 	Q_OBJECT
-	Q_INTERFACES(Win32Service)
 public:
 	ZooCmdWgt(QString renderAdaName, QStringList cmdset, QString datadir = "", QWidget* parent = Q_NULLPTR);
 	~ZooCmdWgt();
-	void* getWnd();
-	bool isFocus();
 	void resgisterCmdset(QStringList cmdset);
 	bool isCmdRegCompleted() const;
 

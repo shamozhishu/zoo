@@ -194,6 +194,13 @@ void zooCmd_Render()
 	}
 }
 
+void* zooCmd_GetWnd(int windowID, bool wndHanle /*= false*/)
+{
+	if (s_isInited)
+		return g_renderAdapter->getWnd(windowID, wndHanle);
+	return nullptr;
+}
+
 void* zooCmd_Setup(int windowWidth /*= 0*/, int windowHeight /*= 0*/, float windowScale /*= 1.0f*/, int windowID /*= 0*/)
 {
 	if (s_isInited)

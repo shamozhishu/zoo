@@ -13,6 +13,7 @@ ZOOCMDRUNPROC zooCmd_Run_Loader;
 ZOOCMDREFRESHPROC zooCmd_Refresh_Loader;
 ZOOCMDDESTROYPROC zooCmd_Destroy_Loader;
 ZOOCMDRENDERPROC zooCmd_Render_Loader;
+ZOOCMDGETWNDPROC zooCmd_GetWnd_Loader;
 ZOOCMDSETUPPROC zooCmd_Setup_Loader;
 ZOOCMDBOOLVALUEPROC zooCmd_BoolValue_Loader;
 ZOOCMDINTVALUEPROC zooCmd_IntValue_Loader;
@@ -67,6 +68,7 @@ static void load_zoocmd(HMODULE libZooCmd, void*(*load)(HMODULE, const char*))
 	zooCmd_Refresh_Loader = (ZOOCMDREFRESHPROC)load(libZooCmd, "zooCmd_Refresh");
 	zooCmd_Destroy_Loader = (ZOOCMDDESTROYPROC)load(libZooCmd, "zooCmd_Destroy");
 	zooCmd_Render_Loader = (ZOOCMDRENDERPROC)load(libZooCmd, "zooCmd_Render");
+	zooCmd_GetWnd_Loader = (ZOOCMDGETWNDPROC)load(libZooCmd, "zooCmd_GetWnd");
 	zooCmd_Setup_Loader = (ZOOCMDSETUPPROC)load(libZooCmd, "zooCmd_Setup");
 	zooCmd_BoolValue_Loader = (ZOOCMDBOOLVALUEPROC)load(libZooCmd, "zooCmd_BoolValue");
 	zooCmd_IntValue_Loader = (ZOOCMDINTVALUEPROC)load(libZooCmd, "zooCmd_IntValue");

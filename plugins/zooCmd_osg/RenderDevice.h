@@ -24,6 +24,7 @@ public:
 	bool isDone();
 	void setDone(bool done);
 	void frame(double simulationTime);
+	void* getWnd(int windowID, bool wndHanle = false);
 	void* setup(int windowWidth, int windowHeight, float windowScale, int windowID = 0);
 
 private:

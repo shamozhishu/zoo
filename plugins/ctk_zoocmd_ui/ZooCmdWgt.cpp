@@ -1,4 +1,5 @@
 #include "ZooCmdWgt.h"
+#include <ctk_service/WarService.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <vector>
 #include <string>
@@ -98,7 +99,7 @@ ZooCmdWgt::ZooCmdWgt(QString renderAdaName, QStringList cmdset, QString datadir 
 	zooCmd_Destroy();
 	if (zooCmd_InitW(renderAdaName.toStdString().c_str(), datadir.toStdWString().c_str()))
 	{
-		QWidget* pGLWgt = (QWidget*)zooCmd_Setup(width(), height(), screen->devicePixelRatio(), ZOOCMDWGT);
+		QWidget* pGLWgt = (QWidget*)zooCmd_Setup(width(), height(), screen->devicePixelRatio(), MAIN_VIEW_WGT);
 		if (pGLWgt)
 		{
 			setLayout(new QHBoxLayout);
@@ -120,16 +121,6 @@ ZooCmdWgt::~ZooCmdWgt()
 
 	delete _cmdRegThread;
 	delete _renderThread;
-}
-
-void* ZooCmdWgt::getWnd()
-{
-	return (HWND)winId();
-}
-
-bool ZooCmdWgt::isFocus()
-{
-	return isActiveWindow();
 }
 
 void ZooCmdWgt::resgisterCmdset(QStringList cmdset)

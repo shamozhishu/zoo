@@ -606,6 +606,13 @@ GraphicsWindowQt::~GraphicsWindowQt()
 	}
 }
 
+void* GraphicsWindowQt::getWndHandle() const
+{
+	if (_widget)
+		return (void*)_widget->winId();
+	return nullptr;
+}
+
 bool GraphicsWindowQt::init(QWidget* parent, const QGLWidget* shareWidget)
 {
 	// update _widget and parent by WindowData

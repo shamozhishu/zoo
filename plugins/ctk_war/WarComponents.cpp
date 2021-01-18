@@ -75,6 +75,459 @@ void Behavior::deserialize(Spawner* spawner)
 	spawner->getValue("script", _scriptFile);
 }
 //////////////////////////////////////////////////////////////////////////
+ZOO_REFLEX_IMPLEMENT(DoF);
+DoF::DoF()
+	: _parent(nullptr)
+	, _sceneType(-1)
+	, _isLLA(false)
+	, _mountEntID(-1)
+	, _mountEntBreed(-1)
+	, _heading(0)
+	, _pitch(0)
+	, _roll(0)
+	, _sx(1)
+	, _sy(1)
+	, _sz(1)
+{
+	_pos.x = 0;
+	_pos.y = 0;
+	_pos.z = 0;
+}
+
+DoF::~DoF()
+{
+	setParent(nullptr);
+	DoF* child;
+	vector<DoF*> children = _children;
+	auto it = children.begin();
+	for (; it != children.end(); ++it)
+	{
+		child = *it;
+		if (child)
+			child->setParent(nullptr);
+	}
+}
+
+void DoF::init()
+{
+	const_cast<int&>(_sceneType) = getEntity()->getSpawner()->breed();
+	_isLLA = _sceneType == 0 ? false : true;
+}
+
+void DoF::serialize(Spawner* spawner)
+{
+	spawner->setValue("lla", _isLLA);
+	if (_isLLA)
+	{
+		spawner->setValue("lon", _lla.lon);
+		spawner->setValue("lat", _lla.lat);
+		spawner->setValue("alt", _lla.alt);
+	}
+	else
+	{
+		spawner->setValue("x", _pos.x);
+		spawner->setValue("y", _pos.y);
+		spawner->setValue("z", _pos.z);
+	}
+
+	spawner->setValue("heading", _heading);
+	spawner->setValue("pitch", _pitch);
+	spawner->setValue("roll", _roll);
+	spawner->setValue("sx", _sx);
+	spawner->setValue("sy", _sy);
+	spawner->setValue("sz", _sz);
+
+	if (_parent)
+	{
+		_mountEntID = _parent->getEntity()->id();
+		_mountEntBreed = _parent->getEntity()->breed();
+		spawner->setValue("mount_entity_id", _mountEntID);
+		spawner->setValue("mount_entity_breed", _mountEntBreed);
+	}
+	else
+	{
+		spawner->setNull("mount_entity_id");
+		spawner->setNull("mount_entity_breed");
+	}
+}
+
+void DoF::deserialize(Spawner* spawner)
+{
+	spawner->getValue("lla", _isLLA);
+	if (_isLLA)
+	{
+		spawner->getValue("lon", _lla.lon);
+		spawner->getValue("lat", _lla.lat);
+		spawner->getValue("alt", _lla.alt);
+	}
+	else
+	{
+		spawner->getValue("x", _pos.x);
+		spawner->getValue("y", _pos.y);
+		spawner->getValue("z", _pos.z);
+	}
+
+	spawner->getValue("heading", _heading);
+	spawner->getValue("pitch", _pitch);
+	spawner->getValue("roll", _roll);
+	spawner->getValue("sx", _sx);
+	spawner->getValue("sy", _sy);
+	spawner->getValue("sz", _sz);
+	spawner->getValue("mount_entity_id", _mountEntID);
+	spawner->getValue("mount_entity_breed", _mountEntBreed);
+
+	SignalTrigger::connect(*getEntity()->getSpawner(), [this]
+	{
+		Entity* pEnt = getEntity()->getSpawner()->gain(_mountEntID, _mountEntBreed);
+		if (pEnt)
+			setParent(pEnt->getComponent<DoF>());
+	});
+}
+
+bool DoF::isLLA() const
+{
+	return _isLLA;
+}
+
+void DoF::setLLA(bool lla)
+{
+	if (lla && _sceneType == 0)
+	{
+		zoo_warning("地形场景类型不支持经纬度坐标系统[DoF::setLLA(true)]");
+		return;
+	}
+
+	if (_isLLA != lla)
+	{
+		_isLLA = lla;
+		_dirty.addState(Parent_);
+	}
+}
+
+void DoF::llaTo(double lon, double lat, double alt)
+{
+	if (!_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到经纬度模式[DoF::llaTo(%f, %f, %f)]", lon, lat, alt);
+		return;
+	}
+
+	if (!equals(_lla.lon, lon) || !equals(_lla.lat, lat) || !equals(_lla.alt, alt))
+	{
+		_lla.lon = lon;
+		_lla.lat = lat;
+		_lla.alt = alt;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setLon(double lon)
+{
+	if (!_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到经纬度模式[DoF::setLon(%f)]", lon);
+		return;
+	}
+
+	if (!equals(_lla.lon, lon))
+	{
+		_lla.lon = lon;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setLat(double lat)
+{
+	if (!_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到经纬度模式[DoF::setLat(%f)]", lat);
+		return;
+	}
+
+	if (!equals(_lla.lat, lat))
+	{
+		_lla.lat = lat;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setAlt(double alt)
+{
+	if (!_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到经纬度模式[DoF::setAlt(%f)]", alt);
+		return;
+	}
+
+	if (!equals(_lla.alt, alt))
+	{
+		_lla.alt = alt;
+		_dirty.addState(Dof_);
+	}
+}
+
+double DoF::getLon() const
+{
+	return _lla.lon;
+}
+
+double DoF::getLat() const
+{
+	return _lla.lat;
+}
+
+double DoF::getAlt() const
+{
+	return _lla.alt;
+}
+
+void DoF::moveTo(double x, double y, double z)
+{
+	if (_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到XYZ模式[DoF::moveTo(%f, %f, %f)]", x, y, z);
+		return;
+	}
+
+	if (!equals(_pos.x, x) || !equals(_pos.y, y) || !equals(_pos.z, z))
+	{
+		_pos.x = x;
+		_pos.y = y;
+		_pos.z = z;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::moveBy(double x, double y, double z)
+{
+	if (_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到XYZ模式[DoF::moveBy(%f, %f, %f)]", x, y, z);
+		return;
+	}
+
+	if (!isZero(x) || !isZero(y) || !isZero(z))
+	{
+		_pos.x += x;
+		_pos.y += y;
+		_pos.z += z;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setPosX(double x)
+{
+	if (_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到XYZ模式[DoF::setPosX(%f)]", x);
+		return;
+	}
+
+	if (!equals(_pos.x, x))
+	{
+		_pos.x = x;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setPosY(double y)
+{
+	if (_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到XYZ模式[DoF::setPosY(%f)]", y);
+		return;
+	}
+
+	if (!equals(_pos.y, y))
+	{
+		_pos.y = y;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setPosZ(double z)
+{
+	if (_isLLA)
+	{
+		zoo_warning("请先设置坐标系统到XYZ模式[DoF::setPosZ(%f)]", z);
+		return;
+	}
+
+	if (!equals(_pos.z, z))
+	{
+		_pos.z = z;
+		_dirty.addState(Dof_);
+	}
+}
+
+double DoF::getPosX() const
+{
+	return _pos.x;
+}
+
+double DoF::getPosY() const
+{
+	return _pos.y;
+}
+
+double DoF::getPosZ() const
+{
+	return _pos.z;
+}
+
+void DoF::rotateTo(float h, float p, float r)
+{
+	if (!equals(_heading, h) || !equals(_pitch, p) || !equals(_roll, r))
+	{
+		_heading = h;
+		_pitch = p;
+		_roll = r;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::rotateBy(float h, float p, float r)
+{
+	if (!isZero(h) || !isZero(p) || !isZero(r))
+	{
+		_heading += h;
+		_pitch += p;
+		_roll += r;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setHeading(float h)
+{
+	if (!equals(_heading, h))
+	{
+		_heading = h;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setPitch(float p)
+{
+	if (!equals(_pitch, p))
+	{
+		_pitch = p;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setRoll(float r)
+{
+	if (!equals(_roll, r))
+	{
+		_roll = r;
+		_dirty.addState(Dof_);
+	}
+}
+
+float DoF::getHeading() const
+{
+	return _heading;
+}
+
+float DoF::getPitch() const
+{
+	return _pitch;
+}
+
+float DoF::getRoll() const
+{
+	return _roll;
+}
+
+void DoF::scaleTo(float sx, float sy, float sz)
+{
+	if (!equals(_sx, sx) || !equals(_sy, sy) || !equals(_sz, sz))
+	{
+		_sx = sx;
+		_sy = sy;
+		_sz = sz;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::scaleBy(float sx, float sy, float sz)
+{
+	if (!isZero(sx) || !isZero(sy) || !isZero(sz))
+	{
+		_sx += sx;
+		_sy += sy;
+		_sz += sz;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setScaleX(float sx)
+{
+	if (!equals(_sx, sx))
+	{
+		_sx = sx;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setScaleY(float sy)
+{
+	if (!equals(_sy, sy))
+	{
+		_sy = sy;
+		_dirty.addState(Dof_);
+	}
+}
+
+void DoF::setScaleZ(float sz)
+{
+	if (!equals(_sz, sz))
+	{
+		_sz = sz;
+		_dirty.addState(Dof_);
+	}
+}
+
+float DoF::getScaleX() const
+{
+	return _sx;
+}
+
+float DoF::getScaleY() const
+{
+	return _sy;
+}
+
+float DoF::getScaleZ() const
+{
+	return _sz;
+}
+
+void DoF::setParent(DoF* parent)
+{
+	if (_parent == parent)
+		return;
+
+	if (_parent)
+	{
+		auto it = std::find(_parent->_children.begin(), _parent->_children.end(), this);
+		if (it != _parent->_children.end())
+			_parent->_children.erase(it);
+	}
+
+	_parent = parent;
+
+	if (parent)
+		parent->_children.push_back(this);
+
+	_dirty.addState(Parent_);
+}
+
+DoF* DoF::getParent() const
+{
+	return _parent;
+}
+//////////////////////////////////////////////////////////////////////////
 Mesh::Mesh()
 	: _currentUseMeshName("Default")
 	, _enableResource(true)
@@ -288,209 +741,6 @@ void Material::changeUniform(const string& uniform, const vector<double>& val)
 	}
 
 	_uniforms[uniform] = val;
-}
-//////////////////////////////////////////////////////////////////////////
-ZOO_REFLEX_IMPLEMENT(DoF);
-DoF::DoF()
-	: _parent(nullptr)
-	, _sceneType(-1)
-	, _lonLatHeight(false)
-	, _mountEntID(-1)
-	, _mountEntBreed(-1)
-	, _x(0)
-	, _y(0)
-	, _z(0)
-	, _heading(0)
-	, _pitch(0)
-	, _roll(0)
-	, _sx(1)
-	, _sy(1)
-	, _sz(1)
-{
-}
-
-DoF::~DoF()
-{
-	setParent(nullptr);
-	DoF* child;
-	vector<DoF*> children = _children;
-	auto it = children.begin();
-	for (; it != children.end(); ++it)
-	{
-		child = *it;
-		if (child)
-			child->setParent(nullptr);
-	}
-}
-
-void DoF::init()
-{
-	const_cast<int&>(_sceneType) = getEntity()->getSpawner()->breed();
-	const_cast<bool&>(_lonLatHeight) = _sceneType == 0 ? false : true;
-}
-
-void DoF::serialize(Spawner* spawner)
-{
-	spawner->setValue("x", _x);
-	spawner->setValue("y", _y);
-	spawner->setValue("z", _z);
-	spawner->setValue("heading", _heading);
-	spawner->setValue("pitch", _pitch);
-	spawner->setValue("roll", _roll);
-	spawner->setValue("sx", _sx);
-	spawner->setValue("sy", _sy);
-	spawner->setValue("sz", _sz);
-	spawner->setValue("lon_lat_height", _lonLatHeight);
-
-	if (_parent)
-	{
-		_mountEntID = _parent->getEntity()->id();
-		_mountEntBreed = _parent->getEntity()->breed();
-		spawner->setValue("mount_entity_id", _mountEntID);
-		spawner->setValue("mount_entity_breed", _mountEntBreed);
-	}
-	else
-	{
-		spawner->setNull("mount_entity_id");
-		spawner->setNull("mount_entity_breed");
-	}
-}
-
-void DoF::deserialize(Spawner* spawner)
-{
-	spawner->getValue("x", _x);
-	spawner->getValue("y", _y);
-	spawner->getValue("z", _z);
-	spawner->getValue("heading", _heading);
-	spawner->getValue("pitch", _pitch);
-	spawner->getValue("roll", _roll);
-	spawner->getValue("sx", _sx);
-	spawner->getValue("sy", _sy);
-	spawner->getValue("sz", _sz);
-	spawner->getValue("lon_lat_height", _lonLatHeight);
-	spawner->getValue("mount_entity_id", _mountEntID);
-	spawner->getValue("mount_entity_breed", _mountEntBreed);
-
-	SignalTrigger::connect(*getEntity()->getSpawner(), [this]
-	{
-		Entity* pEnt = getEntity()->getSpawner()->gain(_mountEntID, _mountEntBreed);
-		if (pEnt)
-			setParent(pEnt->getComponent<DoF>());
-	});
-}
-
-bool DoF::isLLH() const
-{
-	return _lonLatHeight;
-}
-
-void DoF::setPos(double x, double y, double z, bool lon_lat_height /*= false*/)
-{
-	if (!equals(_x, x) || !equals(_y, y) || !equals(_z, z))
-	{
-		_x = x;
-		_y = y;
-		_z = z;
-		_dirty.addState(Dof_);
-	}
-
-	if (_sceneType != 0 && _lonLatHeight != lon_lat_height)
-	{
-		const_cast<bool&>(_lonLatHeight) = lon_lat_height;
-		_dirty.addState(Parent_);
-	}
-}
-
-double DoF::getPosX() const
-{
-	return _x;
-}
-
-double DoF::getPosY() const
-{
-	return _y;
-}
-
-double DoF::getPosZ() const
-{
-	return _z;
-}
-
-void DoF::setRot(float h, float p, float r)
-{
-	if (!equals(_heading, h) || !equals(_pitch, p) || !equals(_roll, r))
-	{
-		_heading = h;
-		_pitch = p;
-		_roll = r;
-		_dirty.addState(Dof_);
-	}
-}
-
-float DoF::getHeading() const
-{
-	return _heading;
-}
-
-float DoF::getPitch() const
-{
-	return _pitch;
-}
-
-float DoF::getRoll() const
-{
-	return _roll;
-}
-
-void DoF::setScale(float sx, float sy, float sz)
-{
-	if (!equals(_sx, sx) || !equals(_sy, sy) || !equals(_sz, sz))
-	{
-		_sx = sx;
-		_sy = sy;
-		_sz = sz;
-		_dirty.addState(Dof_);
-	}
-}
-
-float DoF::getScaleX() const
-{
-	return _sx;
-}
-
-float DoF::getScaleY() const
-{
-	return _sy;
-}
-
-float DoF::getScaleZ() const
-{
-	return _sz;
-}
-
-void DoF::setParent(DoF* parent)
-{
-	if (_parent == parent)
-		return;
-
-	if (_parent)
-	{
-		auto it = std::find(_parent->_children.begin(), _parent->_children.end(), this);
-		if (it != _parent->_children.end())
-			_parent->_children.erase(it);
-	}
-
-	_parent = parent;
-
-	if (parent)
-		parent->_children.push_back(this);
-
-	_dirty.addState(Parent_);
-}
-
-DoF* DoF::getParent() const
-{
-	return _parent;
 }
 //////////////////////////////////////////////////////////////////////////
 ZOO_REFLEX_IMPLEMENT(Model);

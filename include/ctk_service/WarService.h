@@ -3,6 +3,12 @@
 
 #include <QtPlugin>
 
+enum EWindowID
+{
+	MAIN_VIEW_WGT = 0,
+	MATERIAL_DISPLAY_WGT
+};
+
 class WarService
 {
 public:

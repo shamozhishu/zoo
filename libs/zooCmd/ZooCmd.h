@@ -26,6 +26,7 @@ extern "C" {
 	_zooCmdExport void  zooCmd_Refresh();
 	_zooCmdExport void  zooCmd_Destroy();
 	_zooCmdExport void  zooCmd_Render();
+	_zooCmdExport void* zooCmd_GetWnd(int windowID, bool wndHanle = false);
 	_zooCmdExport void* zooCmd_Setup(int windowWidth = 0, int windowHeight = 0, float windowScale = 1.0f, int windowID = 0);
 
 	// Return value, record the return value of the most recently executed command.

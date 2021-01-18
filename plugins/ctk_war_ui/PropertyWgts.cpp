@@ -3,7 +3,7 @@
 #include <zoo/Utils.h>
 #include <zoo/ServiceLocator.h>
 #include <UniversalGlobalServices.h>
-#include <ctk_service/Win32Service.h>
+#include <ctk_service/WarService.h>
 #include <ctk_service/UIManagerService.h>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -71,7 +71,7 @@ ComListWgt::ComListWgt(ComPropertyBoard* propBoard)
 			if (_addComponentBtn) // Ìí¼Ó×é¼þ
 			{
 				zoo::Component* pCom = (comName == "Camera")
-					? _operateEnt->addComponent<Camera, int>(comImpl.toStdString(), ZOOCMDWGT)
+					? _operateEnt->addComponent<Camera, int>(comImpl.toStdString(), MAIN_VIEW_WGT)
 					: _operateEnt->addComponent(comName.toStdString(), comImpl.toStdString());
 				if (pCom)
 				{
@@ -471,9 +471,9 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	connect(_ui->lineEdit_posx, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
 		double tmp = _ui->lineEdit_posx->text().toDouble();
-		if (!zoo::equals(COM_CAST(DoF)->_x, tmp))
+		if (!zoo::equals(COM_CAST(DoF)->_pos.x, tmp))
 		{
-			COM_CAST(DoF)->_x = tmp;
+			COM_CAST(DoF)->_pos.x = tmp;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
@@ -481,9 +481,9 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	connect(_ui->lineEdit_posy, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
 		double tmp = _ui->lineEdit_posy->text().toDouble();
-		if (!zoo::equals(COM_CAST(DoF)->_y, tmp))
+		if (!zoo::equals(COM_CAST(DoF)->_pos.y, tmp))
 		{
-			COM_CAST(DoF)->_y = tmp;
+			COM_CAST(DoF)->_pos.y = tmp;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
@@ -491,9 +491,9 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	connect(_ui->lineEdit_posz, static_cast<void(QLineEdit::*)(const QString&)>(&QLineEdit::textChanged), [this]
 	{
 		double tmp = _ui->lineEdit_posz->text().toDouble();
-		if (!zoo::equals(COM_CAST(DoF)->_z, tmp))
+		if (!zoo::equals(COM_CAST(DoF)->_pos.z, tmp))
 		{
-			COM_CAST(DoF)->_z = tmp;
+			COM_CAST(DoF)->_pos.z = tmp;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
@@ -560,27 +560,27 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	});
 	connect(_ui->doubleSpinBox_lon, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
 	{
-		if (!zoo::equals(COM_CAST(DoF)->_x, val))
+		if (!zoo::equals(COM_CAST(DoF)->_lla.lon, val))
 		{
-			COM_CAST(DoF)->_x = val;
+			COM_CAST(DoF)->_lla.lon = val;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
 	connect(_ui->doubleSpinBox_lat, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
 	{
-		if (!zoo::equals(COM_CAST(DoF)->_y, val))
+		if (!zoo::equals(COM_CAST(DoF)->_lla.lat, val))
 		{
-			COM_CAST(DoF)->_y = val;
+			COM_CAST(DoF)->_lla.lat = val;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
 	});
 	connect(_ui->doubleSpinBox_height, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double val)
 	{
-		if (!zoo::equals(COM_CAST(DoF)->_z, val))
+		if (!zoo::equals(COM_CAST(DoF)->_lla.alt, val))
 		{
-			COM_CAST(DoF)->_z = val;
+			COM_CAST(DoF)->_lla.alt = val;
 			_com->dirtyBit().addState(DoF::Dof_);
 			_uiMgr->starWindowTitle();
 		}
@@ -588,23 +588,23 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 	connect(_ui->radioButton, static_cast<void(QRadioButton::*)(bool)>(&QRadioButton::toggled), [this](bool checked)
 	{
 		DoF* pDoF = COM_CAST(DoF);
-		if (pDoF->_lonLatHeight == checked)
+		if (pDoF->_isLLA == checked)
 			return;
 
 		_uiMgr->starWindowTitle();
-		const_cast<bool&>(pDoF->_lonLatHeight) = checked;
+		pDoF->_isLLA = checked;
 		_ui->stackedWidget->setCurrentIndex(checked ? 1 : 0);
 		if (checked)
 		{
 			double lon, lat, height;
-			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertXYZToLLH(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_x, pDoF->_y, pDoF->_z, lon, lat, height))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertXYZToLLH(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_pos.x, pDoF->_pos.y, pDoF->_pos.z, lon, lat, height))
 			{
 				_ui->doubleSpinBox_lon->setValue(lon);
 				_ui->doubleSpinBox_lat->setValue(lat);
 				_ui->doubleSpinBox_height->setValue(height);
-				pDoF->_x = lon;
-				pDoF->_y = lat;
-				pDoF->_z = height;
+				pDoF->_lla.lon = lon;
+				pDoF->_lla.lat = lat;
+				pDoF->_lla.alt = height;
 				_com->dirtyBit().addState(DoF::Dof_);
 				_com->dirtyBit().addState(DoF::Parent_);
 			}
@@ -612,14 +612,14 @@ DoFPropertyWgt::DoFPropertyWgt(QWidget* parent)
 		else
 		{
 			double X, Y, Z;
-			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertLLHToXYZ(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_x, pDoF->_y, pDoF->_z, X, Y, Z))
+			if (zoo::ServiceLocator<CoordTransformUtil>::getService()->convertLLHToXYZ(pDoF->getEntity()->getSpawner()->getContext<CoordTransformUtil::Converter>(), pDoF->_lla.lon, pDoF->_lla.lat, pDoF->_lla.alt, X, Y, Z))
 			{
 				_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(X));
 				_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(Y));
 				_ui->lineEdit_posz->setText(DOUBLE_TO_STRING(Z));
-				pDoF->_x = X;
-				pDoF->_y = Y;
-				pDoF->_z = Z;
+				pDoF->_pos.x = X;
+				pDoF->_pos.y = Y;
+				pDoF->_pos.z = Z;
 				_com->dirtyBit().addState(DoF::Dof_);
 				_com->dirtyBit().addState(DoF::Parent_);
 			}
@@ -655,21 +655,21 @@ void DoFPropertyWgt::resetCom(zoo::Component* pCom)
 		else
 		{
 			_ui->radioButton->show();
-			_ui->radioButton->setChecked(pDoF->_lonLatHeight ? Qt::Checked : Qt::Unchecked);
-			if (pDoF->_lonLatHeight)
+			_ui->radioButton->setChecked(pDoF->_isLLA ? Qt::Checked : Qt::Unchecked);
+			if (pDoF->_isLLA)
 			{
 				_ui->stackedWidget->setCurrentIndex(1);
-				_ui->doubleSpinBox_lon->setValue(pDoF->_x);
-				_ui->doubleSpinBox_lat->setValue(pDoF->_y);
-				_ui->doubleSpinBox_height->setValue(pDoF->_z);
+				_ui->doubleSpinBox_lon->setValue(pDoF->_lla.lon);
+				_ui->doubleSpinBox_lat->setValue(pDoF->_lla.lat);
+				_ui->doubleSpinBox_height->setValue(pDoF->_lla.alt);
 				break;
 			}
 		}
 
 		_ui->stackedWidget->setCurrentIndex(0);
-		_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(pDoF->_x));
-		_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(pDoF->_y));
-		_ui->lineEdit_posz->setText(DOUBLE_TO_STRING(pDoF->_z));
+		_ui->lineEdit_posx->setText(DOUBLE_TO_STRING(pDoF->_pos.x));
+		_ui->lineEdit_posy->setText(DOUBLE_TO_STRING(pDoF->_pos.y));
+		_ui->lineEdit_posz->setText(DOUBLE_TO_STRING(pDoF->_pos.z));
 
 	} while (0);
 }

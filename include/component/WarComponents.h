@@ -28,6 +28,82 @@ public:
 	void deserialize(Spawner* spawner);
 };
 
+struct DoF : public Component { // tolua_export
+	enum {
+		Dof_ = ESTATE_01,
+		Parent_ = ESTATE_02
+	};
+
+	union
+	{
+		struct
+		{
+			double x, y, z;
+		} _pos;
+		struct
+		{
+			double lon, lat, alt;
+		} _lla;
+	};
+	
+	float _sx, _sy, _sz;
+	float _heading, _pitch, _roll;
+
+	bool _isLLA;
+	DoF* _parent;
+	int _mountEntID;
+	int _mountEntBreed;
+	const int _sceneType; // [0:地形场景;1:地球场景;2:地图场景]
+	vector<DoF*> _children;
+	ZOO_REFLEX_DECLARE(DoF)
+
+public:
+	DoF();
+	~DoF();
+	void init();
+	void serialize(Spawner* spawner);
+	void deserialize(Spawner* spawner);
+
+public:
+	// tolua_begin
+	bool isLLA() const;
+	void setLLA(bool lla);
+	void llaTo(double lon, double lat, double alt);
+	void setLon(double lon);
+	void setLat(double lat);
+	void setAlt(double alt);
+	double getLon() const;
+	double getLat() const;
+	double getAlt() const;
+	void moveTo(double x, double y, double z);
+	void moveBy(double x, double y, double z);
+	void setPosX(double x);
+	void setPosY(double y);
+	void setPosZ(double z);
+	double getPosX() const;
+	double getPosY() const;
+	double getPosZ() const;
+	void rotateTo(float h, float p, float r);
+	void rotateBy(float h, float p, float r);
+	void setHeading(float h);
+	void setPitch(float p);
+	void setRoll(float r);
+	float getHeading() const;
+	float getPitch() const;
+	float getRoll() const;
+	void scaleTo(float sx, float sy, float sz);
+	void scaleBy(float sx, float sy, float sz);
+	void setScaleX(float sx);
+	void setScaleY(float sy);
+	void setScaleZ(float sz);
+	float getScaleX() const;
+	float getScaleY() const;
+	float getScaleZ() const;
+	void setParent(DoF* parent);
+	DoF* getParent() const;
+};
+// tolua_end
+
 struct Mesh : public Serializer { // tolua_export
 	enum {
 		Changed_ = ESTATE_30
@@ -72,50 +148,6 @@ public:
 	// tolua_begin
 	void changeMat(const string& name);
 	void changeUniform(const string& uniform, const vector<double>& val);
-};
-// tolua_end
-
-struct DoF : public Component { // tolua_export
-	enum {
-		Dof_ = ESTATE_01,
-		Parent_ = ESTATE_02
-	};
-
-	double _x, _y, _z;
-	float _sx, _sy, _sz;
-	float _heading, _pitch, _roll;
-	DoF* _parent;
-	int _mountEntID;
-	int _mountEntBreed;
-	const int _sceneType; // [0:地形场景;1:地球场景;2:地图场景]
-	const bool _lonLatHeight;
-	vector<DoF*> _children;
-	ZOO_REFLEX_DECLARE(DoF)
-
-public:
-	DoF();
-	~DoF();
-	void init();
-	void serialize(Spawner* spawner);
-	void deserialize(Spawner* spawner);
-
-public:
-	// tolua_begin
-	bool isLLH() const;
-	void setPos(double x, double y, double z, bool lon_lat_height = false); // 参数lon_lat_height在0类型的场景下无效
-	double getPosX() const;
-	double getPosY() const;
-	double getPosZ() const;
-	void setRot(float h, float p, float r);
-	float getHeading() const;
-	float getPitch() const;
-	float getRoll() const;
-	void setScale(float sx, float sy, float sz);
-	float getScaleX() const;
-	float getScaleY() const;
-	float getScaleZ() const;
-	void setParent(DoF* parent);
-	DoF* getParent() const;
 };
 // tolua_end
 

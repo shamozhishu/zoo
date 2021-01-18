@@ -19,6 +19,7 @@ extern bool zooCmdL_Send(const char* cmd, const char* format, ...);
 #define zooCmd_Refresh zooCmd_Refresh_Loader
 #define zooCmd_Destroy zooCmd_Destroy_Loader
 #define zooCmd_Render zooCmd_Render_Loader
+#define zooCmd_GetWnd zooCmd_GetWnd_Loader
 #define zooCmd_Setup zooCmd_Setup_Loader
 
 // Return value, record the return value of the most recently executed command.
@@ -53,6 +54,8 @@ typedef void(*ZOOCMDDESTROYPROC)();
 extern ZOOCMDDESTROYPROC zooCmd_Destroy_Loader;
 typedef void(*ZOOCMDRENDERPROC)();
 extern ZOOCMDRENDERPROC zooCmd_Render_Loader;
+typedef void*(*ZOOCMDGETWNDPROC)(int windowID, bool wndHanle);
+extern ZOOCMDGETWNDPROC zooCmd_GetWnd_Loader;
 typedef void*(*ZOOCMDSETUPPROC)(int windowWidth, int windowHeight, float windowScale, int windowID);
 extern ZOOCMDSETUPPROC zooCmd_Setup_Loader;
 typedef bool(*ZOOCMDBOOLVALUEPROC)(const char* variable, bool* value);

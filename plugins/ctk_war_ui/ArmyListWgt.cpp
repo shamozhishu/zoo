@@ -9,7 +9,6 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <ctk_service/WarService.h>
-#include <ctk_service/Win32Service.h>
 #include <ctk_service/UIManagerService.h>
 #include "ComPropertyBoard.h"
 #include "OpenBattlefieldDlg.h"
@@ -34,7 +33,7 @@ public:
 		_mainCam = ent->getComponent<Camera>();
 		if (!_mainCam)
 		{
-			_mainCam = ent->addComponent<Camera, int>("CameraImpl", ZOOCMDWGT);
+			_mainCam = ent->addComponent<Camera, int>("CameraImpl", MAIN_VIEW_WGT);
 			_mainCam->getImp()->awake();
 			_uiMgr->starWindowTitle();
 		}

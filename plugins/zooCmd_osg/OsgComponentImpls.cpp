@@ -113,7 +113,7 @@ void DoFImpl::remove()
 
 void DoFImpl::locate(DoF* dof)
 {
-	if (dof->_lonLatHeight)
+	if (dof->_isLLA)
 	{
 #ifdef NEED_OSGEARTH_LIBRARY
 		CoordTransformUtil* pOsgEarthUtils = ServiceLocator<CoordTransformUtil>::getService();
@@ -124,7 +124,7 @@ void DoFImpl::locate(DoF* dof)
 			if (pOsgEarthUtils && pMapNode)
 			{
 				double x, y, z;
-				pOsgEarthUtils->convertLLHToXYZ(osgearthContext, dof->_x, dof->_y, dof->_z, x, y, z);
+				pOsgEarthUtils->convertLLHToXYZ(osgearthContext, dof->_lla.lon, dof->_lla.lat, dof->_lla.alt, x, y, z);
 				osg::Matrix mat;
 				osgEarth::GeoPoint mapPoint;
 				mapPoint.fromWorld(pMapNode->getMapSRS(), osg::Vec3d(x, y, z));
@@ -146,7 +146,7 @@ void DoFImpl::locate(DoF* dof)
 	}
 	else
 	{
-		_transWorld->setMatrix(osg::Matrix::translate(dof->_x, dof->_y, dof->_z));
+		_transWorld->setMatrix(osg::Matrix::translate(dof->_pos.x, dof->_pos.y, dof->_pos.z));
 	}
 
 	_transLocal->setMatrix(osg::Matrix::scale(dof->_sx, dof->_sy, dof->_sz)
@@ -158,7 +158,7 @@ void DoFImpl::locate(DoF* dof)
 void DoFImpl::changeParent(DoF* dof)
 {
 	remove();
-	if (dof->_lonLatHeight)
+	if (dof->_isLLA)
 	{
 		osg::Group* pScene = getEntity()->getSpawner()->getContext<OsgContext>()->getSceneNode();
 		pScene->addChild(_transWorld.get());

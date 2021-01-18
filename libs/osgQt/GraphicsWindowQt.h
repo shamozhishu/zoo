@@ -28,6 +28,7 @@ public:
 	GraphicsWindowQt(osg::GraphicsContext::Traits* traits, QWidget* parent = NULL, const QGLWidget* shareWidget = NULL);
 	virtual ~GraphicsWindowQt();
 
+	void* getWndHandle() const;
 	QGLWidget* getGLWidget() { return _widget; }
 	const QGLWidget* getGLWidget() const { return _widget; }
 

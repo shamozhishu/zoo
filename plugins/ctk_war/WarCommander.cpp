@@ -2,7 +2,6 @@
 #include "Battlefield.h"
 #include <zoo/DatabaseCSV.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
-#include <ctk_service/Win32Service.h>
 #include <toluaInput/Input.h>
 #include <QCoreApplication>
 #include <QFile>
@@ -14,11 +13,11 @@ using namespace zoo;
 
 WarCommander::WarCommander(string cmd, string table)
 	: _cmd(cmd)
+	, _inputDevice(nullptr)
 	, _battlefieldTable(nullptr)
 	, _currentBattlefield(nullptr)
 {
 	new DatabaseCSV();
-	_inputDevice = new Input(WarActivator::getService<Win32Service>()->getWnd());
 	string csvTablePath = table;
 	size_t pos = csvTablePath.find_last_of('/', csvTablePath.length());
 	csvTablePath = csvTablePath.substr(0, pos + 1);
@@ -96,7 +95,11 @@ Battlefield* WarCommander::getCurBattlefield() const
 
 void WarCommander::tick()
 {
-	_inputDevice->poll();
+	if (_inputDevice)
+		_inputDevice->poll();
+	else
+		_inputDevice = new Input(zooCmd_GetWnd(0, true));
+
 	if (_currentBattlefield)
 		_currentBattlefield->stepping();
 

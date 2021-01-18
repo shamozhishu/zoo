@@ -4,10 +4,10 @@
 #include <QLayout>
 #include <QApplication>
 #include <zoo/Component.h>
+#include <ctk_service/WarService.h>
 #include <UniversalGlobalServices.h>
 #include <zooCmdLoader/ZooCmdLoader.h>
 #include <component/WarComponents.h>
-#include <ctk_service/Win32Service.h>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5,0,0))
 #pragma execution_character_set("utf-8")
@@ -27,7 +27,7 @@ MaterialDisplayWgt::MaterialDisplayWgt(QWidget* parent /*= Q_NULLPTR*/)
 	zooCmdL_Load();
 
 	QScreen* screen = windowHandle() && windowHandle()->screen() ? windowHandle()->screen() : qApp->screens().front();
-	QWidget* pGLWgt = (QWidget*)zooCmd_Setup(width(), height(), screen->devicePixelRatio(), MATERIALDISPLAYWGT);
+	QWidget* pGLWgt = (QWidget*)zooCmd_Setup(width(), height(), screen->devicePixelRatio(), MATERIAL_DISPLAY_WGT);
 	if (pGLWgt)
 	{
 		setLayout(new QHBoxLayout);
@@ -38,7 +38,7 @@ MaterialDisplayWgt::MaterialDisplayWgt(QWidget* parent /*= Q_NULLPTR*/)
 		Model* model = _materialSphere->addComponent<Model>("ModelImpl");
 		model->_mesh._currentUseMeshName = "Sphere";
 		ServiceLocator<MeshList>().getService()->switchMesh("Sphere", &model->_mesh);
-		Camera* cam = _materialSphere->addComponent<Camera, int>("CameraImpl", MATERIALDISPLAYWGT);
+		Camera* cam = _materialSphere->addComponent<Camera, int>("CameraImpl", MATERIAL_DISPLAY_WGT);
 		cam->_manipulatorKey = Camera::NodeTracker_;
 		cam->_trackEntID = cam->_trackEntBreed = 1;
 		pSpawner->awakeAll();

@@ -195,6 +195,22 @@ void RenderDevice::frame(double simulationTime)
 	_compositeViewer->frame(simulationTime);
 }
 
+void* RenderDevice::getWnd(int windowID, bool wndHandle /*= false*/)
+{
+	auto it = _osgWinEmbs.find(windowID);
+	if (it == _osgWinEmbs.end())
+		return nullptr;
+
+	osgQt::GraphicsWindowQt* pWndQt = dynamic_cast<osgQt::GraphicsWindowQt*>(it->second.get());
+	if (!pWndQt)
+		return nullptr;
+
+	if (wndHandle)
+		return pWndQt->getWndHandle();
+
+	return pWndQt->getGLWidget();
+}
+
 void* RenderDevice::setup(int windowWidth, int windowHeight, float windowScale, int windowID/* = 0*/)
 {
 	osgQt::GraphicsWindowQt* pGW = nullptr;

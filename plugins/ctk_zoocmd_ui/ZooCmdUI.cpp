@@ -73,7 +73,6 @@ ZooCmdUI::ZooCmdUI(QWidget* parent /*= Q_NULLPTR*/)
 	settings.endGroup();
 
 	_mainWidget = new ZooCmdWgt(_inputAdaName, cmdset, datadir, this);
-	UIActivator::getPluginContext()->registerService<Win32Service>(_mainWidget);
 	_ui.gridLayout_center->addWidget(_mainWidget);
 	setCentralWidget(_mainWidget);
 	connect(_mainWidget, &ZooCmdWgt::cmdRegistered, [this]
