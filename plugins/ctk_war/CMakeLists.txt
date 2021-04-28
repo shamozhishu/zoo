@@ -3,6 +3,8 @@
 #                                  ctk_war                                #
 #                                                                         #
 ###########################################################################
+if (OPTION_CTK_WAR)
+
 project(ctk_war)
 set(OUT_NAME ctk_war)
 set(CMAKE_DEBUG_POSTFIX "")
@@ -108,3 +110,5 @@ endif()
 
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib/$<CONFIGURATION>)
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>/plugins)
+
+endif()

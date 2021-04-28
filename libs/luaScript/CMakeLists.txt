@@ -3,6 +3,8 @@
 #                               luaScript                                 #
 #                                                                         #
 ###########################################################################
+if (OPTION_LUASCRIPT)
+
 set(OUT_NAME luaScript)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -58,3 +60,5 @@ target_link_libraries(
 
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib)
 INSTALL(FILES ${LUASCRIPT_H} DESTINATION include/luaScript)
+
+endif()

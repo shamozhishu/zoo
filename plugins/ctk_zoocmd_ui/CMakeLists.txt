@@ -3,6 +3,8 @@
 #                               ctk_zoocmd_ui                             #
 #                                                                         #
 ###########################################################################
+if (OPTION_CTK_ZOOCMD_UI)
+
 project(ctk_zoocmd_ui)
 set(OUT_NAME ctk_zoocmd_ui)
 set(CMAKE_DEBUG_POSTFIX "")
@@ -100,3 +102,5 @@ ENDIF()
 
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib/$<CONFIGURATION>)
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>/plugins)
+
+endif()

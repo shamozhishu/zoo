@@ -3,6 +3,8 @@
 #                                zooCmdUI                                 #
 #                                                                         #
 ###########################################################################
+if (OPTION_ZOOCMDUI)
+
 set(OUT_NAME zooCmdUI)
 
 set(ZOOCMDUI_CPP
@@ -41,3 +43,5 @@ target_link_libraries(
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
+
+endif()

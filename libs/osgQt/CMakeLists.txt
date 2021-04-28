@@ -3,6 +3,8 @@
 #                                  osgQt                                  #
 #                                                                         #
 ###########################################################################
+if (OPTION_OSGQT)
+
 set(OUT_NAME osgQt)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -48,3 +50,5 @@ target_link_libraries(
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib)
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
 INSTALL(FILES ${ZOOCMD_H} DESTINATION include/osgQt)
+
+endif()

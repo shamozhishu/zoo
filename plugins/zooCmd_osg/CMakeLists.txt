@@ -3,6 +3,8 @@
 #                               zooCmd_osg                                #
 #                                                                         #
 ###########################################################################
+if (OPTION_ZOOCMD_OSG)
+
 set(OUT_NAME zooCmd_osg)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -58,3 +60,5 @@ add_custom_command(TARGET ${OUT_NAME}
 endif()
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
+
+endif()

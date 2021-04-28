@@ -3,6 +3,8 @@
 #                               toluaInput                                #
 #                                                                         #
 ###########################################################################
+if (OPTION_TOLUAINPUT)
+
 set(OUT_NAME toluaInput)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -54,3 +56,5 @@ endif()
 
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib)
 INSTALL(FILES ${INPUT_H} DESTINATION include/toluaInput)
+
+endif()

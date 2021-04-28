@@ -3,6 +3,8 @@
 #                             zooCmd_osg-earth                            #
 #                                                                         #
 ###########################################################################
+if (OPTION_ZOOCMD_OSG_EARTH)
+
 set(OUT_NAME zooCmd_osg-earth)
 
 include_directories("${3RD_PARTY_DIR}/include")
@@ -31,3 +33,5 @@ target_link_libraries(
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
+
+endif()

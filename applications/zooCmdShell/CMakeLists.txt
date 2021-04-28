@@ -3,6 +3,8 @@
 #                              zooCmdShell                                #
 #                                                                         #
 ###########################################################################
+if (OPTION_ZOOCMDSHELL)
+
 set(OUT_NAME zooCmdShell)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -21,3 +23,5 @@ target_link_libraries(
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
+
+endif()

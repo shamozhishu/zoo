@@ -84,6 +84,22 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/libs)
+
+option(OPTION_ZOOCMDSHELL "build project zooCmdShell" OFF)
+option(OPTION_ZOOCMDUI "build project zooCmdUI" OFF)
+
+option(OPTION_OSGQT "build project osgQt" OFF)
+option(OPTION_LUASCRIPT "build project luaScript" OFF)
+option(OPTION_TOLUAINPUT "build project toluaInput" OFF)
+option(OPTION_TOLUAMATH "build project toluaMath" OFF)
+
+option(OPTION_ZOOCMD_OSG "build project zooCmd_osg" OFF)
+option(OPTION_ZOOCMD_OSG_EARTH "build project zooCmd_osg-earth" OFF)
+option(OPTION_CTK_PLUGINFWADMIN "build project ctk_pluginfwadmin" OFF)
+option(OPTION_CTK_WAR "build project ctk_war" OFF)
+option(OPTION_CTK_WAR_UI "build project ctk_war_ui" OFF)
+option(OPTION_CTK_ZOOCMD_UI "build project ctk_zoocmd_ui" OFF)
+
 add_subdirectory(libs)
 add_subdirectory(plugins)
 add_subdirectory(applications)

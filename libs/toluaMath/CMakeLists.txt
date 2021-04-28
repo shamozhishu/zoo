@@ -3,6 +3,8 @@
 #                                toluaMath                                #
 #                                                                         #
 ###########################################################################
+if (OPTION_TOLUAMATH)
+
 set(OUT_NAME toluaMath)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -48,3 +50,5 @@ add_custom_command(TARGET ${OUT_NAME}
 endif()
 
 INSTALL(TARGETS ${OUT_NAME} ARCHIVE DESTINATION lib)
+
+endif()

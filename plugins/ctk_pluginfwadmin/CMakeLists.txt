@@ -3,6 +3,8 @@
 #                            ctk_pluginfwadmin                            #
 #                                                                         #
 ###########################################################################
+if (OPTION_CTK_PLUGINFWADMIN)
+
 set(OUT_NAME ctk_pluginfwadmin)
 set(CMAKE_DEBUG_POSTFIX "")
 
@@ -70,3 +72,5 @@ target_link_libraries(
 )
 
 INSTALL(TARGETS ${OUT_NAME} RUNTIME DESTINATION bin/$<CONFIGURATION>)
+
+endif()
